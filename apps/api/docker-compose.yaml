@@ -1,0 +1,15 @@
+services:
+  postgres:
+    container_name: engflex_postgres
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - engflex_postgres_data:/var/lib/postgresql
+
+volumes:
+  engflex_postgres_data:
