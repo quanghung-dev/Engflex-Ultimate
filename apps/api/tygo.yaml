@@ -1,0 +1,20 @@
+# tygo codegen: Go DTOs -> TypeScript contracts in ../../packages/contracts.
+# Run from this directory: `tygo generate` (or `make contracts`).
+# Generated files are overwritten; shared hand-written code goes in
+# packages/contracts/src/index.ts (barrel, never touched by tygo).
+
+type_mappings:
+  time.Time: "string /* RFC3339 */"
+
+packages:
+  - path: "github.com/gianghp123/engflex-ultimate/internal/common"
+    output_path: "../../packages/contracts/src/common.ts"
+    # AppError never crosses the wire (only its message, inside the envelope).
+    exclude_files:
+      - "errors.go"
+
+  # Add one entry per domain module as it is implemented, e.g.:
+  # - path: "github.com/gianghp123/engflex-ultimate/internal/modules/contents/dtos/requests"
+  #   output_path: "../../packages/contracts/src/contents-requests.ts"
+  # - path: "github.com/gianghp123/engflex-ultimate/internal/modules/contents/dtos/responses"
+  #   output_path: "../../packages/contracts/src/contents-responses.ts"

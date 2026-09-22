@@ -1,0 +1,56 @@
+# --- Markdown: ignore all except README ---
+*.md
+!README.md
+!AGENTS.md
+
+*.html
+!index.html
+.claude
+.superpowers
+docs
+# --- Go ---
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+/bin/
+/dist/
+vendor/
+
+# --- Env / secrets (keep examples) ---
+.env
+!.env.example
+
+# --- Databases / local data ---
+*.db
+*.sqlite
+*.sqlite3
+
+# --- Frontend (Vite/React) ---
+node_modules/
+dist/
+build/
+coverage/
+*.local
+.eslintcache
+.vite/
+
+# --- TypeScript ---
+*.tsbuildinfo
+
+# --- OS / editors ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# --- Logs / temp ---
+*.log
+tmp/
+temp/

@@ -1,0 +1,10 @@
+# mockery v3 config — regenerate with `make mocks` or `mockery`.
+all: false
+dir: "internal/database/repositories/mocks"
+filename: "mock_{{.InterfaceName}}.go"
+pkgname: "mocks"
+template: testify
+packages:
+  github.com/gianghp123/engflex-ultimate/internal/database/repositories:
+    config:
+      all: true
