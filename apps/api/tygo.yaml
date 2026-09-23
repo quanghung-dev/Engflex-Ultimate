@@ -2,9 +2,31 @@
 # Run from this directory: `tygo generate` (or `make contracts`).
 # Generated files are overwritten; shared hand-written code goes in
 # packages/contracts/src/index.ts (barrel, never touched by tygo).
-
+#
+# Cross-package references (enums.*, common.ListParams) are invisible to
+# tygo's per-package type resolution: without these global mappings they
+# degrade to `unknown /* pkg.Type */`. Mapped values are bare TS identifiers
+# declared ambiently in packages/contracts/src/index.ts (declare global), so
+# generated files stay import-free (no per-package frontmatter).
 type_mappings:
   time.Time: "string /* RFC3339 */"
+  "enums.ActivityType": "ActivityType"
+  "enums.AttemptType": "AttemptType"
+  "enums.CEFR": "CEFR"
+  "enums.ConversationMode": "ConversationMode"
+  "enums.ConversationStatus": "ConversationStatus"
+  "enums.Goal": "Goal"
+  "enums.InterestTopic": "InterestTopic"
+  "enums.LessonStatus": "LessonStatus"
+  "enums.Level": "Level"
+  "enums.ScenarioDifficulty": "ScenarioDifficulty"
+  "enums.TurnRole": "TurnRole"
+  "enums.VocabularyDomain": "VocabularyDomain"
+  "enums.VocabularySort": "VocabularySort"
+  "enums.VocabularySource": "VocabularySource"
+  "enums.WordMarkStatus": "WordMarkStatus"
+  # embedded by list request DTOs tagged `tstype:",extends"`
+  "common.ListParams": "ListParams"
 
 packages:
   - path: "github.com/gianghp123/engflex-ultimate/internal/common"
@@ -13,8 +35,51 @@ packages:
     exclude_files:
       - "errors.go"
 
-  # Add one entry per domain module as it is implemented, e.g.:
-  # - path: "github.com/gianghp123/engflex-ultimate/internal/modules/contents/dtos/requests"
-  #   output_path: "../../packages/contracts/src/contents-requests.ts"
-  # - path: "github.com/gianghp123/engflex-ultimate/internal/modules/contents/dtos/responses"
-  #   output_path: "../../packages/contracts/src/contents-responses.ts"
+  # Shared enums: one Go file per enum type -> const + union literal types.
+  - path: "github.com/gianghp123/engflex-ultimate/internal/common/enums"
+    output_path: "../../packages/contracts/src/enums.ts"
+    enum_style: "union"
+    fallback_type: "unknown"
+
+  # Module wire DTOs: dtos/requests + dtos/responses per module.
+  - path: "github.com/gianghp123/engflex-ultimate/internal/modules/profiles/dtos/requests"
+    output_path: "../../packages/contracts/src/profiles-requests.ts"
+    fallback_type: "unknown"
+  - path: "github.com/gianghp123/engflex-ultimate/internal/modules/profiles/dtos/responses"
+    output_path: "../../packages/contracts/src/profiles-responses.ts"
+    fallback_type: "unknown"
+
+  - path: "github.com/gianghp123/engflex-ultimate/internal/modules/lessons/dtos/requests"
+    output_path: "../../packages/contracts/src/lessons-requests.ts"
+    fallback_type: "unknown"
+  - path: "github.com/gianghp123/engflex-ultimate/internal/modules/lessons/dtos/responses"
+    output_path: "../../packages/contracts/src/lessons-responses.ts"
+    fallback_type: "unknown"
+
+  - path: "github.com/gianghp123/engflex-ultimate/internal/modules/personas/dtos/requests"
+    output_path: "../../packages/contracts/src/personas-requests.ts"
+    fallback_type: "unknown"
+  - path: "github.com/gianghp123/engflex-ultimate/internal/modules/personas/dtos/responses"
+    output_path: "../../packages/contracts/src/personas-responses.ts"
+    fallback_type: "unknown"
+
+  - path: "github.com/gianghp123/engflex-ultimate/internal/modules/conversations/dtos/requests"
+    output_path: "../../packages/contracts/src/conversations-requests.ts"
+    fallback_type: "unknown"
+  - path: "github.com/gianghp123/engflex-ultimate/internal/modules/conversations/dtos/responses"
+    output_path: "../../packages/contracts/src/conversations-responses.ts"
+    fallback_type: "unknown"
+
+  - path: "github.com/gianghp123/engflex-ultimate/internal/modules/vocabulary/dtos/requests"
+    output_path: "../../packages/contracts/src/vocabulary-requests.ts"
+    fallback_type: "unknown"
+  - path: "github.com/gianghp123/engflex-ultimate/internal/modules/vocabulary/dtos/responses"
+    output_path: "../../packages/contracts/src/vocabulary-responses.ts"
+    fallback_type: "unknown"
+
+  - path: "github.com/gianghp123/engflex-ultimate/internal/modules/attempts/dtos/requests"
+    output_path: "../../packages/contracts/src/attempts-requests.ts"
+    fallback_type: "unknown"
+  - path: "github.com/gianghp123/engflex-ultimate/internal/modules/attempts/dtos/responses"
+    output_path: "../../packages/contracts/src/attempts-responses.ts"
+    fallback_type: "unknown"

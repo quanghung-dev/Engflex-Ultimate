@@ -2,6 +2,8 @@
 *.md
 !README.md
 !AGENTS.md
+*.png
+!public/*.png
 
 *.html
 !index.html
