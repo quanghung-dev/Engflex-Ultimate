@@ -1,5 +1,5 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.2.4/schema.json",
+	"$schema": "https://biomejs.dev/schemas/2.4.5/schema.json",
 	"vcs": {
 		"enabled": false,
 		"clientKind": "git",
@@ -13,7 +13,10 @@
 			"**/index.html",
 			"**/vite.config.ts",
 			"!**/src/routeTree.gen.ts",
-			"!**/src/styles.css"
+			"!**/src/styles.css",
+			"!**/src/paraglide",
+			"!**/src/routes/demo",
+			"!**/src/data/demo-table-data.ts"
 		]
 	},
 	"formatter": {
@@ -27,10 +30,43 @@
 			"recommended": true
 		}
 	},
+	"overrides": [
+		{
+			"includes": ["**/src/components/ui/sidebar.tsx"],
+			"linter": {
+				"rules": {
+					"suspicious": { "noDocumentCookie": "off" },
+					"correctness": { "useExhaustiveDependencies": "off" }
+				}
+			}
+		},
+		{
+			"includes": ["**/src/components/ui/breadcrumb.tsx"],
+			"linter": {
+				"rules": {
+					"a11y": {
+						"useFocusableInteractive": "off",
+						"useSemanticElements": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["**/src/components/ui/field.tsx"],
+			"linter": {
+				"rules": {
+					"a11y": { "useSemanticElements": "off" },
+					"suspicious": {
+						"noDoubleEquals": "off",
+						"noArrayIndexKey": "off"
+					}
+				}
+			}
+		}
+	],
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "double"
 		}
 	}
 }
-
