@@ -1,0 +1,86 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "onboarding": {
+    "crumb": "Onboarding",
+    "tagline": "English learning platform",
+    "levelTitle": "Choose your level",
+    "levelSubtitle": "Engflex tunes conversational latency and vocabulary complexity based on your baseline.",
+    "levels": {
+      "beginner": {
+        "title": "Beginner",
+        "description": "Foundational syntax & everyday vocabulary",
+        "hint": "Guided prompts"
+      },
+      "intermediate": {
+        "title": "Intermediate",
+        "description": "Fluent meeting participation & technical dialogues",
+        "hint": "AI benchmark recommendation"
+      },
+      "advanced": {
+        "title": "Advanced",
+        "description": "Executive negotiation, nuance, and keynote delivery",
+        "hint": "Cognitive pressure mode"
+      }
+    },
+    "goalTitle": "What's your goal?",
+    "goalSubtitle": "Targeted synthetic dialogues will be generated around high-stakes real work situations.",
+    "goals": {
+      "travel": "Travel",
+      "work": "Work & Career",
+      "exams": "Exams (IELTS/TOEIC)",
+      "daily": "Daily conversation",
+      "fun": "Just for fun"
+    },
+    "topicsTitle": "Pick topics you like",
+    "topicsSubtitle": "Choose 2 or more topics to fuel dynamic case studies and AI voice drill scenarios.",
+    "topics": {
+      "travel": "Travel",
+      "business": "Business",
+      "movies_tv": "Movies & TV",
+      "technology": "Technology",
+      "food": "Food",
+      "music": "Music",
+      "sports": "Sports",
+      "news": "News"
+    },
+    "topicsError": "Choose 2 or more topics to continue.",
+    "timeTitle": "How much time can you study daily?",
+    "timeSubtitle": "Consistency outperforms duration. AI speech loops adapt smoothly to your schedule.",
+    "commitments": {
+      "c5": {
+        "label": "Light micro-session",
+        "sub": "1 drill / day"
+      },
+      "c10": {
+        "label": "Steady habit",
+        "sub": "2 drills / day"
+      },
+      "c15": {
+        "label": "Recommended daily pacing",
+        "sub": "Optimal retention"
+      },
+      "c30": {
+        "label": "Accelerated mastery",
+        "sub": "Executive depth"
+      }
+    },
+    "recommended": "Recommended",
+    "minutesUnit": "{count} min",
+    "diagnostic": {
+      "percentile": "You're in the top 18% of technical communicators entering Engflex",
+      "acceleration": "High potential trajectory detected! Based on your target goals and chosen topics, your speech fluency curve accelerates 2.4x faster in simulation mode.",
+      "chartLabel": "Engflex acoustic diagnostic hexagon",
+      "baseline": "Optimal baseline unlocked",
+      "latency": "Predicted conversational latency",
+      "clarity": "Acoustic clarity confidence",
+      "axes": {
+        "precision": "PRECISION",
+        "lexical": "LEXICAL",
+        "cadence": "CADENCE",
+        "stress": "STRESS",
+        "latency": "LATENCY",
+        "clarity": "CLARITY"
+      }
+    }
+  }
+}

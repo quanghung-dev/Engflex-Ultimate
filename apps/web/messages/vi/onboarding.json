@@ -1,0 +1,86 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "onboarding": {
+    "crumb": "Bắt đầu",
+    "tagline": "Nền tảng học tiếng Anh",
+    "levelTitle": "Chọn trình độ của bạn",
+    "levelSubtitle": "Engflex điều chỉnh độ trễ hội thoại và độ phức tạp từ vựng dựa trên điểm xuất phát của bạn.",
+    "levels": {
+      "beginner": {
+        "title": "Sơ cấp",
+        "description": "Ngữ pháp nền tảng & từ vựng giao tiếp hằng ngày",
+        "hint": "Gợi ý có hướng dẫn"
+      },
+      "intermediate": {
+        "title": "Trung cấp",
+        "description": "Tham gia họp trôi chảy & hội thoại kỹ thuật",
+        "hint": "AI đề xuất theo chuẩn"
+      },
+      "advanced": {
+        "title": "Nâng cao",
+        "description": "Đàm phán điều hành, sắc thái ngôn ngữ và thuyết trình",
+        "hint": "Chế độ thử thách tư duy"
+      }
+    },
+    "goalTitle": "Mục tiêu của bạn là gì?",
+    "goalSubtitle": "Các hội thoại mô phỏng sẽ được xây dựng quanh những tình huống công việc quan trọng của bạn.",
+    "goals": {
+      "travel": "Du lịch",
+      "work": "Công việc & Sự nghiệp",
+      "exams": "Thi cử (IELTS/TOEIC)",
+      "daily": "Giao tiếp hằng ngày",
+      "fun": "Giải trí"
+    },
+    "topicsTitle": "Chọn chủ đề bạn thích",
+    "topicsSubtitle": "Chọn từ 2 chủ đề trở lên để tạo tình huống học tập và kịch bản luyện nói AI.",
+    "topics": {
+      "travel": "Du lịch",
+      "business": "Kinh doanh",
+      "movies_tv": "Phim ảnh & TV",
+      "technology": "Công nghệ",
+      "food": "Ẩm thực",
+      "music": "Âm nhạc",
+      "sports": "Thể thao",
+      "news": "Tin tức"
+    },
+    "topicsError": "Hãy chọn từ 2 chủ đề trở lên để tiếp tục.",
+    "timeTitle": "Mỗi ngày bạn học được bao lâu?",
+    "timeSubtitle": "Đều đặn quan trọng hơn thời lượng. Các bài luyện nói AI sẽ tự điều chỉnh theo lịch của bạn.",
+    "commitments": {
+      "c5": {
+        "label": "Buổi học siêu ngắn",
+        "sub": "1 bài tập / ngày"
+      },
+      "c10": {
+        "label": "Thói quen ổn định",
+        "sub": "2 bài tập / ngày"
+      },
+      "c15": {
+        "label": "Nhịp học hằng ngày khuyên dùng",
+        "sub": "Ghi nhớ tối ưu"
+      },
+      "c30": {
+        "label": "Bứt tốc làm chủ",
+        "sub": "Chiều sâu điều hành"
+      }
+    },
+    "recommended": "Khuyên dùng",
+    "minutesUnit": "{count} phút",
+    "diagnostic": {
+      "percentile": "Bạn nằm trong top 18% người dùng giao tiếp kỹ thuật tốt nhất trên Engflex",
+      "acceleration": "Đã phát hiện tiềm năng bứt phá! Dựa trên mục tiêu và chủ đề bạn đã chọn, độ trôi chảy khi nói của bạn có thể tiến bộ nhanh gấp 2,4 lần ở chế độ mô phỏng.",
+      "chartLabel": "Lục giác chẩn đoán âm thanh Engflex",
+      "baseline": "Đã mở khóa mức nền tối ưu",
+      "latency": "Độ trễ hội thoại dự đoán",
+      "clarity": "Độ rõ của giọng nói",
+      "axes": {
+        "precision": "CHÍNH XÁC",
+        "lexical": "TỪ VỰNG",
+        "cadence": "NHỊP",
+        "stress": "TRỌNG ÂM",
+        "latency": "ĐỘ TRỄ",
+        "clarity": "RÕ ÂM"
+      }
+    }
+  }
+}

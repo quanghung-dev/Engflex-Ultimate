@@ -22,24 +22,3 @@ export const APP_ROUTES = {
 		SERVER: "/500",
 	},
 } as const;
-
-/**
- * Topbar breadcrumbs, keyed by TanStack route id.
- * Verify keys against src/routeTree.gen.ts after `pnpm generate-routes`.
- */
-export const BREADCRUMB_LABELS: Record<string, string[]> = {
-	"/_app/": ["Home", "Daily practice"],
-	"/_app/lessons/": ["Lessons"],
-	"/_app/lessons/$lessonId/": ["Lessons", "Lesson detail"],
-	"/_app/lessons/$lessonId/parts/$part": [
-		"Lessons",
-		"Lesson detail",
-		"Practice",
-	],
-	"/_app/vocabulary/": ["Vocabulary"],
-	"/_app/vocabulary/$itemId": ["Vocabulary", "Word detail"],
-	"/_app/voice/": ["Voice"],
-	"/_app/voice/scenarios": ["Voice", "Scenarios"],
-	"/_app/voice/room": ["Voice", "Live studio"],
-	"/onboarding": ["Onboarding"],
-};

@@ -1,0 +1,89 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "voice": {
+    "crumbScenarios": "Tình huống",
+    "crumbRoomFallback": "Phòng luyện trực tiếp",
+    "modesTitle": "Chọn chế độ nói",
+    "modesSubtitle": "Chọn cách bạn muốn luyện hôm nay. Khởi động tự do hoặc thử sức với đóng vai có cấu trúc.",
+    "modes": {
+      "spontaneous": {
+        "badge": "Chế độ 01 · Hội thoại tự nhiên",
+        "title": "Nói tự do & luyện phản xạ",
+        "description": "Luyện đối đáp mở không kịch bản định sẵn. AI thích ứng linh hoạt với mọi chủ đề, thách thức cách diễn đạt, nhịp ngắt và thành ngữ tự nhiên của bạn.",
+        "meta": "Khuyên dùng: 10–15 phút mỗi ngày",
+        "cta": "Bắt đầu nói tự do",
+        "feature0": "Chuyển chủ đề linh hoạt",
+        "feature1": "Đo nhịp & tốc độ (mục tiêu 135 từ/phút)",
+        "feature2": "Luyện phản xạ với độ trễ bằng không"
+      },
+      "structured": {
+        "badge": "Chế độ 02 · Mô phỏng có cấu trúc",
+        "title": "Tình huống đóng vai điều hành",
+        "description": "Mô phỏng công sở áp lực cao với nhân vật đối tác chân thực. Luyện phản biện sprint, bảo vệ thiết kế hệ thống, đàm phán lương và thuyết trình điều hành.",
+        "meta": "Gồm 4 nhóm chính · 12 tình huống",
+        "cta": "Khám phá tình huống",
+        "feature0": "12 nhân vật & tình huống điều hành chọn lọc",
+        "feature1": "Chuẩn hóa phát âm & nâng cấp cách diễn đạt",
+        "feature2": "Hiệu chỉnh độ khó CEFR B1 đến C1"
+      }
+    },
+    "calibration": {
+      "title": "Đã hiệu chỉnh micrô",
+      "device": "Micrô MacBook Pro · Đã phát hiện độ nhạy tối ưu",
+      "ready": "Sẵn sàng (Mic mặc định)",
+      "cta": "Kiểm tra âm thanh",
+      "listening": "Đang nghe…"
+    },
+    "scenariosTitle": "Chọn tình huống đóng vai",
+    "scenariosSubtitle": "Chọn chủ đề trọng tâm và tình huống để luyện hội thoại chuyên nghiệp chân thực với phản hồi âm thanh tức thì.",
+    "filterSearch": "Tìm tình huống",
+    "filterAllDifficulties": "Mọi độ khó",
+    "emptyTitle": "Không có tình huống nào khớp bộ lọc",
+    "customSection": "Tùy chỉnh",
+    "custom": {
+      "title": "Cần tình huống tùy chỉnh?",
+      "body": "Tạo bài luyện cá nhân dựa trên buổi phỏng vấn, kickoff sprint hay slide thuyết trình sắp tới của bạn.",
+      "cta": "Tạo tình huống tùy chỉnh",
+      "dialogTitle": "Tạo tình huống tùy chỉnh",
+      "dialogBody": "Mô tả tình huống; nhân vật đối tác là tùy chọn.",
+      "titleLabel": "Tiêu đề",
+      "objectiveLabel": "Mục tiêu",
+      "difficultyLabel": "Độ khó",
+      "minLabel": "Thời lượng tối thiểu (phút)",
+      "maxLabel": "Thời lượng tối đa (phút)",
+      "add": "Thêm tình huống",
+      "required": "Tiêu đề và mục tiêu là bắt buộc.",
+      "durationError": "Hãy nhập thời lượng từ 1–60 phút, tối thiểu không lớn hơn tối đa."
+    },
+    "card": {
+      "customTag": "Tình huống tùy chỉnh",
+      "partner": "Đối tác: {role}",
+      "sessionRange": "Phiên {min}–{max} phút",
+      "start": "Bắt đầu luyện"
+    },
+    "room": {
+      "back": "Quay lại các chế độ nói",
+      "spaceHint": "Nhấn Space để bật/tắt micrô",
+      "freeTalkTitle": "Khởi động nói tự do",
+      "freeTalkObjective": "Luyện đối đáp mở không kịch bản định sẵn. AI thích ứng với bất cứ điều gì bạn mang đến.",
+      "defenseRange": "Bảo vệ {min}–{max} phút",
+      "freeTalkFixed": "Nói tự do 10 phút",
+      "transcriptTitle": "Bản chép trực tiếp",
+      "analyzedOnly": "Chỉ hiện đã phân tích",
+      "now": "bây giờ",
+      "analyze": "Phân tích lượt nói",
+      "annotated": "Diễn đạt có chú thích",
+      "inWord": "trong “{word}”",
+      "micMuteSpeaker": "Tắt loa",
+      "micUnmuteSpeaker": "Bật loa",
+      "micMuteMic": "Tắt micrô",
+      "micUnmuteMic": "Bật micrô",
+      "micEnd": "Kết thúc phiên",
+      "briefTip1": "· Nói tự nhiên — đối tác thích ứng với cách diễn đạt của bạn.",
+      "briefTip2": "· Phân tích một lượt nói sau phiên để xem chẩn đoán.",
+      "speakerYou": "Bạn",
+      "speakerPartner": "{name} (Đối tác)",
+      "partnerFallback": "Đối tác"
+    }
+  }
+}

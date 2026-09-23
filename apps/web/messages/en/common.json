@@ -1,0 +1,49 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "common": {
+    "appName": "Engflex",
+    "cancel": "Cancel",
+    "back": "Back",
+    "continue": "Continue",
+    "finish": "Finish",
+    "nextSentence": "Next sentence →",
+    "resetFilters": "Reset filters",
+    "clear": "Clear",
+    "saveNote": "Save note",
+    "playPronunciation": "Play pronunciation",
+    "listenUS": "Listen pronunciation (US)",
+    "listenUK": "Listen (UK)",
+    "playTerm": "Play {term}",
+    "copiedClipboard": "Copied to clipboard",
+    "linkCopied": "Link copied",
+    "clipboardUnavailable": "Clipboard unavailable in this browser",
+    "customScenarioAdded": "Custom scenario added",
+    "addedToVocabulary": "Added to your vocabulary",
+    "flashcardSoon": "Flashcard drill coming soon",
+    "replayMockOnly": "Replay is mock-only for now",
+    "sessionSavedMock": "Session saved (mock)",
+    "levelFilter": "Level",
+    "statusFilter": "Status",
+    "audio": {
+      "play": "Play audio",
+      "pause": "Pause audio",
+      "replay": "Replay"
+    },
+    "about": {
+      "kicker": "About",
+      "title": "A small starter with room to grow.",
+      "body": "TanStack Start gives you type-safe routing, server functions, and modern SSR defaults. Use this as a clean foundation, then layer in your own routes, styling, and add-ons."
+    },
+    "documentTitle": "Engflex",
+    "a11y": {
+      "more": "More",
+      "close": "Close",
+      "sidebar": "Sidebar",
+      "sidebarDescription": "Displays the mobile sidebar.",
+      "toggleSidebar": "Toggle Sidebar"
+    },
+    "previousQuestion": "Previous",
+    "previousPage": "Previous",
+    "nextPage": "Next"
+  }
+}

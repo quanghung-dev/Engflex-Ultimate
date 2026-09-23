@@ -1,0 +1,17 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "nav": {
+    "groupPractice": "Daily practice",
+    "groupKnowledge": "Knowledge & review",
+    "home": "Home",
+    "lessons": "Lessons",
+    "voice": "Voice",
+    "vocabulary": "Vocabulary",
+    "learner": "Learner",
+    "level": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    }
+  }
+}

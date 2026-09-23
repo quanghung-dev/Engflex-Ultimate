@@ -191,17 +191,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  color: var(--primary);
-  text-decoration-color: color-mix(in oklab, var(--primary) 40%, transparent);
-  text-decoration-thickness: 1px;
-  text-underline-offset: 2px;
-}
-
-a:hover {
-  color: color-mix(in oklab, var(--primary) 85%, black);
-}
-
 code {
   font-size: 0.9em;
   border: 1px solid var(--border);
@@ -270,6 +259,7 @@ pre code {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .energy-card,
   .energy-pill {
     animation: none;
@@ -285,6 +275,7 @@ pre code {
   width: 100%;
   margin-inline: auto;
   padding-inline: 1.5rem;
+  height: 100%;
 }
 
 .container-dashboard {
@@ -312,6 +303,7 @@ pre code {
 }
 
 @media (min-width: 1280px) {
+
   .container-dashboard,
   .container-content,
   .container-detail,

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "common": {
+    "appName": "Engflex",
+    "cancel": "Hủy",
+    "back": "Quay lại",
+    "continue": "Tiếp tục",
+    "finish": "Hoàn thành",
+    "nextSentence": "Câu tiếp theo →",
+    "resetFilters": "Đặt lại bộ lọc",
+    "clear": "Xóa",
+    "saveNote": "Lưu ghi chú",
+    "playPronunciation": "Nghe phát âm",
+    "listenUS": "Nghe phát âm (Mỹ)",
+    "listenUK": "Nghe (Anh)",
+    "playTerm": "Nghe {term}",
+    "copiedClipboard": "Đã sao chép",
+    "linkCopied": "Đã sao chép liên kết",
+    "clipboardUnavailable": "Không thể sao chép trong trình duyệt này",
+    "customScenarioAdded": "Đã thêm tình huống tùy chỉnh",
+    "addedToVocabulary": "Đã thêm vào từ vựng của bạn",
+    "flashcardSoon": "Tính năng flashcard sắp ra mắt",
+    "replayMockOnly": "Xem lại hiện chỉ khả dụng trong bản demo",
+    "sessionSavedMock": "Đã lưu phiên luyện tập (bản demo)",
+    "levelFilter": "Trình độ",
+    "statusFilter": "Trạng thái",
+    "audio": {
+      "play": "Phát âm thanh",
+      "pause": "Tạm dừng",
+      "replay": "Nghe lại"
+    },
+    "about": {
+      "kicker": "Giới thiệu",
+      "title": "Một điểm khởi đầu gọn nhẹ để phát triển.",
+      "body": "TanStack Start mang đến định tuyến kiểm tra kiểu tĩnh, server function và SSR hiện đại. Hãy dùng đây làm nền tảng sạch, rồi thêm các route, phong cách và tiện ích của riêng bạn."
+    },
+    "documentTitle": "Engflex",
+    "a11y": {
+      "more": "Xem thêm",
+      "close": "Đóng",
+      "sidebar": "Thanh bên",
+      "sidebarDescription": "Hiển thị thanh bên trên di động.",
+      "toggleSidebar": "Ẩn/hiện thanh bên"
+    },
+    "previousQuestion": "Câu trước",
+    "previousPage": "Trang trước",
+    "nextPage": "Trang sau"
+  }
+}

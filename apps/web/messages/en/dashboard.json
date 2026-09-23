@@ -1,0 +1,66 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "dashboard": {
+    "greeting": "Good morning",
+    "greetingName": "Good morning, {name}",
+    "subtitle": "Speech performance",
+    "unitLabel": "Active lesson · Unit 4.2",
+    "stats": {
+      "fluency": "Overall fluency",
+      "pronunciation": "Pronunciation",
+      "speed": "Speaking speed",
+      "speedUnit": "words / min",
+      "reviewQueue": "Review queue",
+      "highFriction": "{count} high friction",
+      "practice": "Practice"
+    },
+    "sequenceTitle": "Today's practice sequence",
+    "sequenceMeta": "{count} modules · Customize schedule →",
+    "activeLesson": {
+      "progress": "{done} of {total} exercises completed",
+      "continue": "Continue practice"
+    },
+    "voicePartner": {
+      "title": "Spontaneous speaking roleplay",
+      "description": "Real-time conversational sparring with low latency speech recognition.",
+      "selected": "Selected",
+      "ready": "Ready",
+      "start": "Start conversation"
+    },
+    "sequence": {
+      "duration": "{count} min",
+      "state": {
+        "upNext": "Up next",
+        "queued": "Queued"
+      },
+      "doneScore": "Done ({score}% score)",
+      "dueCount": "{count} due",
+      "cards": {
+        "shadowing": {
+          "kicker": "Shadowing",
+          "title": "Tech keynote speech cadence",
+          "description": "Matched pace with product launches and engineering demos.",
+          "cta": "Replay"
+        },
+        "dictation": {
+          "kicker": "Dictation · Up next",
+          "title": "Executive summary review",
+          "description": "Complex technical summaries with architectural decision records.",
+          "cta": "Start dictation"
+        },
+        "roleplay": {
+          "kicker": "Roleplay simulation",
+          "title": "Sprint retro debate trade-offs",
+          "description": "Handle contentious points without sounding aggressive or evasive.",
+          "cta": "View scenarios"
+        },
+        "spaced": {
+          "kicker": "Spaced repetition",
+          "title": "Sprint & engineering lexicon",
+          "description": "Strengthen active vocal recall for velocity and blocker terminology.",
+          "cta": "Practice"
+        }
+      }
+    }
+  }
+}

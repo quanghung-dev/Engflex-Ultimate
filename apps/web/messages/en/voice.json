@@ -1,0 +1,89 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "voice": {
+    "crumbScenarios": "Scenarios",
+    "crumbRoomFallback": "Live studio",
+    "modesTitle": "Select speaking mode",
+    "modesSubtitle": "Choose how you want to train today. Warm up freely or test your instincts in structured roleplay.",
+    "modes": {
+      "spontaneous": {
+        "badge": "Mode 01 · Spontaneous conversation",
+        "title": "Free talk & acoustic sparring",
+        "description": "Open-ended sparring with no predefined script. The AI dynamically adapts to any topic, challenging your phrasing, pausing cadence, and natural idioms.",
+        "meta": "Recommended: 10–15 min daily session",
+        "cta": "Start free talk",
+        "feature0": "Dynamic topic switching",
+        "feature1": "Cadence & tempo telemetry (target 135 wpm)",
+        "feature2": "Zero-latency acoustic sparring engine"
+      },
+      "structured": {
+        "badge": "Mode 02 · Structured simulation",
+        "title": "Executive roleplay scenarios",
+        "description": "High-stakes workplace simulations with realistic partner personas. Practice sprint pushbacks, system architecture defenses, salary negotiations, and executive presentations.",
+        "meta": "Available: 4 core tracks · 12 scenarios",
+        "cta": "Explore scenarios",
+        "feature0": "12 curated executive personas & scenarios",
+        "feature1": "Phoneme parity & executive phrase upgrades",
+        "feature2": "CEFR B1 to C1 difficulty calibration"
+      }
+    },
+    "calibration": {
+      "title": "Audio input calibrated",
+      "device": "MacBook Pro Microphone · Optimal sensitivity detected",
+      "ready": "Ready (Default Mic)",
+      "cta": "Test audio",
+      "listening": "Listening…"
+    },
+    "scenariosTitle": "Select roleplay scenario",
+    "scenariosSubtitle": "Pick a focused topic and scenario to practice authentic professional dialogue with instant acoustic feedback.",
+    "filterSearch": "Search scenarios",
+    "filterAllDifficulties": "All difficulties",
+    "emptyTitle": "No scenario matches current filters",
+    "customSection": "Custom",
+    "custom": {
+      "title": "Need a custom scenario?",
+      "body": "Create a personalized prompt based on your upcoming job interview, sprint kickoff, or pitch deck.",
+      "cta": "Build custom scenario",
+      "dialogTitle": "Build custom scenario",
+      "dialogBody": "Describe the situation; the partner persona is optional.",
+      "titleLabel": "Title",
+      "objectiveLabel": "Objective",
+      "difficultyLabel": "Difficulty",
+      "minLabel": "Min duration (min)",
+      "maxLabel": "Max duration (min)",
+      "add": "Add scenario",
+      "required": "Title and objective are required.",
+      "durationError": "Durations must satisfy 1 ≤ min ≤ max ≤ 60."
+    },
+    "card": {
+      "customTag": "Custom scenario",
+      "partner": "Partner: {role}",
+      "sessionRange": "{min}–{max} min session",
+      "start": "Start practice"
+    },
+    "room": {
+      "back": "Back to voice modes",
+      "spaceHint": "Press Space to toggle the microphone",
+      "freeTalkTitle": "Free talk warm-up",
+      "freeTalkObjective": "Open-ended sparring with no predefined script. The AI adapts to whatever you bring.",
+      "defenseRange": "{min}–{max} min defense",
+      "freeTalkFixed": "10 min free talk",
+      "transcriptTitle": "Live transcript",
+      "analyzedOnly": "Analyzed only",
+      "now": "now",
+      "analyze": "Analyze turn",
+      "annotated": "Annotated delivery",
+      "inWord": "in “{word}”",
+      "micMuteSpeaker": "Mute speaker",
+      "micUnmuteSpeaker": "Unmute speaker",
+      "micMuteMic": "Mute microphone",
+      "micUnmuteMic": "Unmute microphone",
+      "micEnd": "End session",
+      "briefTip1": "· Speak naturally — the partner adapts to your phrasing.",
+      "briefTip2": "· Analyze a turn after the session to reveal diagnostics.",
+      "speakerYou": "You (You)",
+      "speakerPartner": "{name} (Partner)",
+      "partnerFallback": "Partner"
+    }
+  }
+}

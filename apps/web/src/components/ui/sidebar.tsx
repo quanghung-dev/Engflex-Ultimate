@@ -23,6 +23,7 @@ import {
 	TooltipTrigger,
 } from "#/components/ui/tooltip.tsx";
 import { useIsMobile } from "#/hooks/use-mobile.ts";
+import { m } from "#/paraglide/messages";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
@@ -195,8 +196,10 @@ function Sidebar({
 					side={side}
 				>
 					<SheetHeader className="sr-only">
-						<SheetTitle>Sidebar</SheetTitle>
-						<SheetDescription>Displays the mobile sidebar.</SheetDescription>
+						<SheetTitle>{m["common.a11y.sidebar"]()}</SheetTitle>
+						<SheetDescription>
+							{m["common.a11y.sidebarDescription"]()}
+						</SheetDescription>
 					</SheetHeader>
 					<div className="flex h-full w-full flex-col">{children}</div>
 				</SheetContent>
@@ -273,7 +276,7 @@ function SidebarTrigger({
 			{...props}
 		>
 			<PanelLeftIcon />
-			<span className="sr-only">Toggle Sidebar</span>
+			<span className="sr-only">{m["common.a11y.toggleSidebar"]()}</span>
 		</Button>
 	);
 }

@@ -13,11 +13,6 @@ import { Route as AppRouteRouteImport } from './routes/_app/route'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
-import { Route as DemoClerkRouteImport } from './routes/demo/clerk'
-import { Route as DemoI18nRouteImport } from './routes/demo.i18n'
-import { Route as DemoStoreRouteImport } from './routes/demo/store'
-import { Route as DemoTableRouteImport } from './routes/demo/table'
-import { Route as DemoTanstackQueryRouteImport } from './routes/demo/tanstack-query'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
 import { Route as AppLessonsIndexRouteImport } from './routes/_app/lessons/index'
@@ -26,8 +21,6 @@ import { Route as AppVocabularyItemIdRouteImport } from './routes/_app/vocabular
 import { Route as AppVoiceIndexRouteImport } from './routes/_app/voice/index'
 import { Route as AppVoiceRoomRouteImport } from './routes/_app/voice/room'
 import { Route as AppVoiceScenariosRouteImport } from './routes/_app/voice/scenarios'
-import { Route as DemoFormAddressRouteImport } from './routes/demo/form.address'
-import { Route as DemoFormSimpleRouteImport } from './routes/demo/form.simple'
 import { Route as AppLessonsLessonIdIndexRouteImport } from './routes/_app/lessons/$lessonId/index'
 import { Route as AppLessonsLessonIdPartsPartRouteImport } from './routes/_app/lessons/$lessonId/parts/$part'
 
@@ -49,31 +42,6 @@ const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRouteRoute,
-} as any)
-const DemoClerkRoute = DemoClerkRouteImport.update({
-  id: '/demo/clerk',
-  path: '/demo/clerk',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoI18nRoute = DemoI18nRouteImport.update({
-  id: '/demo/i18n',
-  path: '/demo/i18n',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoStoreRoute = DemoStoreRouteImport.update({
-  id: '/demo/store',
-  path: '/demo/store',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoTableRoute = DemoTableRouteImport.update({
-  id: '/demo/table',
-  path: '/demo/table',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
-  id: '/demo/tanstack-query',
-  path: '/demo/tanstack-query',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const SignInSplatRoute = SignInSplatRouteImport.update({
   id: '/sign-in/$',
@@ -115,16 +83,6 @@ const AppVoiceScenariosRoute = AppVoiceScenariosRouteImport.update({
   path: '/voice/scenarios',
   getParentRoute: () => AppRouteRoute,
 } as any)
-const DemoFormAddressRoute = DemoFormAddressRouteImport.update({
-  id: '/demo/form/address',
-  path: '/demo/form/address',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoFormSimpleRoute = DemoFormSimpleRouteImport.update({
-  id: '/demo/form/simple',
-  path: '/demo/form/simple',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AppLessonsLessonIdIndexRoute = AppLessonsLessonIdIndexRouteImport.update({
   id: '/lessons/$lessonId/',
   path: '/lessons/$lessonId/',
@@ -141,18 +99,11 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/about': typeof AboutRoute
   '/onboarding': typeof OnboardingRoute
-  '/demo/clerk': typeof DemoClerkRoute
-  '/demo/i18n': typeof DemoI18nRoute
-  '/demo/store': typeof DemoStoreRoute
-  '/demo/table': typeof DemoTableRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/vocabulary/$itemId': typeof AppVocabularyItemIdRoute
   '/voice/room': typeof AppVoiceRoomRoute
   '/voice/scenarios': typeof AppVoiceScenariosRoute
-  '/demo/form/address': typeof DemoFormAddressRoute
-  '/demo/form/simple': typeof DemoFormSimpleRoute
   '/lessons/': typeof AppLessonsIndexRoute
   '/vocabulary/': typeof AppVocabularyIndexRoute
   '/voice/': typeof AppVoiceIndexRoute
@@ -162,19 +113,12 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/onboarding': typeof OnboardingRoute
-  '/demo/clerk': typeof DemoClerkRoute
-  '/demo/i18n': typeof DemoI18nRoute
-  '/demo/store': typeof DemoStoreRoute
-  '/demo/table': typeof DemoTableRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/': typeof AppIndexRoute
   '/vocabulary/$itemId': typeof AppVocabularyItemIdRoute
   '/voice/room': typeof AppVoiceRoomRoute
   '/voice/scenarios': typeof AppVoiceScenariosRoute
-  '/demo/form/address': typeof DemoFormAddressRoute
-  '/demo/form/simple': typeof DemoFormSimpleRoute
   '/lessons': typeof AppLessonsIndexRoute
   '/vocabulary': typeof AppVocabularyIndexRoute
   '/voice': typeof AppVoiceIndexRoute
@@ -186,19 +130,12 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/onboarding': typeof OnboardingRoute
-  '/demo/clerk': typeof DemoClerkRoute
-  '/demo/i18n': typeof DemoI18nRoute
-  '/demo/store': typeof DemoStoreRoute
-  '/demo/table': typeof DemoTableRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/_app/': typeof AppIndexRoute
   '/_app/vocabulary/$itemId': typeof AppVocabularyItemIdRoute
   '/_app/voice/room': typeof AppVoiceRoomRoute
   '/_app/voice/scenarios': typeof AppVoiceScenariosRoute
-  '/demo/form/address': typeof DemoFormAddressRoute
-  '/demo/form/simple': typeof DemoFormSimpleRoute
   '/_app/lessons/': typeof AppLessonsIndexRoute
   '/_app/vocabulary/': typeof AppVocabularyIndexRoute
   '/_app/voice/': typeof AppVoiceIndexRoute
@@ -211,18 +148,11 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/onboarding'
-    | '/demo/clerk'
-    | '/demo/i18n'
-    | '/demo/store'
-    | '/demo/table'
-    | '/demo/tanstack-query'
     | '/sign-in/$'
     | '/sign-up/$'
     | '/vocabulary/$itemId'
     | '/voice/room'
     | '/voice/scenarios'
-    | '/demo/form/address'
-    | '/demo/form/simple'
     | '/lessons/'
     | '/vocabulary/'
     | '/voice/'
@@ -232,19 +162,12 @@ export interface FileRouteTypes {
   to:
     | '/about'
     | '/onboarding'
-    | '/demo/clerk'
-    | '/demo/i18n'
-    | '/demo/store'
-    | '/demo/table'
-    | '/demo/tanstack-query'
     | '/sign-in/$'
     | '/sign-up/$'
     | '/'
     | '/vocabulary/$itemId'
     | '/voice/room'
     | '/voice/scenarios'
-    | '/demo/form/address'
-    | '/demo/form/simple'
     | '/lessons'
     | '/vocabulary'
     | '/voice'
@@ -255,19 +178,12 @@ export interface FileRouteTypes {
     | '/_app'
     | '/about'
     | '/onboarding'
-    | '/demo/clerk'
-    | '/demo/i18n'
-    | '/demo/store'
-    | '/demo/table'
-    | '/demo/tanstack-query'
     | '/sign-in/$'
     | '/sign-up/$'
     | '/_app/'
     | '/_app/vocabulary/$itemId'
     | '/_app/voice/room'
     | '/_app/voice/scenarios'
-    | '/demo/form/address'
-    | '/demo/form/simple'
     | '/_app/lessons/'
     | '/_app/vocabulary/'
     | '/_app/voice/'
@@ -279,15 +195,8 @@ export interface RootRouteChildren {
   AppRouteRoute: typeof AppRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   OnboardingRoute: typeof OnboardingRoute
-  DemoClerkRoute: typeof DemoClerkRoute
-  DemoI18nRoute: typeof DemoI18nRoute
-  DemoStoreRoute: typeof DemoStoreRoute
-  DemoTableRoute: typeof DemoTableRoute
-  DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
   SignInSplatRoute: typeof SignInSplatRoute
   SignUpSplatRoute: typeof SignUpSplatRoute
-  DemoFormAddressRoute: typeof DemoFormAddressRoute
-  DemoFormSimpleRoute: typeof DemoFormSimpleRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -319,41 +228,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRouteRoute
-    }
-    '/demo/clerk': {
-      id: '/demo/clerk'
-      path: '/demo/clerk'
-      fullPath: '/demo/clerk'
-      preLoaderRoute: typeof DemoClerkRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/i18n': {
-      id: '/demo/i18n'
-      path: '/demo/i18n'
-      fullPath: '/demo/i18n'
-      preLoaderRoute: typeof DemoI18nRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/store': {
-      id: '/demo/store'
-      path: '/demo/store'
-      fullPath: '/demo/store'
-      preLoaderRoute: typeof DemoStoreRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/table': {
-      id: '/demo/table'
-      path: '/demo/table'
-      fullPath: '/demo/table'
-      preLoaderRoute: typeof DemoTableRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/tanstack-query': {
-      id: '/demo/tanstack-query'
-      path: '/demo/tanstack-query'
-      fullPath: '/demo/tanstack-query'
-      preLoaderRoute: typeof DemoTanstackQueryRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/sign-in/$': {
       id: '/sign-in/$'
@@ -411,20 +285,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppVoiceScenariosRouteImport
       parentRoute: typeof AppRouteRoute
     }
-    '/demo/form/address': {
-      id: '/demo/form/address'
-      path: '/demo/form/address'
-      fullPath: '/demo/form/address'
-      preLoaderRoute: typeof DemoFormAddressRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/form/simple': {
-      id: '/demo/form/simple'
-      path: '/demo/form/simple'
-      fullPath: '/demo/form/simple'
-      preLoaderRoute: typeof DemoFormSimpleRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_app/lessons/$lessonId/': {
       id: '/_app/lessons/$lessonId/'
       path: '/lessons/$lessonId'
@@ -474,26 +334,9 @@ const rootRouteChildren: RootRouteChildren = {
   AppRouteRoute: AppRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   OnboardingRoute: OnboardingRoute,
-  DemoClerkRoute: DemoClerkRoute,
-  DemoI18nRoute: DemoI18nRoute,
-  DemoStoreRoute: DemoStoreRoute,
-  DemoTableRoute: DemoTableRoute,
-  DemoTanstackQueryRoute: DemoTanstackQueryRoute,
   SignInSplatRoute: SignInSplatRoute,
   SignUpSplatRoute: SignUpSplatRoute,
-  DemoFormAddressRoute: DemoFormAddressRoute,
-  DemoFormSimpleRoute: DemoFormSimpleRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

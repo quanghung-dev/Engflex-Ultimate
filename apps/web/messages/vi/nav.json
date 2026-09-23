@@ -1,0 +1,17 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "nav": {
+    "groupPractice": "Luyện tập hằng ngày",
+    "groupKnowledge": "Kiến thức & ôn tập",
+    "home": "Trang chủ",
+    "lessons": "Bài học",
+    "voice": "Luyện nói",
+    "vocabulary": "Từ vựng",
+    "learner": "Học viên",
+    "level": {
+      "beginner": "Sơ cấp",
+      "intermediate": "Trung cấp",
+      "advanced": "Nâng cao"
+    }
+  }
+}

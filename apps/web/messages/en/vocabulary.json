@@ -1,0 +1,115 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "vocabulary": {
+    "crumbDetailFallback": "Word detail",
+    "hubTitle": "Vocabulary studio",
+    "hubSubtitle": "Review technical terminology, manage custom engineering phrases, and track active recall retention.",
+    "totalSaved": "Total saved",
+    "stats": {
+      "saved": "Total saved",
+      "savedSub": "+14 this week",
+      "mastered": "Mastered words",
+      "masteredSub": "{pct}% retention rate",
+      "needsReview": "Needs review",
+      "needsReviewSub": "{count} due today",
+      "custom": "Custom additions",
+      "customSub": "User-created notes"
+    },
+    "filterSearch": "Search terminology",
+    "filterSource": {
+      "all": "All vocabulary",
+      "lesson": "From lessons",
+      "conversation": "From AI sparring",
+      "manual": "Custom"
+    },
+    "domainLabel": "Domain:",
+    "domainAll": "All domains",
+    "domains": {
+      "backend_db": "Backend & DB",
+      "distributed_systems": "Distributed systems",
+      "devops_cloud": "DevOps & Cloud",
+      "frontend_ui": "Frontend & UI",
+      "ai_ml": "AI & Machine learning"
+    },
+    "cefrLabel": "CEFR:",
+    "cefrAll": "All",
+    "sort": {
+      "recent": "Recent",
+      "mastery": "Mastery status",
+      "alphabetical": "Alphabetical",
+      "interval": "Interval urgency"
+    },
+    "source": {
+      "lesson": "From lesson",
+      "conversation": "From AI sparring",
+      "manual": "Custom"
+    },
+    "sourceLineLesson": "From lesson: {id}",
+    "sourceLineNote": "Note: {id}",
+    "emptyTitle": "No term matches current filters",
+    "showing": "Showing {shown} of {total} terminology cards",
+    "card": {
+      "contextTitle": "Engineering context",
+      "markMastered": "Mark mastered",
+      "fullyRetained": "Fully retained",
+      "retained": "Retained",
+      "dueToday": "Due today",
+      "needsReview": "Needs review",
+      "bookmark": "Bookmark",
+      "moreActions": "More actions",
+      "review": "Review",
+      "editNote": "Edit note",
+      "mastered": "Mastered",
+      "markAsMastered": "Mark as mastered",
+      "copy": "Copy",
+      "share": "Share",
+      "fullDefinition": "Full definition"
+    },
+    "detail": {
+      "contextsTitle": "Real engineering contexts",
+      "collocationsTitle": "Essential engineering collocations",
+      "morphologyTitle": "Word morphology & forms",
+      "origin": "Origin",
+      "acousticTitle": "Acoustic breakdown",
+      "syllables": "Syllables:",
+      "stressTip": "Stress tip",
+      "commonSlip": "Common non-native slip: ",
+      "noteTitle": "Your personal note",
+      "addedOn": "Added {date}",
+      "noNote": "No note yet.",
+      "editNote": "Edit note",
+      "deleteNote": "Delete note"
+    },
+    "addWord": {
+      "button": "Add custom word",
+      "title": "Add custom engineering phrase",
+      "description": "Saved to your personal list with a Custom source.",
+      "termLabel": "Term or phrase",
+      "cefrLabel": "CEFR tier",
+      "cefrOptions": {
+        "B1": "B1 (Operational)",
+        "B2": "B2 (Technical)",
+        "C1": "C1 (Architectural)"
+      },
+      "posLabel": "Part of speech",
+      "definitionLabel": "Definition",
+      "exampleLabel": "Contextual usage / Example sentence",
+      "save": "Save to vocabulary",
+      "required": "Term and definition are required."
+    },
+    "recall": {
+      "title": "Daily active recall deck",
+      "subtitle": "Spaced interval algorithm",
+      "dueBadge": "{count} due",
+      "body": "Testing yourself with high-stakes technical cues locks vocabulary into involuntary active speech memory.",
+      "dueToday": "Due today",
+      "overdue": "Overdue",
+      "start": "Start flashcard drill ({count} cards)"
+    },
+    "recent": {
+      "title": "Recent custom additions",
+      "viewAll": "View all ({count})",
+      "body": "Terms you captured during meetings, design documents, and architecture reviews."
+    }
+  }
+}

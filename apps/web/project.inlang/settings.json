@@ -1,12 +1,21 @@
 {
   "$schema": "https://inlang.com/schema/project-settings",
-  "baseLocale": "en",
-  "locales": ["en", "de"],
+  "baseLocale": "vi",
+  "locales": ["en", "vi"],
   "modules": [
     "https://cdn.jsdelivr.net/npm/@inlang/plugin-message-format@4/dist/index.js",
     "https://cdn.jsdelivr.net/npm/@inlang/plugin-m-function-matcher@2/dist/index.js"
   ],
   "plugin.inlang.messageFormat": {
-    "pathPattern": "./messages/{locale}.json"
+    "pathPattern": [
+      "./messages/{locale}/common.json",
+      "./messages/{locale}/nav.json",
+      "./messages/{locale}/onboarding.json",
+      "./messages/{locale}/dashboard.json",
+      "./messages/{locale}/lessons.json",
+      "./messages/{locale}/vocabulary.json",
+      "./messages/{locale}/voice.json",
+      "./messages/{locale}/progress.json"
+    ]
   }
 }
