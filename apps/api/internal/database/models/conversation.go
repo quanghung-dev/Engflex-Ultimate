@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	"github.com/gianghp123/engflex-ultimate/internal/common/enums"
+	"engflex-api/internal/common/enums"
 )
 
 // Conversation is one voice session (free talk or roleplay). Duration is

@@ -9,9 +9,9 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	"github.com/gianghp123/engflex-ultimate/config"
-	"github.com/gianghp123/engflex-ultimate/internal/logger"
-	"github.com/gianghp123/engflex-ultimate/internal/server"
+	"engflex-api/config"
+	"engflex-api/internal/logger"
+	"engflex-api/internal/server"
 )
 
 // @title			EngFlex API

@@ -3,7 +3,7 @@ package repositories
 import (
 	"github.com/google/uuid"
 
-	"github.com/gianghp123/engflex-ultimate/internal/common"
+	"engflex-api/internal/common"
 )
 
 // parseID converts a string ID into uuid.UUID, returning a

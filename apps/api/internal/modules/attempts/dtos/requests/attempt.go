@@ -1,6 +1,6 @@
 package requests
 
-import "github.com/gianghp123/engflex-ultimate/internal/common/enums"
+import "engflex-api/internal/common/enums"
 
 // CreateAttempt records one practice run. result carries per-type detail
 // (typed schemas come with the practice endpoints). score and duration are

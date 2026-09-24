@@ -1,6 +1,6 @@
 package responses
 
-import "github.com/gianghp123/engflex-ultimate/internal/common/enums"
+import "engflex-api/internal/common/enums"
 
 // WordMark highlights one word inside an analyzed turn (feedback.marks[]).
 type WordMark struct {

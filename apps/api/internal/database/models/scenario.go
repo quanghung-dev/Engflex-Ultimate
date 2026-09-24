@@ -5,7 +5,7 @@ import (
 
 	"gorm.io/datatypes"
 
-	"github.com/gianghp123/engflex-ultimate/internal/common/enums"
+	"engflex-api/internal/common/enums"
 )
 
 // Scenario is a roleplay practice card under a topic banner. A non-null

@@ -5,7 +5,7 @@ import (
 
 	"gorm.io/datatypes"
 
-	"github.com/gianghp123/engflex-ultimate/internal/common/enums"
+	"engflex-api/internal/common/enums"
 )
 
 // Lesson is one curriculum unit ("Unit 4.2" folded into slug/title).

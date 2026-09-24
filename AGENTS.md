@@ -1,12 +1,45 @@
 # engflex-ultimate — Contributor Guide
 
 > Stack: Go + Gin + GORM (control plane), PostgreSQL, Clerk auth.
-> AI Voice (Python + Pipecat) is a separate stateless service — Go never proxies audio.
-> Frontend: Vite + TS required, router/data/auth/UI libs swappable (no fixed framework yet).
+> AI Voice (Python + Pipecat) is a separate stateless service, **uv-managed**
+> (`pyproject.toml` + `uv.lock` + `.python-version`; always `uv run`) — Go never
+> proxies audio.
+> Frontend: Vite + TS + TanStack Start/Router, TanStack Store/Query, Clerk, shadcn/ui, Paraglide i18n.
 > Run Go commands from `<api-dir>` (e.g. `apps/api`).
 
 Monorepo (optional): `<api-dir>` (Go), `<web-dir>` (frontend),
-`<contracts-dir>` (generated TypeScript shared package), `<voice-dir>` (Python, independent).
+`<contracts-dir>` (generated TypeScript shared package), `<voice-dir>` (Python +
+Pipecat, uv-managed, independent).
+
+## Standing preferences (human decisions — do not override without asking)
+
+- **No commits.** Leave all work uncommitted in the working tree unless the human
+  explicitly asks for a commit. `docs/` is gitignored by intent — specs, plans
+  and ledgers are never committed.
+- **Use the library, don't reinvent it.** Prefer library-provided integrations
+  over custom implementations; verify claims against the installed code
+  (`node_modules`, generated output), not training data or pasted snippets.
+- **Web i18n (Paraglide + inlang message-format):** locales `vi` (base/default)
+  + `en` only.
+  - `messages/{locale}/<domain>.json`, each file nested under its domain key
+    (the plugin merges all files into one flat id namespace — unprefixed
+    duplicates silently override each other).
+  - Strategy `["cookie", "baseLocale"]` — never `url` (path prefixes 404 in
+    TanStack Router and are client-only, causing SSR mismatch). SSR locale via
+    the official `paraglideMiddleware` in `src/start.ts` `requestMiddleware`;
+    never import `node:*` in hand-written `src` (it leaks into the client
+    bundle — the lib lazy-imports it internally).
+  - `pnpm compile:messages` before typecheck; `src/paraglide/` is
+    generated-only, never hand-edit.
+  - Scope: UI chrome localized; fixture/learning content (lesson titles, terms,
+    transcripts, passages) stays English. EN copy verbatim from mocks; VI authored.
+  - Locale-sensitive code must resolve at render: breadcrumb `staticData`
+    labels and `PART_META` labels are thunks; fixture-held chrome keyed by item id.
+- **Web routes:** directory convention (`_app/route.tsx`,
+  `_app/lessons/index.tsx`), not dotted flat names.
+- **Web gates (no test framework):** `pnpm check`, `pnpm exec tsc --noEmit`,
+  `pnpm build`, plus HTTP/SSR probes. Changes to `src/start.ts` /
+  `vite.config.ts` require a dev-server restart (HMR cannot apply them).
 
 ## Folder structure (`<api-dir>`)
 
@@ -17,7 +50,7 @@ docs/                       # generated swagger (swag); served at /swagger
 internal/
   common/                   # AppError, ApiResponse envelope, shared constants/limits
   database/
-    migrations/             # goose/golang-migrate SQL — source of truth for schema
+    migrations/             # goose SQL — source of truth for schema (never AutoMigrate)
     models/                 # gorm structs + TableName() + scopes (no gorm.Model)
     repositories/           # hand-written repos over *gorm.DB + mocks/
   logger/                   # slog setup (New/NewWithWriter/Report/WithRequestID/WithUserID)
@@ -189,37 +222,56 @@ Assert with `require.ErrorAs(err, &appErr)` + check `.Status`.
   `common/errors.go` excluded (`AppError` never crosses).
 - Frontend imports types + limit constants from `<contracts-pkg>` only.
 
-## Web structure (`<web-dir>`, framework-agnostic — Vite required only)
+## Web structure (`<web-dir>` — TanStack Start + Router, TanStack Store/Query, Clerk, shadcn/ui, Paraglide i18n)
 
 ```text
-src/
-  main.tsx
-  app/
-    router.*              # route table + RequireAuth wrap (any router)
-    app-route.*           # frontend URLs (/, /<domain>, /<domain>/:id, ...)
-    api-routes.*          # backend paths only (/attempts, /contents/:id...), no hardcoded URLs in services
-    query-client.*        # single server-state client (or equivalent)
-    providers.*           # AuthProvider + data provider (+ Theme/Toast)
-  lib/
-    api.*                 # fetch wrapper: ApiError, api<T>, apiPage<T>, withQuery
-    auth-token.*          # token getter bridge for non-component api.*
-    utils.*
-  routes/                 # thin page shells (compose features + layout)
-  features/<domain>/      # real logic per domain
-    services/<d>-service.* # list/get/create/update/delete via api()/apiPage()
-    hooks/use-<d>.*        # query/mutation wrappers + keys (or equivalent)
-    components/            # presentational only
-    types.*                # import type {...} from '<contracts-pkg>' + local filter types
-  components/
-    ui/*                  # design system (any)
-    common/               # Layout, RequireAuth, ErrorState...
+<web-dir>/
+  messages/{en,vi}/<domain>.json  # inlang source (common, nav, onboarding, dashboard, lessons, vocabulary, voice, progress)
+  project.inlang/settings.json    # baseLocale vi, locales [en,vi], pathPattern array
+  vite.config.ts                  # paraglideVitePlugin strategy ["cookie","baseLocale"]
+  src/
+    app/
+      app-route.ts                # APP_ROUTES (frontend URLs — use instead of hardcoding paths)
+      api-routes.ts               # backend paths only (/attempts, /contents/:id...), no hardcoded URLs elsewhere
+      breadcrumbs.ts              # breadcrumb protocol: staticData specs, targets from APP_ROUTES (labels are thunks)
+    assets/topics/*.png
+    components/
+      common/                     # Logo, PageHeader, StatCard, CefrBadge, SourcePill, AudioButton, Kbd, ProgressBar
+      layout/                     # AppShell, AppSidebar, Topbar, LocaleSwitcher (EN/VI pill)
+      ui/*                        # shadcn primitives (a11y copy via common.a11y.*)
+    features/<domain>/            # attempts, dashboard, dictation, lessons, onboarding, profiles, reading, vocabulary, voice, writing
+      components/                 # presentational only; copy via m["<domain>.*"](), never hardcoded UI strings
+      fixtures.ts                 # mock-only data (learning content stays English)
+      store.ts                    # @tanstack/store where state is cross-screen (profiles, lessons, vocabulary, voice)
+      types.ts | parts.ts | dates.ts | diff.ts | scripts.ts  # domain-local helpers, only where needed
+    hooks/use-mobile.ts
+    integrations/
+      clerk/                      # provider, header-user
+      tanstack-query/             # root-provider, devtools
+    lib/
+      api.ts                      # fetch wrapper (envelope unwrap, ApiError)
+      auth-guard.ts               # Clerk guard: beforeLoad + server auth() probe + <Show> defence-in-depth
+      auth-token.ts               # token getter bridge for non-component api.*
+      paraglide-middleware.ts     # official paraglideMiddleware in requestMiddleware (no node:* imports)
+      utils.ts
+    paraglide/                    # generated-only (messages/runtime/server), never hand-edit
+    routes/                       # directory convention; thin shells composing features + layout
+      __root.tsx, _app/route.tsx (Clerk guard) + _app/<domain>/..., onboarding.tsx, about.tsx, sign-in/out
+    router.tsx, start.ts (requestMiddleware), styles.css, routeTree.gen.ts, env.ts
 ```
 
 - `lib/api.*` pattern: base URL from env, Bearer from auth provider,
   envelope `{message,data,pagination}` unwrap, `!ok -> ApiError(status,message)`.
-- `features` pattern (same per domain): `service (fetch)` → `hooks (query/mutation + invalidate)` → `routes (shell)`.
-- Stack: Vite + TS required. Router, server-state, client-state, auth, UI libs
-  are swappable — keep the `services/hooks/components/types` split regardless.
+- `features` pattern (mock phase, no fetching layer yet): `fixtures.ts` (typed
+  consts, `@tanstack/store` where cross-screen, `useState` for ephemeral)
+  → `components/` → `routes/` (thin shell). Types via
+  `import type {...} from '<contracts-pkg>'`; fixture-held UI chrome lives in
+  `messages/` keyed by item id, never duplicated in fixtures.
+- Breadcrumbs come from the router's match chain: each route declares
+  `staticData: breadcrumb(...)`, `Topbar` renders links from declared targets.
+  Neither route ids nor paths are hardcoded outside `APP_ROUTES`.
+- Fixed stack: Vite + TS + TanStack Start/Router, TanStack Store/Query, Clerk,
+  shadcn/ui + Tailwind, Paraglide (cookie strategy, vi default).
 - Voice screens talk WebRTC directly to `<voice-dir>`; Go is never in the audio path.
 
 ## mockery (generated mocks only)
@@ -258,5 +310,5 @@ src/
 | Vet/fmt | `go vet ./...`, `gofmt -l internal/` (must be empty) |
 | Mocks | `make mocks` |
 | Contracts | `make contracts` |
-| Migrations | `make migration-create/migration-up/migration-down name=...` (`DATABASE_URL` for up/down); dev-only `AutoMigrate` behind flag, never in prod |
+| Migrations | goose SQL is the **only** schema mechanism — never auto-apply from models. New: `make migration-create name=...`; apply/rollback: `make migration-up` / `migration-down` (`DATABASE_URL`). While a schema area is **unfrozen** (pre-deploy), edit existing migrations in place; create new ones only after it is deployed |
 | Swagger | `make swagger` (`swag init -g cmd/server/main.go`) |

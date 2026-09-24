@@ -1,6 +1,6 @@
 package responses
 
-import "github.com/gianghp123/engflex-ultimate/internal/common/enums"
+import "engflex-api/internal/common/enums"
 
 // QuestionOption is one multiple-choice option. Correctness is intentionally
 // not exposed: answer checking becomes a server endpoint (see spec).

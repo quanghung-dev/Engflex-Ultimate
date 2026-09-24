@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	"github.com/gianghp123/engflex-ultimate/internal/common/enums"
+	"engflex-api/internal/common/enums"
 )
 
 // Persona is an AI conversation partner ("Sarah", Hiring director).

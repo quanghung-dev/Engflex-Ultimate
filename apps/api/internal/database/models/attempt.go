@@ -5,7 +5,7 @@ import (
 
 	"gorm.io/datatypes"
 
-	"github.com/gianghp123/engflex-ultimate/internal/common/enums"
+	"engflex-api/internal/common/enums"
 )
 
 // Attempt is the single source of truth for progress: every practice run

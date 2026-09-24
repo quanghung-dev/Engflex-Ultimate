@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/gianghp123/engflex-ultimate/internal/common"
+	"engflex-api/internal/common"
 )
 
 // Recovery replaces gin.Recovery: panics are logged with their stack through

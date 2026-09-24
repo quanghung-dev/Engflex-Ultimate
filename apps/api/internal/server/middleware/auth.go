@@ -9,8 +9,8 @@ import (
 	clerkhttp "github.com/clerk/clerk-sdk-go/v2/http"
 	"github.com/gin-gonic/gin"
 
-	"github.com/gianghp123/engflex-ultimate/internal/common"
-	"github.com/gianghp123/engflex-ultimate/internal/logger"
+	"engflex-api/internal/common"
+	"engflex-api/internal/logger"
 )
 
 // userIDKey is the gin context key holding the authenticated user ID

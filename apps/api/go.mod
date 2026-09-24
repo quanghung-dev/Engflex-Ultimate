@@ -1,4 +1,4 @@
-module github.com/gianghp123/engflex-ultimate
+module engflex-api
 
 go 1.25.0
 

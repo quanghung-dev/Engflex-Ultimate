@@ -1,6 +1,6 @@
 package responses
 
-import "github.com/gianghp123/engflex-ultimate/internal/common/enums"
+import "engflex-api/internal/common/enums"
 
 // Scenario is one roleplay practice card. Durations come from
 // scenarios.details (jsonb); a non-null Persona marks curated scenarios

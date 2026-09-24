@@ -1,8 +1,8 @@
 package requests
 
 import (
-	"github.com/gianghp123/engflex-ultimate/internal/common"
-	"github.com/gianghp123/engflex-ultimate/internal/common/enums"
+	"engflex-api/internal/common"
+	"engflex-api/internal/common/enums"
 )
 
 // ListVocabulary sorts and filters the vocabulary studio. Pagination/search

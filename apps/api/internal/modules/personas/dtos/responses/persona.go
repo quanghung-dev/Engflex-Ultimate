@@ -1,6 +1,6 @@
 package responses
 
-import "github.com/gianghp123/engflex-ultimate/internal/common/enums"
+import "engflex-api/internal/common/enums"
 
 // Persona is an AI partner row (name feeds turn display names).
 type Persona struct {

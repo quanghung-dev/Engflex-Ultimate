@@ -10,9 +10,9 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
 
-	"github.com/gianghp123/engflex-ultimate/config"
-	_ "github.com/gianghp123/engflex-ultimate/docs"
-	"github.com/gianghp123/engflex-ultimate/internal/server/middleware"
+	"engflex-api/config"
+	_ "engflex-api/docs"
+	"engflex-api/internal/server/middleware"
 )
 
 // NewRouter builds the Gin engine with shared middleware and module routes.

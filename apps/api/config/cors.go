@@ -3,7 +3,7 @@ package config
 import (
 	"strings"
 
-	"github.com/gianghp123/engflex-ultimate/internal/utils"
+	"engflex-api/internal/utils"
 )
 
 // CorsConfig holds the CORS settings.

@@ -1,6 +1,6 @@
 package requests
 
-import "github.com/gianghp123/engflex-ultimate/internal/common/enums"
+import "engflex-api/internal/common/enums"
 
 // CreateCustomScenario builds a user-authored roleplay scenario
 // ("Build custom scenario" CTA).

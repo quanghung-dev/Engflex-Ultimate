@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/gianghp123/engflex-ultimate/internal/utils"
+	"engflex-api/internal/utils"
 )
 
 // DatabaseConfig holds the PostgreSQL connection settings.

@@ -3,7 +3,7 @@ package responses
 import (
 	"time"
 
-	"github.com/gianghp123/engflex-ultimate/internal/common/enums"
+	"engflex-api/internal/common/enums"
 )
 
 // Category is a lesson_categories row.

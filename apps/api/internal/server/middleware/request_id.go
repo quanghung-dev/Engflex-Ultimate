@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"github.com/gianghp123/engflex-ultimate/internal/logger"
+	"engflex-api/internal/logger"
 )
 
 // RequestIDHeader is the request/response correlation header.

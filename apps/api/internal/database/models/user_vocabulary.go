@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	"github.com/gianghp123/engflex-ultimate/internal/common/enums"
+	"engflex-api/internal/common/enums"
 )
 
 // UserVocabulary is the per-user state over a shared vocabulary item:

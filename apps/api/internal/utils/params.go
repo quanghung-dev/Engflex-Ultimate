@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/gianghp123/engflex-ultimate/internal/common"
+	"engflex-api/internal/common"
 )
 
 // ParsePagination reads ?page= & ?pageSize= (1-based), falling back to

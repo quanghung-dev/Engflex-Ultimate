@@ -29,57 +29,57 @@ type_mappings:
   "common.ListParams": "ListParams"
 
 packages:
-  - path: "github.com/gianghp123/engflex-ultimate/internal/common"
+  - path: "engflex-api/internal/common"
     output_path: "../../packages/contracts/src/common.ts"
     # AppError never crosses the wire (only its message, inside the envelope).
     exclude_files:
       - "errors.go"
 
   # Shared enums: one Go file per enum type -> const + union literal types.
-  - path: "github.com/gianghp123/engflex-ultimate/internal/common/enums"
+  - path: "engflex-api/internal/common/enums"
     output_path: "../../packages/contracts/src/enums.ts"
     enum_style: "union"
     fallback_type: "unknown"
 
   # Module wire DTOs: dtos/requests + dtos/responses per module.
-  - path: "github.com/gianghp123/engflex-ultimate/internal/modules/profiles/dtos/requests"
+  - path: "engflex-api/internal/modules/profiles/dtos/requests"
     output_path: "../../packages/contracts/src/profiles-requests.ts"
     fallback_type: "unknown"
-  - path: "github.com/gianghp123/engflex-ultimate/internal/modules/profiles/dtos/responses"
+  - path: "engflex-api/internal/modules/profiles/dtos/responses"
     output_path: "../../packages/contracts/src/profiles-responses.ts"
     fallback_type: "unknown"
 
-  - path: "github.com/gianghp123/engflex-ultimate/internal/modules/lessons/dtos/requests"
+  - path: "engflex-api/internal/modules/lessons/dtos/requests"
     output_path: "../../packages/contracts/src/lessons-requests.ts"
     fallback_type: "unknown"
-  - path: "github.com/gianghp123/engflex-ultimate/internal/modules/lessons/dtos/responses"
+  - path: "engflex-api/internal/modules/lessons/dtos/responses"
     output_path: "../../packages/contracts/src/lessons-responses.ts"
     fallback_type: "unknown"
 
-  - path: "github.com/gianghp123/engflex-ultimate/internal/modules/personas/dtos/requests"
+  - path: "engflex-api/internal/modules/personas/dtos/requests"
     output_path: "../../packages/contracts/src/personas-requests.ts"
     fallback_type: "unknown"
-  - path: "github.com/gianghp123/engflex-ultimate/internal/modules/personas/dtos/responses"
+  - path: "engflex-api/internal/modules/personas/dtos/responses"
     output_path: "../../packages/contracts/src/personas-responses.ts"
     fallback_type: "unknown"
 
-  - path: "github.com/gianghp123/engflex-ultimate/internal/modules/conversations/dtos/requests"
+  - path: "engflex-api/internal/modules/conversations/dtos/requests"
     output_path: "../../packages/contracts/src/conversations-requests.ts"
     fallback_type: "unknown"
-  - path: "github.com/gianghp123/engflex-ultimate/internal/modules/conversations/dtos/responses"
+  - path: "engflex-api/internal/modules/conversations/dtos/responses"
     output_path: "../../packages/contracts/src/conversations-responses.ts"
     fallback_type: "unknown"
 
-  - path: "github.com/gianghp123/engflex-ultimate/internal/modules/vocabulary/dtos/requests"
+  - path: "engflex-api/internal/modules/vocabulary/dtos/requests"
     output_path: "../../packages/contracts/src/vocabulary-requests.ts"
     fallback_type: "unknown"
-  - path: "github.com/gianghp123/engflex-ultimate/internal/modules/vocabulary/dtos/responses"
+  - path: "engflex-api/internal/modules/vocabulary/dtos/responses"
     output_path: "../../packages/contracts/src/vocabulary-responses.ts"
     fallback_type: "unknown"
 
-  - path: "github.com/gianghp123/engflex-ultimate/internal/modules/attempts/dtos/requests"
+  - path: "engflex-api/internal/modules/attempts/dtos/requests"
     output_path: "../../packages/contracts/src/attempts-requests.ts"
     fallback_type: "unknown"
-  - path: "github.com/gianghp123/engflex-ultimate/internal/modules/attempts/dtos/responses"
+  - path: "engflex-api/internal/modules/attempts/dtos/responses"
     output_path: "../../packages/contracts/src/attempts-responses.ts"
     fallback_type: "unknown"

@@ -3,7 +3,7 @@ package responses
 import (
 	"time"
 
-	"github.com/gianghp123/engflex-ultimate/internal/common/enums"
+	"engflex-api/internal/common/enums"
 )
 
 // Preferences mirrors user_profiles.preferences (jsonb). The CEFR range is

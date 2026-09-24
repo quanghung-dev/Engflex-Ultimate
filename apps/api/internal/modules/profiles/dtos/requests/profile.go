@@ -1,6 +1,6 @@
 package requests
 
-import "github.com/gianghp123/engflex-ultimate/internal/common/enums"
+import "engflex-api/internal/common/enums"
 
 // UpdateProfile carries the onboarding/profile preference fields
 // (all optional; partial update).

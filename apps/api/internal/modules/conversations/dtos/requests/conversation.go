@@ -1,6 +1,6 @@
 package requests
 
-import "github.com/gianghp123/engflex-ultimate/internal/common/enums"
+import "engflex-api/internal/common/enums"
 
 // StartConversation provisions a session. scenarioId is required for
 // roleplay and omitted for free talk.

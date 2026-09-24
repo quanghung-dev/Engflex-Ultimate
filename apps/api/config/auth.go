@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/gianghp123/engflex-ultimate/internal/utils"
+	"engflex-api/internal/utils"
 )
 
 // AuthConfig holds authentication settings.
