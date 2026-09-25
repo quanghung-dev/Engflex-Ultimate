@@ -10,10 +10,10 @@ import (
 // result stays loosely typed this phase; typed per-practice schemas come
 // with the practice endpoints.
 type Attempt struct {
-	ID             string            `json:"id"`
-	UserID         string            `json:"userId"`
-	LessonID       *string           `json:"lessonId"`
-	ActivityID     *string           `json:"activityId"`
+	ID               string            `json:"id"`
+	UserID           string            `json:"userId"`
+	LessonPracticeID *string           `json:"lessonPracticeId"`
+	ActivityID       *string           `json:"activityId"`
 	ConversationID *string           `json:"conversationId"`
 	Type           enums.AttemptType `json:"type"`
 	Score          *float64          `json:"score"`

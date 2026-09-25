@@ -6,8 +6,8 @@ import "engflex-api/internal/common/enums"
 // (typed schemas come with the practice endpoints). score and duration are
 // optional; free talk has no score.
 type CreateAttempt struct {
-	LessonID       *string           `json:"lessonId" binding:"omitempty,uuid"`
-	ActivityID     *string           `json:"activityId" binding:"omitempty,uuid"`
+	LessonPracticeID *string           `json:"lessonPracticeId" binding:"omitempty,uuid"`
+	ActivityID       *string           `json:"activityId" binding:"omitempty,uuid"`
 	ConversationID *string           `json:"conversationId" binding:"omitempty,uuid"`
 	Type           enums.AttemptType `json:"type" binding:"required,oneof=reading dictation writing voice shadowing flashcard benchmark"`
 	Score          *float64          `json:"score"`

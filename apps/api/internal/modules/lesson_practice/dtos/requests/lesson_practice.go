@@ -5,12 +5,12 @@ import (
 	"engflex-api/internal/common/enums"
 )
 
-// ListLessons filters the lesson hub (level, category, skill tab,
+// ListLessonPractice filters the lesson hub (level, category, skill tab,
 // completion status). Pagination/search come from the embedded
-// common.ListParams (tstype:",extends" -> `interface ListLessons extends
+// common.ListParams (tstype:",extends" -> `interface ListLessonPractice extends
 // ListParams`); json tags mirror the query keys so the generated TS field
 // names match the wire.
-type ListLessons struct {
+type ListLessonPractice struct {
 	common.ListParams `tstype:",extends"`
 	Level             enums.CEFR         `form:"level" json:"level" binding:"omitempty,oneof=A1 A2 B1 B2 C1 C2"`
 	CategorySlug      string             `form:"categorySlug" json:"categorySlug"`

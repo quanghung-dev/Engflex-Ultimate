@@ -16,7 +16,7 @@ type Question struct {
 	Options     []QuestionOption `json:"options"`
 }
 
-// ReadingPayload is lesson_activities.config for type=reading.
+// ReadingPayload is lesson_practice_activities.config for type=reading.
 type ReadingPayload struct {
 	Passage   string     `json:"passage"`
 	Questions []Question `json:"questions"`
@@ -30,12 +30,12 @@ type DictationSentence struct {
 	DurationMS int    `json:"durationMs"`
 }
 
-// DictationPayload is lesson_activities.config for type=dictation.
+// DictationPayload is lesson_practice_activities.config for type=dictation.
 type DictationPayload struct {
 	Sentences []DictationSentence `json:"sentences"`
 }
 
-// WritingPayload is lesson_activities.config for type=writing.
+// WritingPayload is lesson_practice_activities.config for type=writing.
 type WritingPayload struct {
 	Title            string   `json:"title"`
 	MinWords         int      `json:"minWords"`
@@ -43,7 +43,7 @@ type WritingPayload struct {
 	ContextQuestions []string `json:"contextQuestions"`
 }
 
-// VoicePayload is lesson_activities.config for type=voice.
+// VoicePayload is lesson_practice_activities.config for type=voice.
 type VoicePayload struct {
 	ScenarioID string `json:"scenarioId"`
 }

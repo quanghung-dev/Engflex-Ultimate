@@ -11,12 +11,12 @@ import (
 // Attempt is the single source of truth for progress: every practice run
 // writes one row here, and lesson status, streak, daily minutes, and
 // dashboard metrics are derived from it. result (jsonb) carries per-type
-// detail plus voice metrics; lesson_id is denormalized for cheap lesson
+// detail plus voice metrics; lesson_practice_id is denormalized for cheap lesson
 // aggregation.
 type Attempt struct {
-	ID             string            `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	UserID         string            `gorm:"not null" json:"userId"`
-	LessonID       *string           `gorm:"type:uuid" json:"lessonId"`
+	ID               string            `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	UserID           string            `gorm:"not null" json:"userId"`
+	LessonPracticeID *string           `gorm:"column:lesson_practice_id;type:uuid" json:"lessonPracticeId"`
 	ActivityID     *string           `gorm:"type:uuid" json:"activityId"`
 	ConversationID *string           `gorm:"type:uuid" json:"conversationId"`
 	Type           enums.AttemptType `gorm:"not null" json:"type"`

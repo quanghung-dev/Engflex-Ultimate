@@ -2,9 +2,9 @@ package models
 
 import "time"
 
-// LessonCategory is the author-owned lesson taxonomy
+// LessonPracticeCategory is the author-owned lesson taxonomy
 // ("Cross-team coordination").
-type LessonCategory struct {
+type LessonPracticeCategory struct {
 	ID        string    `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
 	Slug      string    `gorm:"not null" json:"slug"`
 	Name      string    `gorm:"not null" json:"name"`
@@ -12,4 +12,4 @@ type LessonCategory struct {
 	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updatedAt"`
 }
 
-func (LessonCategory) TableName() string { return "lesson_categories" }
+func (LessonPracticeCategory) TableName() string { return "lesson_practice_categories" }
