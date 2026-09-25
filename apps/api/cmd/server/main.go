@@ -58,7 +58,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	router := server.NewRouter(db, cfg.Cors)
+	router := server.NewRouter(db, cfg)
 
 	if err := router.Run(cfg.Server.Addr()); err != nil {
 		slog.Error("server exited unexpectedly", "error", err)

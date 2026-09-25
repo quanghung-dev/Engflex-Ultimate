@@ -4,6 +4,8 @@ package enums
 type ConversationStatus string
 
 const (
-	ConversationStatusLive  ConversationStatus = "live"
-	ConversationStatusEnded ConversationStatus = "ended"
+	ConversationStatusPending ConversationStatus = "pending"
+	ConversationStatusLive    ConversationStatus = "live"
+	ConversationStatusEnded   ConversationStatus = "ended"
+	ConversationStatusFailed  ConversationStatus = "failed"
 )

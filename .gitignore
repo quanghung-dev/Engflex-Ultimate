@@ -1,3 +1,9 @@
+# --- Python (voice engine) ---
+__pycache__/
+.venv/
+.pytest_cache/
+*.pyc
+
 # --- Markdown: ignore all except README ---
 *.md
 !README.md

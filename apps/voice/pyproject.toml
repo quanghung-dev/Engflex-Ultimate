@@ -1,0 +1,26 @@
+[project]
+name = "engflex-voice"
+version = "0.1.0"
+description = "EngFlex Pipecat voice engine"
+requires-python = ">=3.12"
+dependencies = [
+  "pipecat-ai[deepgram,piper,runner,sentry,silero,webrtc]>=1.8.0",
+  "pydantic-settings>=2.4",
+  "loguru>=0.7.2",
+  "aiohttp>=3.10",
+]
+
+[dependency-groups]
+dev = ["pytest>=8.3"]
+
+# Transient upstream defect (2026-09): google-crc32c 1.9.0 ships macOS-only
+# wheels (no sdist, no manylinux). Pulled in via aiortc (pipecat webrtc
+# extra). Constrain below 1.9 until upstream publishes Linux wheels again.
+[tool.uv]
+constraint-dependencies = ["google-crc32c<1.9"]
+
+# pytest runs from apps/voice; src/ holds the package so top-level imports
+# (config, prompts, …) resolve from tests/ without __init__.py tricks.
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

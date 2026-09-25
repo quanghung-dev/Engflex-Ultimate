@@ -24,7 +24,21 @@ export interface Conversation {
   status: ConversationStatus;
   startedAt: string /* RFC3339 */;
   endedAt?: string /* RFC3339 */;
+  durationSec?: number /* int */;
   turns: Turn[];
+}
+
+//////////
+// source: conversation_session.go
+
+/**
+ * ConversationSession is returned by POST /conversations/:id/start.
+ * SessionID is the EngFlex conversation id (the engine id stays server-side).
+ */
+export interface ConversationSession {
+  sessionId: string;
+  iceConfig?: IceConfig;
+  maxDuration: number /* int */;
 }
 
 //////////
@@ -65,4 +79,22 @@ export interface TurnFeedback {
   phonemes: PhonemeMark[];
   upgrades: PhraseUpgrade[];
   tip: string;
+}
+
+//////////
+// source: ice.go
+
+/**
+ * IceServer is one STUN/TURN entry handed to the browser.
+ */
+export interface IceServer {
+  urls: string[];
+  username?: string;
+  credential?: string;
+}
+/**
+ * IceConfig is the engine-supplied ICE configuration for a session.
+ */
+export interface IceConfig {
+  iceServers: IceServer[];
 }

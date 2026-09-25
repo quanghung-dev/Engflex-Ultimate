@@ -11,6 +11,7 @@ type Config struct {
 	Auth     AuthConfig
 	Cors     CorsConfig
 	Log      LogConfig
+	Voice    VoiceConfig
 }
 
 // Load reads .env files (if present) and then resolves every config section
@@ -30,5 +31,6 @@ func Load(dotEnvPaths ...string) (Config, error) {
 		Auth:     LoadAuthConfig(),
 		Cors:     LoadCorsConfig(),
 		Log:      LoadLogConfig(server.Env),
+		Voice:    LoadVoiceConfig(),
 	}, nil
 }

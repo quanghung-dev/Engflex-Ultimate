@@ -1,0 +1,232 @@
+package services
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
+	"log/slog"
+	"net/http"
+
+	"engflex-api/internal/common"
+	"engflex-api/internal/common/enums"
+	"engflex-api/internal/database/models"
+	"engflex-api/internal/database/repositories"
+	"engflex-api/internal/logger"
+	"engflex-api/internal/modules/conversations/dtos/requests"
+	"engflex-api/internal/modules/conversations/dtos/responses"
+)
+
+var errEmptyAnswer = errors.New("voice engine returned an empty offer answer")
+
+// ConversationService owns the conversation lifecycle rules.
+type ConversationService struct {
+	conversations repositories.ConversationRepository
+	voice         VoiceClient
+	maxDuration   int
+}
+
+// NewConversationService builds the service over repository + engine interfaces.
+func NewConversationService(conversations repositories.ConversationRepository, voice VoiceClient, maxDuration int) *ConversationService {
+	return &ConversationService{conversations: conversations, voice: voice, maxDuration: maxDuration}
+}
+
+// Create provisions a pending conversation. The close of the caller's other
+// non-terminal conversations and the insert run atomically inside the
+// repository (CreateClosingActive), so concurrent creates cannot both slip
+// through — the row lock serializes them.
+func (s *ConversationService) Create(ctx context.Context, userID string, req requests.StartConversation) (*models.Conversation, error) {
+	if req.Mode == enums.ConversationModeRoleplay && (req.ScenarioID == nil || *req.ScenarioID == "") {
+		return nil, common.BadRequest("scenarioId is required for roleplay")
+	}
+
+	m := &models.Conversation{
+		UserID:     userID,
+		Mode:       req.Mode,
+		ScenarioID: req.ScenarioID,
+		Status:     enums.ConversationStatusPending,
+	}
+	if err := s.conversations.CreateClosingActive(ctx, m); err != nil {
+		appErr := common.FromDBError(err, "conversation")
+		logger.Report(ctx, "create conversation failed", appErr, "userID", userID)
+		return nil, appErr
+	}
+	slog.InfoContext(ctx, "conversation created", "conversationID", m.ID, "mode", m.Mode)
+	return m, nil
+}
+
+// Get returns the caller's conversation.
+func (s *ConversationService) Get(ctx context.Context, userID, id string) (*models.Conversation, error) {
+	return s.getOwned(ctx, userID, id)
+}
+
+// Start provisions the engine session (idempotent) and returns the ICE config.
+func (s *ConversationService) Start(ctx context.Context, userID, id string) (*models.Conversation, *responses.IceConfig, error) {
+	conv, err := s.getOwned(ctx, userID, id)
+	if err != nil {
+		return nil, nil, err
+	}
+	if conv.Status != enums.ConversationStatusPending {
+		return nil, nil, common.Conflict("conversation is not pending")
+	}
+	if conv.SpeechSessionID != "" && len(conv.SpeechStartResponse) > 0 {
+		if cached, ok := decodeStartResponse(conv.SpeechStartResponse); ok {
+			return conv, cached.ICEConfig, nil
+		}
+	}
+
+	res, err := s.voice.Start(ctx, StartRequest{
+		Transport:               "webrtc",
+		EnableDefaultICEServers: true,
+		Body: VoiceSessionBody{
+			UserID:         userID,
+			ConversationID: conv.ID,
+			MaxDuration:    s.maxDuration,
+		},
+	})
+	if err != nil {
+		logger.Report(ctx, "voice engine start failed", err, "conversationID", conv.ID)
+		return nil, nil, common.ServiceUnavailable("voice service unavailable")
+	}
+
+	raw, err := json.Marshal(res)
+	if err != nil {
+		logger.Report(ctx, "marshal voice start response failed", err, "conversationID", conv.ID)
+		return nil, nil, common.Internal()
+	}
+	affected, err := s.conversations.SetSpeechStart(ctx, conv.ID, res.SessionID, raw)
+	if err != nil {
+		appErr := common.FromDBError(err, "conversation")
+		logger.Report(ctx, "cache voice start failed", appErr, "conversationID", conv.ID)
+		return nil, nil, appErr
+	}
+	if affected == 0 {
+		refreshed, err := s.conversations.GetByID(ctx, conv.ID)
+		if err != nil {
+			return nil, nil, common.FromDBError(err, "conversation")
+		}
+		if cached, ok := decodeStartResponse(refreshed.SpeechStartResponse); ok {
+			return refreshed, cached.ICEConfig, nil
+		}
+		return nil, nil, common.Conflict("conversation start raced")
+	}
+
+	conv.SpeechSessionID = res.SessionID
+	conv.SpeechStartResponse = raw
+	slog.InfoContext(ctx, "conversation start provisioned", "conversationID", conv.ID, "engineSessionID", res.SessionID)
+	return conv, res.ICEConfig, nil
+}
+
+// Offer proxies SDP/ICE to the engine and applies the state transition on POST.
+func (s *ConversationService) Offer(ctx context.Context, userID, id, method string, body []byte) ([]byte, int, error) {
+	conv, err := s.getOwned(ctx, userID, id)
+	if err != nil {
+		return nil, 0, err
+	}
+	if conv.Status == enums.ConversationStatusEnded || conv.Status == enums.ConversationStatusFailed {
+		return nil, 0, common.Conflict("conversation is closed")
+	}
+	if conv.SpeechSessionID == "" {
+		return nil, 0, common.Conflict("conversation not started")
+	}
+
+	respBody, status, err := s.voice.Offer(ctx, conv.SpeechSessionID, method, body)
+	if err != nil {
+		logger.Report(ctx, "voice engine offer failed", err, "conversationID", conv.ID)
+		return nil, 0, common.ServiceUnavailable("voice service unavailable")
+	}
+
+	if method != http.MethodPost {
+		return respBody, status, nil
+	}
+
+	ok := status >= 200 && status < 300 && len(bytes.TrimSpace(respBody)) > 0
+	to := enums.ConversationStatusLive
+	if !ok {
+		to = enums.ConversationStatusFailed
+	}
+	if conv.Status == enums.ConversationStatusPending {
+		if _, err := s.conversations.SetStatus(ctx, conv.ID, enums.ConversationStatusPending, to); err != nil {
+			// The engine already answered, but we could not record it.
+			// Fail loudly so the client retries instead of proceeding
+			// on a state the database does not reflect. Retry is safe:
+			// Start replays the cache and Offer re-applies the transition.
+			appErr := common.FromDBError(err, "conversation")
+			logger.Report(ctx, "update conversation status failed", appErr, "conversationID", conv.ID)
+			return nil, 0, appErr
+		}
+	}
+	if !ok {
+		if status >= 200 && status < 300 {
+			logger.Report(ctx, "voice engine returned an empty answer", errEmptyAnswer, "conversationID", conv.ID)
+			return nil, 0, common.ServiceUnavailable("voice service unavailable")
+		}
+		return respBody, status, nil
+	}
+	return respBody, status, nil
+}
+
+// End closes a conversation; idempotent for terminal rows.
+func (s *ConversationService) End(ctx context.Context, userID, id string) (*models.Conversation, error) {
+	conv, err := s.getOwned(ctx, userID, id)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := s.conversations.SetEnded(ctx, conv.ID, nil); err != nil {
+		appErr := common.FromDBError(err, "conversation")
+		logger.Report(ctx, "end conversation failed", appErr, "conversationID", conv.ID)
+		return nil, appErr
+	}
+	updated, err := s.conversations.GetByID(ctx, conv.ID)
+	if err != nil {
+		return nil, common.FromDBError(err, "conversation")
+	}
+	slog.InfoContext(ctx, "conversation ended", "conversationID", conv.ID)
+	return updated, nil
+}
+
+// Finalize records the engine-reported duration (internal callback).
+// It is intentionally status-agnostic: the engine reports sessions it ran,
+// which are live, or already ended by the user — either way the duration
+// must land (first ended_at wins, first duration wins, per SetEnded).
+func (s *ConversationService) Finalize(ctx context.Context, id string, durationSec int) error {
+	if durationSec < 0 {
+		return common.BadRequest("durationSec must be >= 0")
+	}
+	if _, err := s.conversations.GetByID(ctx, id); err != nil {
+		return common.FromDBError(err, "conversation")
+	}
+	if _, err := s.conversations.SetEnded(ctx, id, &durationSec); err != nil {
+		appErr := common.FromDBError(err, "conversation")
+		logger.Report(ctx, "finalize conversation failed", appErr, "conversationID", id)
+		return appErr
+	}
+	slog.InfoContext(ctx, "conversation finalized", "conversationID", id, "durationSec", durationSec)
+	return nil
+}
+
+func (s *ConversationService) getOwned(ctx context.Context, userID, id string) (*models.Conversation, error) {
+	m, err := s.conversations.GetByID(ctx, id)
+	if err != nil {
+		appErr := common.FromDBError(err, "conversation")
+		if appErr.Status >= http.StatusInternalServerError {
+			logger.Report(ctx, "get conversation failed", appErr, "conversationID", id)
+		}
+		return nil, appErr
+	}
+	if m.UserID != userID {
+		return nil, common.NotFound("conversation not found")
+	}
+	return m, nil
+}
+
+func decodeStartResponse(raw []byte) (*StartResponse, bool) {
+	var out StartResponse
+	if err := json.Unmarshal(raw, &out); err != nil {
+		return nil, false
+	}
+	if out.SessionID == "" {
+		return nil, false
+	}
+	return &out, true
+}

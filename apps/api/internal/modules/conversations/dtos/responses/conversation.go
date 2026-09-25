@@ -18,11 +18,12 @@ type Turn struct {
 
 // Conversation is a voice session with its transcript.
 type Conversation struct {
-	ID         string                   `json:"id"`
-	Mode       enums.ConversationMode   `json:"mode"`
-	ScenarioID *string                  `json:"scenarioId"`
-	Status     enums.ConversationStatus `json:"status"`
-	StartedAt  time.Time                `json:"startedAt"`
-	EndedAt    *time.Time               `json:"endedAt"`
-	Turns      []Turn                   `json:"turns"`
+	ID          string                   `json:"id"`
+	Mode        enums.ConversationMode   `json:"mode"`
+	ScenarioID  *string                  `json:"scenarioId"`
+	Status      enums.ConversationStatus `json:"status"`
+	StartedAt   time.Time                `json:"startedAt"`
+	EndedAt     *time.Time               `json:"endedAt"`
+	DurationSec *int                     `json:"durationSec,omitempty"`
+	Turns       []Turn                   `json:"turns"`
 }

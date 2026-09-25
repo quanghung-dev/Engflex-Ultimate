@@ -12,18 +12,19 @@ import (
 
 	"engflex-api/config"
 	_ "engflex-api/docs"
+	"engflex-api/internal/modules/conversations"
 	"engflex-api/internal/server/middleware"
 )
 
 // NewRouter builds the Gin engine with shared middleware and module routes.
 // Add domain modules here as they are implemented:
 // profiles.RegisterRoutes(v1, db), contents.RegisterRoutes(v1, db), ...
-func NewRouter(db *gorm.DB, corsCfg config.CorsConfig) *gin.Engine {
+func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	r := gin.New()
 	r.Use(middleware.RequestID(), middleware.RequestLogger(), middleware.Recovery())
 	r.Use(cors.New(cors.Config{
 		// Dev: allow all origins. For production, switch to
-		// AllowOrigins: corsCfg.AllowedOrigins (and re-enable
+		// AllowOrigins: cfg.Cors.AllowedOrigins (and re-enable
 		// AllowCredentials, which browsers reject with a wildcard).
 		AllowAllOrigins: true,
 		AllowMethods:    []string{"GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"},
@@ -38,10 +39,8 @@ func NewRouter(db *gorm.DB, corsCfg config.CorsConfig) *gin.Engine {
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	v1 := r.Group("/api/v1")
-	_ = v1
-	_ = db
-	_ = corsCfg
-	// TODO: register engflex modules, e.g.
+	conversations.RegisterRoutes(v1, db, cfg.Voice)
+	// TODO: register remaining engflex modules, e.g.
 	// profiles.RegisterRoutes(v1, repositories.NewProfileRepository(db))
 	// contents.RegisterRoutes(v1, repositories.NewContentRepository(db))
 	// attempts.RegisterRoutes(v1, repositories.NewAttemptRepository(db))

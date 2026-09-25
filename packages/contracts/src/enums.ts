@@ -64,9 +64,11 @@ export type ConversationMode = typeof ConversationModeFreeTalk | typeof Conversa
 /**
  * ConversationStatus is the session lifecycle state (conversations.status).
  */
+export const ConversationStatusPending = "pending";
 export const ConversationStatusLive = "live";
 export const ConversationStatusEnded = "ended";
-export type ConversationStatus = typeof ConversationStatusLive | typeof ConversationStatusEnded;
+export const ConversationStatusFailed = "failed";
+export type ConversationStatus = typeof ConversationStatusPending | typeof ConversationStatusLive | typeof ConversationStatusEnded | typeof ConversationStatusFailed;
 
 //////////
 // source: goal.go
