@@ -3,6 +3,12 @@
   "voice": {
     "crumbScenarios": "Tình huống",
     "crumbRoomFallback": "Phòng luyện trực tiếp",
+    "roomCrumb": "Phiên luyện trực tiếp",
+    "sessionEnded": "Phiên này đã kết thúc.",
+    "backToScenarios": "Quay lại các tình huống",
+    "connectionFailed": "Kết nối thất bại. Vui lòng thử lại.",
+    "endSession": "Kết thúc phiên",
+    "createFailed": "Không thể bắt đầu cuộc hội thoại. Vui lòng thử lại.",
     "modesTitle": "Chọn chế độ nói",
     "modesSubtitle": "Chọn cách bạn muốn luyện hôm nay. Khởi động tự do hoặc thử sức với đóng vai có cấu trúc.",
     "modes": {
@@ -69,6 +75,7 @@
       "defenseRange": "Bảo vệ {min}–{max} phút",
       "freeTalkFixed": "Nói tự do 10 phút",
       "transcriptTitle": "Bản chép trực tiếp",
+      "transcriptEmpty": "Bản chép trực tiếp sẽ hiện ở đây khi bạn bắt đầu nói.",
       "analyzedOnly": "Chỉ hiện đã phân tích",
       "now": "bây giờ",
       "analyze": "Phân tích lượt nói",

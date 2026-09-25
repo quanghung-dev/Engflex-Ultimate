@@ -119,6 +119,8 @@
 
 @theme inline {
   --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  /* Manrope-only rule: even mono contexts (IPA, kbd) use the brand font. */
+  --font-mono: 'Manrope', ui-sans-serif, system-ui, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

@@ -3,6 +3,12 @@
   "voice": {
     "crumbScenarios": "Scenarios",
     "crumbRoomFallback": "Live studio",
+    "roomCrumb": "Live session",
+    "sessionEnded": "This session has ended.",
+    "backToScenarios": "Back to scenarios",
+    "connectionFailed": "Connection failed. Please try again.",
+    "endSession": "End session",
+    "createFailed": "Could not start a conversation. Please try again.",
     "modesTitle": "Select speaking mode",
     "modesSubtitle": "Choose how you want to train today. Warm up freely or test your instincts in structured roleplay.",
     "modes": {
@@ -69,6 +75,7 @@
       "defenseRange": "{min}–{max} min defense",
       "freeTalkFixed": "10 min free talk",
       "transcriptTitle": "Live transcript",
+      "transcriptEmpty": "Your live transcript will appear here once you start speaking.",
       "analyzedOnly": "Analyzed only",
       "now": "now",
       "analyze": "Analyze turn",

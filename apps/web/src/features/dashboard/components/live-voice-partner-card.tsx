@@ -1,21 +1,38 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Mic } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "#/components/ui/button";
 import { VOICE_PARTNER_SCENARIO_IDS } from "#/features/dashboard/fixtures";
 import { getScenario } from "#/features/voice/fixtures";
-import { startSession } from "#/features/voice/store";
+import { useCreateConversation } from "#/features/voice/queries";
 import { m } from "#/paraglide/messages";
 import { ScenarioSelectorRow } from "./scenario-selector-row";
 
 export function LiveVoicePartnerCard() {
 	const navigate = useNavigate();
+	const createConversation = useCreateConversation();
 	const [selectedId, setSelectedId] = useState<string>(
 		VOICE_PARTNER_SCENARIO_IDS[0],
 	);
 	const rows = VOICE_PARTNER_SCENARIO_IDS.map((id) => getScenario(id)).filter(
 		(scenario) => scenario !== undefined,
 	);
+
+	async function startFreeTalk() {
+		if (createConversation.isPending) return;
+		try {
+			const conversation = await createConversation.mutateAsync({
+				mode: "free_talk",
+			});
+			await navigate({
+				to: "/voice/room/$conversationId",
+				params: { conversationId: conversation.id },
+			});
+		} catch {
+			toast.error(m["voice.createFailed"]());
+		}
+	}
 
 	return (
 		<div className="flex h-full flex-col gap-4 rounded-xl border bg-card p-5">
@@ -47,8 +64,7 @@ export function LiveVoicePartnerCard() {
 			<Button
 				className="mt-auto w-full"
 				onClick={() => {
-					startSession("free_talk");
-					navigate({ to: "/voice/room" });
+					void startFreeTalk();
 				}}
 			>
 				<Mic data-icon="inline-start" />

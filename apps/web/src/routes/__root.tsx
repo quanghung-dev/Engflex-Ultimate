@@ -6,6 +6,7 @@ import {
 	Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { RouteNotFound } from "#/components/common/error-pages";
 import { Toaster } from "#/components/ui/sonner";
 import { m } from "#/paraglide/messages";
 import { getLocale } from "#/paraglide/runtime";
@@ -53,6 +54,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 			},
 		],
 	}),
+	notFoundComponent: RouteNotFound,
 	shellComponent: RootDocument,
 });
 
@@ -62,6 +64,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			<head>
 				{/* biome-ignore lint/security/noDangerouslySetInnerHtml: theme must be applied before hydration */}
 				<script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+				<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 				<HeadContent />
 			</head>
 			<body className="font-sans antialiased [overflow-wrap:anywhere] selection:bg-primary/15">

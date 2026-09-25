@@ -29,6 +29,10 @@ export const API_ROUTES = {
 	CONVERSATIONS: {
 		LIST: "/conversations",
 		BY_ID: (id: ApiId) => `/conversations/${id}`,
+		CREATE: "/conversations",
+		START: (id: ApiId) => `/conversations/${id}/start`,
+		OFFER: (id: ApiId) => `/conversations/${id}/offer`,
+		END: (id: ApiId) => `/conversations/${id}/end`,
 		TURNS: (id: ApiId) => `/conversations/${id}/turns`,
 		FEEDBACK: (id: ApiId) => `/conversations/${id}/feedback`,
 	},

@@ -44,6 +44,12 @@
     },
     "previousQuestion": "Câu trước",
     "previousPage": "Trang trước",
-    "nextPage": "Trang sau"
+    "nextPage": "Trang sau",
+    "notFoundTitle": "Không tìm thấy trang",
+    "notFoundBody": "Trang này không tồn tại hoặc mục đã bị xóa.",
+    "errorTitle": "Đã xảy ra lỗi",
+    "errorBody": "Một lỗi bất ngờ đã làm gián đoạn trang này. Hãy thử lại hoặc quay về trang chủ.",
+    "retry": "Thử lại",
+    "backHome": "Về trang chủ"
   }
 }

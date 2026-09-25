@@ -3,6 +3,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
 import { Search } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { APP_ROUTES } from "#/app/app-route";
 import { breadcrumb } from "#/app/breadcrumbs";
 import { PageHeader } from "#/components/common/page-header";
@@ -25,11 +26,8 @@ import { CustomScenarioBanner } from "#/features/voice/components/custom-scenari
 import { ScenarioCard } from "#/features/voice/components/scenario-card";
 import { TopicBanner } from "#/features/voice/components/topic-banner";
 import { SCENARIO_TOPICS, TOPIC_IMAGES } from "#/features/voice/fixtures";
-import {
-	addCustomScenario,
-	startSession,
-	voiceSessionStore,
-} from "#/features/voice/store";
+import { useCreateConversation } from "#/features/voice/queries";
+import { addCustomScenario, voiceSessionStore } from "#/features/voice/store";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/voice/scenarios")({
@@ -81,9 +79,22 @@ function ScenariosPage() {
 		visibleTopics.reduce((sum, entry) => sum + entry.scenarios.length, 0) +
 		visibleCustom.length;
 
-	function start(scenario: Scenario) {
-		startSession("roleplay", scenario.id);
-		navigate({ to: "/voice/room" });
+	const createConversation = useCreateConversation();
+
+	async function startRoleplay(scenarioId: string) {
+		if (createConversation.isPending) return;
+		try {
+			const conversation = await createConversation.mutateAsync({
+				mode: "roleplay",
+				scenarioId,
+			});
+			await navigate({
+				to: "/voice/room/$conversationId",
+				params: { conversationId: conversation.id },
+			});
+		} catch {
+			toast.error(m["voice.createFailed"]());
+		}
 	}
 
 	return (
@@ -154,7 +165,9 @@ function ScenariosPage() {
 							<ScenarioCard
 								key={scenario.id}
 								scenario={scenario}
-								onStart={() => start(scenario)}
+								onStart={() => {
+									void startRoleplay(scenario.id);
+								}}
 							/>
 						))}
 					</div>
@@ -171,7 +184,9 @@ function ScenariosPage() {
 							<ScenarioCard
 								key={scenario.id}
 								scenario={scenario}
-								onStart={() => start(scenario)}
+								onStart={() => {
+									void startRoleplay(scenario.id);
+								}}
 							/>
 						))}
 					</div>

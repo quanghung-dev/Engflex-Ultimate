@@ -70,15 +70,18 @@ export function ModeCard({
 				{copy.meta()}
 			</div>
 			<ul className="flex flex-col gap-2">
-				{copy.features.map((feature, index) => (
-					<li
-						key={index}
-						className="flex items-start gap-2 text-xs text-muted-foreground"
-					>
-						<CircleCheck className="mt-0.5 size-3.5 shrink-0 text-accuracy" />
-						{feature()}
-					</li>
-				))}
+				{copy.features.map((feature) => {
+					const label = feature();
+					return (
+						<li
+							key={label}
+							className="flex items-start gap-2 text-xs text-muted-foreground"
+						>
+							<CircleCheck className="mt-0.5 size-3.5 shrink-0 text-accuracy" />
+							{label}
+						</li>
+					);
+				})}
 			</ul>
 			<Button type="button" className="mt-auto w-full" onClick={onStart}>
 				{copy.cta()}

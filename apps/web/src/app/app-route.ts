@@ -9,7 +9,7 @@ export const APP_ROUTES = {
 	VOCABULARY_ITEM: "/vocabulary/$itemId",
 	VOICE: "/voice",
 	VOICE_SCENARIOS: "/voice/scenarios",
-	VOICE_ROOM: "/voice/room",
+	VOICE_ROOM: "/voice/room/$conversationId",
 	AUTH: {
 		SIGN_IN: "/sign-in",
 		SIGN_UP: "/sign-up",

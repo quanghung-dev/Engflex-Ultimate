@@ -44,6 +44,12 @@
     },
     "previousQuestion": "Previous",
     "previousPage": "Previous",
-    "nextPage": "Next"
+    "nextPage": "Next",
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "This page doesn't exist or the item was removed.",
+    "errorTitle": "Something went wrong",
+    "errorBody": "An unexpected error interrupted this page. Try again or head back home.",
+    "retry": "Try again",
+    "backHome": "Back to home"
   }
 }

@@ -1,6 +1,12 @@
 import type { Activity } from "@engflex/contracts";
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import {
+	createFileRoute,
+	notFound,
+	redirect,
+	useNavigate,
+} from "@tanstack/react-router";
 import { useState } from "react";
+import { toast } from "sonner";
 import { APP_ROUTES } from "#/app/app-route";
 import { breadcrumb, lessonCrumbLabel } from "#/app/breadcrumbs";
 import { AudioPlayerBar } from "#/features/dictation/components/audio-player-bar";
@@ -24,7 +30,7 @@ import { PassagePanel } from "#/features/reading/components/passage-panel";
 import { QuestionPanel } from "#/features/reading/components/question-panel";
 import { VoiceBriefCard } from "#/features/voice/components/voice-brief-card";
 import { getScenario } from "#/features/voice/fixtures";
-import { startSession } from "#/features/voice/store";
+import { useCreateConversation } from "#/features/voice/queries";
 import { WritingEditorCard } from "#/features/writing/components/writing-editor-card";
 import { WritingFeedbackCard } from "#/features/writing/components/writing-feedback-card";
 import { WritingPromptBanner } from "#/features/writing/components/writing-prompt-banner";
@@ -115,7 +121,7 @@ function WritingActivity({
 	const [text, setText] = useState(WRITING_SAMPLE_TEXT);
 	const [submitted, setSubmitted] = useState(false);
 
-	if (!payload) return null;
+	if (!payload) throw notFound();
 
 	const nextPart = getNextPart("writing", partCount);
 	const continueLabel = nextPart
@@ -173,10 +179,27 @@ function VoiceActivity({
 	activity: Activity;
 }) {
 	const navigate = useNavigate();
+	const createConversation = useCreateConversation();
 	const scenarioId = activity.voice?.scenarioId;
 	const scenario = scenarioId ? getScenario(scenarioId) : undefined;
 
-	if (!scenario) return null;
+	async function startRoleplay(scenarioId: string) {
+		if (createConversation.isPending) return;
+		try {
+			const conversation = await createConversation.mutateAsync({
+				mode: "roleplay",
+				scenarioId,
+			});
+			await navigate({
+				to: "/voice/room/$conversationId",
+				params: { conversationId: conversation.id },
+			});
+		} catch {
+			toast.error(m["voice.createFailed"]());
+		}
+	}
+
+	if (!scenario) throw notFound();
 
 	return (
 		<div className="container-focus">
@@ -185,8 +208,7 @@ function VoiceActivity({
 				scenario={scenario}
 				onStart={() => {
 					completePart(lessonId, activity.partNumber);
-					startSession("roleplay", scenario.id);
-					navigate({ to: "/voice/room" });
+					void startRoleplay(scenario.id);
 				}}
 			/>
 		</div>
@@ -208,9 +230,9 @@ function DictationActivity({
 	const [typed, setTyped] = useState("");
 	const [checked, setChecked] = useState(false);
 
-	if (!payload) return null;
+	if (!payload) throw notFound();
 	const sentence = payload.sentences[index];
-	if (!sentence) return null;
+	if (!sentence) throw notFound();
 
 	const remaining = payload.sentences.length - index - 1;
 	const nextPart = getNextPart("dictation", partCount);
@@ -278,9 +300,9 @@ function ReadingActivity({
 	const [index, setIndex] = useState(0);
 	const [answers, setAnswers] = useState<Record<number, string>>({});
 
-	if (!payload) return null;
+	if (!payload) throw notFound();
 	const question = payload.questions[index];
-	if (!question) return null;
+	if (!question) throw notFound();
 	const isLast = index === payload.questions.length - 1;
 
 	function handleContinue() {

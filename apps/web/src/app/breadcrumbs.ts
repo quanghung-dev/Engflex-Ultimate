@@ -1,8 +1,6 @@
 import type { APP_ROUTES } from "#/app/app-route";
 import { getLessonDetail } from "#/features/lessons/fixtures";
 import { getVocabularyItem } from "#/features/vocabulary/store";
-import { getScenario } from "#/features/voice/fixtures";
-import { voiceSessionStore } from "#/features/voice/store";
 import { m } from "#/paraglide/messages";
 
 export type RouteParams = Record<string, string>;
@@ -58,10 +56,6 @@ export const lessonCrumbLabel = (params: RouteParams) =>
 export const vocabularyCrumbLabel = (params: RouteParams) =>
 	getVocabularyItem(params.itemId)?.term ??
 	m["vocabulary.crumbDetailFallback"]();
-
-export const voiceRoomCrumbLabel = () =>
-	getScenario(voiceSessionStore.state.scenarioId ?? "")?.title ??
-	m["voice.crumbRoomFallback"]();
 
 export function crumbLabel(label: CrumbLabel, params: RouteParams): string {
 	return typeof label === "function" ? label(params) : label;

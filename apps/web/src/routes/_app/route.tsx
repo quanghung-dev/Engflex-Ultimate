@@ -1,5 +1,6 @@
 import { RedirectToSignIn, Show } from "@clerk/tanstack-react-start";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { RouteErrorFallback } from "#/components/common/error-pages";
 import { AppShell } from "#/components/layout/app-shell";
 import { getAuthState } from "#/lib/auth-guard";
 
@@ -11,6 +12,7 @@ export const Route = createFileRoute("/_app")({
 		}
 	},
 	component: AppLayout,
+	errorComponent: RouteErrorFallback,
 });
 
 function AppLayout() {
