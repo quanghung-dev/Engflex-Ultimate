@@ -1,4 +1,9 @@
-import type { Persona, Scenario, ScenarioTopic } from "@engflex/contracts";
+import type {
+	Persona,
+	Scenario,
+	ScenarioTopic,
+	Turn,
+} from "@engflex/contracts";
 import {
 	AudioWaveform,
 	Clock3,
@@ -337,3 +342,55 @@ export function getScenario(id: string): Scenario | undefined {
 export function getScenarioPersonaName(id: string): string {
 	return getScenario(id)?.persona?.name ?? "Partner";
 }
+
+/**
+ * Mock end-of-session review, shown when a finished conversation has no
+ * persisted turns (e.g. the mic never captured anything). Throwaway: delete
+ * once real turns flow end to end.
+ */
+export const REVIEW_MOCK_TURNS: Turn[] = [
+	{
+		id: "mock-turn-1",
+		position: 1,
+		role: "ai",
+		text: "Hi! What would you like to talk about today?",
+		wasInterrupted: false,
+		createdAt: "2026-09-26T15:00:00Z",
+	},
+	{
+		id: "mock-turn-2",
+		position: 2,
+		role: "user",
+		text: "I want to practice talking about my last sprint review.",
+		wasInterrupted: false,
+		feedback: {
+			annotated: "I want to practice talking about my last sprint review.",
+			marks: [{ word: "sprint", status: "accurate" }],
+			upgrades: [
+				{
+					original: "talk about",
+					replacements: ["discuss", "walk through"],
+					category: "phrasing",
+				},
+			],
+			tip: "Good opener — try a stronger verb than “talk about”.",
+		},
+		createdAt: "2026-09-26T15:00:12Z",
+	},
+	{
+		id: "mock-turn-3",
+		position: 3,
+		role: "ai",
+		text: "Great choice. How did the review go — what went well?",
+		wasInterrupted: false,
+		createdAt: "2026-09-26T15:00:20Z",
+	},
+	{
+		id: "mock-turn-4",
+		position: 4,
+		role: "user",
+		text: "We shipped on time, but I struggled to explain the delay.",
+		wasInterrupted: false,
+		createdAt: "2026-09-26T15:00:35Z",
+	},
+];

@@ -1,6 +1,9 @@
-import type { Scenario, ScenarioDifficulty } from "@engflex/contracts";
+import type {
+	CreateCustomScenario,
+	Scenario,
+	ScenarioDifficulty,
+} from "@engflex/contracts";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useStore } from "@tanstack/react-store";
 import { Search } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -26,8 +29,11 @@ import { CustomScenarioBanner } from "#/features/voice/components/custom-scenari
 import { ScenarioCard } from "#/features/voice/components/scenario-card";
 import { TopicBanner } from "#/features/voice/components/topic-banner";
 import { SCENARIO_TOPICS, TOPIC_IMAGES } from "#/features/voice/fixtures";
-import { useCreateConversation } from "#/features/voice/queries";
-import { addCustomScenario, voiceSessionStore } from "#/features/voice/store";
+import {
+	useCreateConversation,
+	useCreateScenario,
+	useScenarios,
+} from "#/features/voice/queries";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/voice/scenarios")({
@@ -54,10 +60,11 @@ function ScenariosPage() {
 		"all",
 	);
 	const [search, setSearch] = useState("");
-	const customScenarios = useStore(
-		voiceSessionStore,
-		(state) => state.customScenarios,
-	);
+	// Custom scenarios come from the API (real UUIDs); built-in sections stay
+	// on fixtures until seed data exists — the database ships empty and the
+	// API exposes no topic names to group a server-driven browser by.
+	const customQuery = useScenarios({ scope: "custom" });
+	const customScenarios = customQuery.data?.items ?? [];
 
 	const matches = (scenario: Scenario) => {
 		if (difficulty !== "all" && scenario.cefrLevel !== difficulty) return false;
@@ -80,6 +87,12 @@ function ScenariosPage() {
 		visibleCustom.length;
 
 	const createConversation = useCreateConversation();
+	const createScenario = useCreateScenario();
+
+	async function createAndStart(input: CreateCustomScenario) {
+		const scenario = await createScenario.mutateAsync(input);
+		await startRoleplay(scenario.id);
+	}
 
 	async function startRoleplay(scenarioId: string) {
 		if (createConversation.isPending) return;
@@ -193,7 +206,7 @@ function ScenariosPage() {
 				</section>
 			) : null}
 
-			<CustomScenarioBanner onCreate={addCustomScenario} />
+			<CustomScenarioBanner onCreate={(input) => createAndStart(input)} />
 		</div>
 	);
 }

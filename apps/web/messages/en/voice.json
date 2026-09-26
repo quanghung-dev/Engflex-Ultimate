@@ -88,9 +88,12 @@
       "micEnd": "End session",
       "briefTip1": "· Speak naturally — the partner adapts to your phrasing.",
       "briefTip2": "· Analyze a turn after the session to reveal diagnostics.",
-      "speakerYou": "You (You)",
-      "speakerPartner": "{name} (Partner)",
-      "partnerFallback": "Partner"
+      "speakerYou": "You",
+      "speakerPartner": "{name}",
+      "partnerFallback": "Partner",
+      "analyzing": "Analyzing…",
+      "analyzeFailed": "Analysis failed. Try again.",
+      "reanalyze": "Analyze again"
     }
   }
 }

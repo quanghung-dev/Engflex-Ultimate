@@ -83,38 +83,38 @@
   --hero-a: rgba(96, 215, 207, 0.18);
   --hero-b: rgba(110, 200, 154, 0.12);
 
-  --background: oklch(0.141 0.005 285.823);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.141 0.005 285.823);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.141 0.005 285.823);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.21 0.006 285.885);
-  --secondary: oklch(0.274 0.006 286.033);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.274 0.006 286.033);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.274 0.006 286.033);
-  --input: oklch(0.274 0.006 286.033);
-  --ring: oklch(0.442 0.017 285.786);
+  --background: oklch(0.19 0.022 264);
+  --foreground: oklch(0.93 0.012 264);
+  --card: oklch(0.232 0.028 264);
+  --card-foreground: oklch(0.93 0.012 264);
+  --popover: oklch(0.232 0.028 264);
+  --popover-foreground: oklch(0.93 0.012 264);
+  --primary: oklch(0.72 0.15 264);
+  --primary-foreground: oklch(0.17 0.03 264);
+  --secondary: oklch(0.27 0.035 264);
+  --secondary-foreground: oklch(0.93 0.012 264);
+  --muted: oklch(0.27 0.035 264);
+  --muted-foreground: oklch(0.72 0.03 264);
+  --accent: oklch(0.27 0.035 264);
+  --accent-foreground: oklch(0.78 0.13 264);
+  --destructive: oklch(0.63 0.19 25);
+  --destructive-foreground: oklch(0.17 0.03 264);
+  --border: oklch(0.31 0.035 264);
+  --input: oklch(0.31 0.035 264);
+  --ring: oklch(0.72 0.15 264);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.21 0.006 285.885);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.274 0.006 286.033);
-  --sidebar-ring: oklch(0.442 0.017 285.786);
+  --sidebar: oklch(0.16 0.02 264);
+  --sidebar-foreground: oklch(0.93 0.012 264);
+  --sidebar-primary: oklch(0.72 0.15 264);
+  --sidebar-primary-foreground: oklch(0.17 0.03 264);
+  --sidebar-accent: oklch(0.27 0.035 264);
+  --sidebar-accent-foreground: oklch(0.93 0.012 264);
+  --sidebar-border: oklch(0.31 0.035 264);
+  --sidebar-ring: oklch(0.72 0.15 264);
 }
 
 @theme inline {
@@ -224,6 +224,38 @@ pre code {
     linear-gradient(to right, rgba(226, 232, 240, 0.5) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(226, 232, 240, 0.5) 1px, transparent 1px);
   background-size: 24px 24px;
+}
+
+/* Dark surfaces need hairlines, not chalk lines: the light slate grid would
+   render near-white on ink. */
+.dark .grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(124, 155, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(124, 155, 255, 0.07) 1px, transparent 1px);
+}
+
+/* Semantic tokens carry light-mode tints; on dark cards those would glow.
+   Dark variants keep the hue family but swap to luminous text on translucent
+   fills. */
+.dark {
+  --accuracy: #34d399;
+  --accuracy-tint: rgba(52, 211, 153, 0.12);
+  --ai-coral: #ff7a7a;
+  --ai-coral-tint: rgba(255, 77, 77, 0.14);
+  --accent-violet: #a5a0ff;
+  --warning: #fbbf24;
+  --cefr-b1: #7cc4f5;
+  --cefr-b1-bg: rgba(3, 105, 161, 0.28);
+  --cefr-b1-border: rgba(124, 196, 245, 0.35);
+  --cefr-b1p: #67e8f9;
+  --cefr-b1p-bg: rgba(14, 116, 144, 0.28);
+  --cefr-b1p-border: rgba(103, 232, 249, 0.35);
+  --cefr-b2: #a5b4fc;
+  --cefr-b2-bg: rgba(67, 56, 202, 0.35);
+  --cefr-b2-border: rgba(165, 180, 252, 0.35);
+  --cefr-c1: #c4b5fd;
+  --cefr-c1-bg: rgba(109, 40, 217, 0.35);
+  --cefr-c1-border: rgba(196, 181, 253, 0.35);
 }
 
 .energy-card {

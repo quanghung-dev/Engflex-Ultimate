@@ -26,6 +26,10 @@ export const API_ROUTES = {
 		LIST: "/personas",
 		BY_ID: (id: ApiId) => `/personas/${id}`,
 	},
+	SCENARIOS: {
+		LIST: "/scenarios",
+		CREATE: "/scenarios",
+	},
 	CONVERSATIONS: {
 		LIST: "/conversations",
 		BY_ID: (id: ApiId) => `/conversations/${id}`,
@@ -33,7 +37,7 @@ export const API_ROUTES = {
 		START: (id: ApiId) => `/conversations/${id}/start`,
 		OFFER: (id: ApiId) => `/conversations/${id}/offer`,
 		END: (id: ApiId) => `/conversations/${id}/end`,
-		TURNS: (id: ApiId) => `/conversations/${id}/turns`,
-		FEEDBACK: (id: ApiId) => `/conversations/${id}/feedback`,
+		ANALYZE_TURN: (id: ApiId, position: number) =>
+			`/conversations/${id}/turns/${position}/analyze`,
 	},
 } as const;

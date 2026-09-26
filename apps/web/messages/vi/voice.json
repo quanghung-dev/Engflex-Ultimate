@@ -90,7 +90,10 @@
       "briefTip2": "· Phân tích một lượt nói sau phiên để xem chẩn đoán.",
       "speakerYou": "Bạn",
       "speakerPartner": "{name} (Đối tác)",
-      "partnerFallback": "Đối tác"
+      "partnerFallback": "Đối tác",
+      "analyzing": "Đang phân tích…",
+      "analyzeFailed": "Phân tích thất bại. Hãy thử lại.",
+      "reanalyze": "Phân tích lại"
     }
   }
 }

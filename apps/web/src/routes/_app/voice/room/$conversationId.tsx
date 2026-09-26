@@ -1,6 +1,7 @@
 import {
 	type ConversationSession,
-	ConversationStatusPending,
+	ConversationStatusEnded,
+	ConversationStatusFailed,
 } from "@engflex/contracts";
 import { RTVIEvent } from "@pipecat-ai/client-js";
 import { useRTVIClientEvent } from "@pipecat-ai/client-react";
@@ -17,6 +18,7 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from "#/components/ui/sheet";
+import { PersistedTranscript } from "#/features/voice/components/persisted-transcript";
 import { SessionModal } from "#/features/voice/components/session-modal";
 import { TranscriptPanel } from "#/features/voice/components/transcript-panel";
 import { VoicePanel } from "#/features/voice/components/voice-panel";
@@ -113,29 +115,51 @@ function VoiceRoomPage() {
 		await navigate({ to: APP_ROUTES.VOICE });
 	}
 
+	async function handleEnd() {
+		// End and stay: the query invalidation flips status to ended, which
+		// renders the persisted review below instead of navigating away.
+		userDisconnecting.current = true;
+		try {
+			await endConversation.mutateAsync();
+		} catch {
+			// end is idempotent server-side; the review renders regardless
+		}
+	}
+
 	if (conversation.isPending) {
 		return <VoiceRoomSkeleton />;
 	}
 
-	// Every terminal pre-connect state is the same blocking modal as a
-	// runtime failure — never an inline page. The room stays mounted behind;
-	// leaving ends the conversation.
-	if (
-		conversation.isError ||
-		conversation.data.status !== ConversationStatusPending
-	) {
-		const failed = conversation.isError;
+	if (conversation.isError) {
 		return (
 			<div className="p-8" aria-hidden="true">
 				<SessionModal
 					open
-					title={
-						failed ? m["voice.connectionFailed"]() : m["voice.sessionEnded"]()
-					}
+					title={m["voice.connectionFailed"]()}
 					description={m["voice.sessionEnded"]()}
 					actionLabel={m["voice.backToScenarios"]()}
 					onAction={() => void handleDisconnect()}
 				/>
+			</div>
+		);
+	}
+
+	// A finished conversation renders its persisted transcript (review state)
+	// with per-turn Analyze — no live session, no modal, no redirect.
+	if (
+		conversation.data.status === ConversationStatusEnded ||
+		conversation.data.status === ConversationStatusFailed
+	) {
+		return (
+			<div className="flex min-h-0 flex-1 flex-col gap-4 p-4">
+				<PersistedTranscript conversationId={conversationId} />
+				<Button
+					type="button"
+					variant="outline"
+					onClick={() => void navigate({ to: APP_ROUTES.VOICE })}
+				>
+					{m["voice.backToScenarios"]()}
+				</Button>
 			</div>
 		);
 	}
@@ -174,11 +198,14 @@ function VoiceRoomPage() {
 											userDisconnecting.current = true;
 											void (async () => {
 												await disconnect?.();
-												await handleDisconnect();
+												await handleEnd();
 											})();
 										}}
 									/>
-									<TranscriptPanel className="hidden lg:flex" />
+									<TranscriptPanel
+										className="hidden lg:flex"
+										conversationId={conversationId}
+									/>
 								</div>
 								<div className="lg:hidden">
 									<Sheet>
@@ -198,7 +225,7 @@ function VoiceRoomPage() {
 												</SheetDescription>
 											</SheetHeader>
 											<div className="overflow-hidden px-4 pb-4">
-												<TranscriptPanel />
+												<TranscriptPanel conversationId={conversationId} />
 											</div>
 										</SheetContent>
 									</Sheet>
@@ -239,13 +266,25 @@ function RoomErrorListener({
 	onRuntimeError: (detail: string | null) => void;
 }) {
 	useRTVIClientEvent(RTVIEvent.Error, (message) => {
-		const data = (message as { data?: { error?: unknown; message?: unknown } })
-			?.data;
+		const data = (
+			message as {
+				data?: { error?: unknown; message?: unknown; fatal?: unknown };
+			}
+		)?.data;
 		const text = [data?.error, data?.message].find(
 			(value): value is string => typeof value === "string" && value.length > 0,
 		);
 		onRuntimeError(text ?? null);
-		onConnectionLost();
+		// Pipecat's RTVI processor forwards EVERY pipeline error to the
+		// client, including non-fatal ones the engine already recovered from
+		// (fatal: false, e.g. a single TTS context with no audio on cold
+		// start). Modaling on those kills a live session from the user's
+		// perspective while the bot keeps running. Record the detail — a
+		// later unexpected disconnect surfaces it — but only flip to the
+		// blocking modal for fatal or unknown errors.
+		if (data?.fatal !== false) {
+			onConnectionLost();
+		}
 	});
 	useRTVIClientEvent(RTVIEvent.Disconnected, () => {
 		if (isUserDisconnectingRef.current) return;

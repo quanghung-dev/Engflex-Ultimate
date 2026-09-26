@@ -43,13 +43,13 @@ const EMPTY_FORM = {
 export function CustomScenarioBanner({
 	onCreate,
 }: {
-	onCreate: (input: CreateCustomScenario) => void;
+	onCreate: (input: CreateCustomScenario) => Promise<unknown>;
 }) {
 	const [open, setOpen] = useState(false);
 	const [form, setForm] = useState(EMPTY_FORM);
 	const [error, setError] = useState<string | null>(null);
 
-	function submit() {
+	async function submit() {
 		if (!form.title.trim() || !form.objective.trim()) {
 			setError(m["voice.custom.required"]());
 			return;
@@ -62,13 +62,19 @@ export function CustomScenarioBanner({
 			setError(m["voice.custom.durationError"]());
 			return;
 		}
-		onCreate({
-			title: form.title.trim(),
-			objective: form.objective.trim(),
-			difficulty: form.difficulty,
-			durationMin: form.durationMin,
-			durationMax: form.durationMax,
-		});
+		try {
+			await onCreate({
+				title: form.title.trim(),
+				objective: form.objective.trim(),
+				difficulty: form.difficulty,
+				durationMin: form.durationMin,
+				durationMax: form.durationMax,
+			});
+		} catch {
+			// Server rejected the scenario: stay open so nothing is lost.
+			setError(m["voice.createFailed"]());
+			return;
+		}
 		setOpen(false);
 		setForm(EMPTY_FORM);
 		setError(null);
@@ -201,7 +207,7 @@ export function CustomScenarioBanner({
 						>
 							{m["common.cancel"]()}
 						</Button>
-						<Button type="button" onClick={submit}>
+						<Button type="button" onClick={() => void submit()}>
 							{m["voice.custom.add"]()}
 						</Button>
 					</DialogFooter>

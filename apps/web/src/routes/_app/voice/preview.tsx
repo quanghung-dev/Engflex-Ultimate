@@ -1,4 +1,4 @@
-import type { ConversationMessage } from "@pipecat-ai/client-react";
+import type { Turn } from "@engflex/contracts";
 import { PipecatAppBase } from "@pipecat-ai/voice-ui-kit";
 import { APP_ROUTES } from "#/app/app-route";
 import { breadcrumb } from "#/app/breadcrumbs";
@@ -11,8 +11,8 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from "#/components/ui/sheet";
+import { PersistedTranscript } from "#/features/voice/components/persisted-transcript";
 import { SessionModal } from "#/features/voice/components/session-modal";
-import { TranscriptPanel } from "#/features/voice/components/transcript-panel";
 import { VoicePanel } from "#/features/voice/components/voice-panel";
 import { VoiceRoomSkeleton } from "#/features/voice/components/voice-room-skeleton";
 import { m } from "#/paraglide/messages";
@@ -33,132 +33,54 @@ export const Route = createFileRoute("/_app/voice/preview")({
 const now = new Date().toISOString();
 
 /** Fixture turns so the real panels can be tweaked without a session. */
-const PREVIEW_MESSAGES: ConversationMessage[] = [
+const PREVIEW_TURNS: Turn[] = [
 	{
-		role: "assistant",
-		parts: [
-			{
-				text: "Hi! What would you like to talk about today?",
-				final: true,
-				createdAt: now,
-			},
-		],
+		id: "preview-1",
+		position: 1,
+		role: "ai",
+		text: "Hi! What would you like to talk about today?",
+		wasInterrupted: false,
 		createdAt: now,
 	},
 	{
+		id: "preview-2",
+		position: 2,
 		role: "user",
-		parts: [
-			{
-				text: "I want to practice talking about my last sprint review.",
-				final: true,
-				createdAt: now,
-			},
-		],
+		text: "I want to practice talking about my last sprint review.",
+		wasInterrupted: false,
 		createdAt: now,
 	},
 	{
-		role: "assistant",
-		parts: [
-			{
-				text: "Great choice. How did the review go — what went well?",
-				final: true,
-				createdAt: now,
-			},
-		],
+		id: "preview-3",
+		position: 3,
+		role: "ai",
+		text: "Great choice. How did the review go — what went well?",
+		wasInterrupted: false,
 		createdAt: now,
 	},
 	{
+		id: "preview-4",
+		position: 4,
 		role: "user",
-		parts: [
-			{
-				text: "We shipped on time, but I struggled to explain the delay in the API migration.",
-				final: true,
-				createdAt: now,
-			},
-		],
-		createdAt: now,
-	},
-	{
-		role: "assistant",
-		parts: [
-			{
-				text: "That happens to everyone. How did you phrase it in the moment?",
-				final: true,
-				createdAt: now,
-			},
-		],
-		createdAt: now,
-	},
-	{
-		role: "user",
-		parts: [
-			{
-				text: "I said the migration was blocked because the endpoint was unstable, and the team kept asking for details I did not have.",
-				final: true,
-				createdAt: now,
-			},
-		],
-		createdAt: now,
-	},
-	{
-		role: "assistant",
-		parts: [
-			{
-				text: "Good instinct to name the blocker. Next time try framing the impact first, then the cause — want to rehearse that?",
-				final: true,
-				createdAt: now,
-			},
-		],
-		createdAt: now,
-	},
-	{
-		role: "user",
-		parts: [
-			{
-				text: "Sure. So I would say the release slipped by two days because the new endpoint failed under load, and we added retries as a guard.",
-				final: true,
-				createdAt: now,
-			},
-		],
-		createdAt: now,
-	},
-	{
-		role: "assistant",
-		parts: [
-			{
-				text: "Much clearer — impact, cause, fix in one breath. How confident did that feel on a scale of one to five?",
-				final: true,
-				createdAt: now,
-			},
-		],
-		createdAt: now,
-	},
-	{
-		role: "user",
-		parts: [
-			{
-				text: "Maybe a three. I always rush when executives ask follow-up questions.",
-				final: true,
-				createdAt: now,
-			},
-		],
-		createdAt: now,
-	},
-	{
-		role: "assistant",
-		parts: [
-			{
-				text: "Then let's drill exactly that — I'll play the stakeholder and push back. Ready?",
-				final: true,
-				createdAt: now,
-			},
-		],
+		text: "We shipped on time, but I struggled to explain the delay in the API migration.",
+		wasInterrupted: false,
+		feedback: {
+			annotated: "We shipped on time, but I struggled to explain the delay.",
+			marks: [{ word: "struggled", status: "accurate" }],
+			upgrades: [
+				{
+					original: "explain the delay",
+					replacements: ["explain away the delay", "justify the delay"],
+					category: "phrasing",
+				},
+			],
+			tip: "Lead with the impact, then the cause.",
+		},
 		createdAt: now,
 	},
 ];
-
 /**
- * DEV-only preview of the real room panels (VoicePanel + TranscriptPanel)
+ * DEV-only preview of the real room panels (VoicePanel + PersistedTranscript)
  * with fixture data — no conversation, no engine. Devices initialize on
  * mount so the local mic track exists for the "mic" waveform source.
  * Throws 404 in production builds; delete before P2 if no longer needed.
@@ -218,9 +140,10 @@ function PreviewPanels() {
 					onEnd={() => setEnded(true)}
 					waveformSource={source}
 				/>
-				<TranscriptPanel
+				<PersistedTranscript
+					conversationId="preview"
+					turns={PREVIEW_TURNS}
 					className="hidden lg:flex"
-					messages={PREVIEW_MESSAGES}
 				/>
 			</div>
 			<div className="lg:hidden">
@@ -239,7 +162,10 @@ function PreviewPanels() {
 							</SheetDescription>
 						</SheetHeader>
 						<div className="overflow-hidden px-4 pb-4">
-							<TranscriptPanel messages={PREVIEW_MESSAGES} />
+							<PersistedTranscript
+								conversationId="preview"
+								turns={PREVIEW_TURNS}
+							/>
 						</div>
 					</SheetContent>
 				</Sheet>
