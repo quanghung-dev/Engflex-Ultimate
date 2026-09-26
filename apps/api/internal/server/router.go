@@ -13,6 +13,8 @@ import (
 	"engflex-api/config"
 	_ "engflex-api/docs"
 	"engflex-api/internal/modules/conversations"
+	"engflex-api/internal/modules/personas"
+	"engflex-api/internal/modules/scenarios"
 	"engflex-api/internal/server/middleware"
 )
 
@@ -40,6 +42,8 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 
 	v1 := r.Group("/api/v1")
 	conversations.RegisterRoutes(v1, db, cfg.Voice)
+	personas.RegisterRoutes(v1, db)
+	scenarios.RegisterRoutes(v1, db)
 	// TODO: register remaining engflex modules, e.g.
 	// profiles.RegisterRoutes(v1, repositories.NewProfileRepository(db))
 	// contents.RegisterRoutes(v1, repositories.NewContentRepository(db))

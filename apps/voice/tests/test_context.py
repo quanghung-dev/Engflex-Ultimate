@@ -15,6 +15,13 @@ def test_context_opens_with_single_user_message():
     assert [m["role"] for m in ctx.messages] == ["user"]
 
 
+def test_seeded_opener_is_a_bare_greeting():
+    # Anything more specific makes the model reply to the opener
+    # ("No problem-...") instead of delivering its own opening line.
+    ctx = build_context()
+    assert ctx.messages[0]["content"] == "Hello!"
+
+
 def test_llm_carries_system_instruction():
     llm = build_llm(conversation_id="c1")
     assert "CEFR" in llm._settings.system_instruction

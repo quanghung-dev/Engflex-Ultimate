@@ -33,11 +33,12 @@ func requireAppError(t *testing.T, err error, status int) {
 	require.Equal(t, status, appErr.Status)
 }
 
-func newService(t *testing.T) (*services.ConversationService, *repomocks.MockConversationRepository, *svcmocks.MockVoiceClient) {
+func newService(t *testing.T) (*services.ConversationService, *repomocks.MockConversationRepository, *svcmocks.MockVoiceClient, *repomocks.MockScenarioRepository) {
 	t.Helper()
 	repo := repomocks.NewMockConversationRepository(t)
 	voice := svcmocks.NewMockVoiceClient(t)
-	return services.NewConversationService(repo, voice, 300), repo, voice
+	scenarios := repomocks.NewMockScenarioRepository(t)
+	return services.NewConversationService(repo, voice, 300, repomocks.NewMockFeedbackRepository(t), scenarios, repomocks.NewMockPersonaRepository(t)), repo, voice, scenarios
 }
 
 func pendingConv() *models.Conversation {
@@ -83,7 +84,7 @@ func TestCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc, repo, _ := newService(t)
+			svc, repo, _, _ := newService(t)
 			tt.setup(repo)
 
 			m, err := svc.Create(context.Background(), userID, tt.req)
@@ -111,7 +112,7 @@ func TestGetOwnership(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc, repo, _ := newService(t)
+			svc, repo, _, _ := newService(t)
 			repo.On("GetByID", mock.Anything, convID).Return(tt.conv, tt.dbErr).Once()
 
 			m, err := svc.Get(context.Background(), userID, convID)
@@ -128,12 +129,12 @@ func TestGetOwnership(t *testing.T) {
 func TestStart(t *testing.T) {
 	tests := []struct {
 		name       string
-		setup      func(*repomocks.MockConversationRepository, *svcmocks.MockVoiceClient)
+		setup      func(*repomocks.MockConversationRepository, *svcmocks.MockVoiceClient, *repomocks.MockScenarioRepository)
 		wantStatus int
 	}{
 		{
 			name: "cached response skips the engine",
-			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient) {
+			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient, _ *repomocks.MockScenarioRepository) {
 				raw, _ := json.Marshal(services.StartResponse{
 					SessionID: "eng-1",
 					ICEConfig: &responses.IceConfig{IceServers: []responses.IceServer{{URLs: []string{"stun:x"}}}},
@@ -146,7 +147,7 @@ func TestStart(t *testing.T) {
 		},
 		{
 			name: "fresh start caches the engine response",
-			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient) {
+			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient, _ *repomocks.MockScenarioRepository) {
 				repo.On("GetByID", mock.Anything, convID).Return(pendingConv(), nil).Once()
 				voice.On("Start", mock.Anything, mock.AnythingOfType("services.StartRequest")).
 					Return(&services.StartResponse{SessionID: "eng-2"}, nil).Once()
@@ -154,8 +155,23 @@ func TestStart(t *testing.T) {
 			},
 		},
 		{
+			name: "missing scenario still starts on the generic prompt",
+			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient, scenarios *repomocks.MockScenarioRepository) {
+				scenarioID := "22222222-2222-2222-2222-222222222222"
+				repo.On("GetByID", mock.Anything, convID).Return(&models.Conversation{
+					ID: convID, UserID: userID, Status: enums.ConversationStatusPending,
+					ScenarioID: &scenarioID,
+				}, nil).Once()
+				scenarios.On("GetByID", mock.Anything, scenarioID).Return(nil, gorm.ErrRecordNotFound).Once()
+				voice.On("Start", mock.Anything, mock.MatchedBy(func(req services.StartRequest) bool {
+					return req.Body.Persona == nil && req.Body.Scenario == nil
+				})).Return(&services.StartResponse{SessionID: "eng-3"}, nil).Once()
+				repo.On("SetSpeechStart", mock.Anything, convID, "eng-3", mock.Anything).Return(int64(1), nil).Once()
+			},
+		},
+		{
 			name: "engine failure is not cached and surfaces 503",
-			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient) {
+			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient, _ *repomocks.MockScenarioRepository) {
 				repo.On("GetByID", mock.Anything, convID).Return(pendingConv(), nil).Once()
 				voice.On("Start", mock.Anything, mock.AnythingOfType("services.StartRequest")).
 					Return(nil, errBoom()).Once()
@@ -164,7 +180,7 @@ func TestStart(t *testing.T) {
 		},
 		{
 			name: "live conversation conflicts",
-			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient) {
+			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient, _ *repomocks.MockScenarioRepository) {
 				repo.On("GetByID", mock.Anything, convID).Return(&models.Conversation{
 					ID: convID, UserID: userID, Status: enums.ConversationStatusLive,
 				}, nil).Once()
@@ -173,7 +189,7 @@ func TestStart(t *testing.T) {
 		},
 		{
 			name: "corrupt cache falls through to the engine",
-			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient) {
+			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient, _ *repomocks.MockScenarioRepository) {
 				repo.On("GetByID", mock.Anything, convID).Return(&models.Conversation{
 					ID: convID, UserID: userID, Status: enums.ConversationStatusPending,
 					SpeechSessionID: "eng-9", SpeechStartResponse: []byte(`{}`),
@@ -187,8 +203,8 @@ func TestStart(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc, repo, voice := newService(t)
-			tt.setup(repo, voice)
+			svc, repo, voice, scenarios := newService(t)
+			tt.setup(repo, voice, scenarios)
 
 			_, _, err := svc.Start(context.Background(), userID, convID)
 			if tt.wantStatus != 0 {
@@ -253,7 +269,7 @@ func TestOfferTransitions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc, repo, voice := newService(t)
+			svc, repo, voice, _ := newService(t)
 			repo.On("GetByID", mock.Anything, convID).Return(&models.Conversation{
 				ID: convID, UserID: userID, Status: enums.ConversationStatusPending, SpeechSessionID: "eng-1",
 			}, nil).Once()
@@ -305,7 +321,7 @@ func TestEnd(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc, repo, _ := newService(t)
+			svc, repo, _, _ := newService(t)
 			repo.On("GetByID", mock.Anything, convID).Return(tt.conv, tt.dbErr).Once()
 			if tt.setEnded {
 				repo.On("SetEnded", mock.Anything, convID, (*int)(nil)).Return(int64(1), nil).Once()
@@ -338,7 +354,7 @@ func TestFinalize(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc, repo, _ := newService(t)
+			svc, repo, _, _ := newService(t)
 			if tt.wantStatus == 0 {
 				repo.On("GetByID", mock.Anything, convID).Return(&models.Conversation{
 					ID: convID, UserID: userID, Status: tt.status,

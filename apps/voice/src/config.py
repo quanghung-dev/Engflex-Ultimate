@@ -28,6 +28,14 @@ class Settings(BaseSettings):
     # Session
     max_duration_sec: int = 300
     idle_timeout_sec: int = 300
+    # Turn batch callback to Go (at-most-once; a failed batch is dropped).
+    turns_post_timeout_sec: int = 30
+
+    # Analysis (a separate SDK client: the session's LLM service is streaming).
+    analyze_timeout_sec: int = 60
+    analyze_session_prefix: str = "engflex-analyze"
+    # Turn off to force the extraction path without a code change (D19).
+    analysis_structured_output: bool = True
 
     # Observability (optional)
     sentry_dsn: str = ""

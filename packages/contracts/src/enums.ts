@@ -71,6 +71,28 @@ export const ConversationStatusFailed = "failed";
 export type ConversationStatus = typeof ConversationStatusPending | typeof ConversationStatusLive | typeof ConversationStatusEnded | typeof ConversationStatusFailed;
 
 //////////
+// source: feedback_subject_type.go
+
+/**
+ * FeedbackSubjectType names what a feedback row is about. The subject is a
+ * polymorphic reference: there is no foreign key, so ownership is verified
+ * in the service before a row is written (spec section 3.1).
+ */
+export type FeedbackSubjectType = string;
+/**
+ * FeedbackSubjectConversationTurn is one learner turn in a voice
+ * conversation. Its payload carries the language block; the speech block
+ * stays absent until a provider is chosen (P3).
+ */
+export const FeedbackSubjectConversationTurn: FeedbackSubjectType = "conversation_turn";
+/**
+ * FeedbackSubjectWritingResponse and FeedbackSubjectReadingAnswer are
+ * reserved for the writing and reading activities; unused in P2.
+ */
+export const FeedbackSubjectWritingResponse: FeedbackSubjectType = "writing_response";
+export const FeedbackSubjectReadingAnswer: FeedbackSubjectType = "reading_answer";
+
+//////////
 // source: goal.go
 
 /**

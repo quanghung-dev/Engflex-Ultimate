@@ -2,6 +2,8 @@
 package conversations
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
@@ -15,8 +17,10 @@ import (
 // RegisterRoutes mounts the conversation endpoints under /api/v1.
 func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.VoiceConfig) {
 	repo := repositories.NewConversationRepository(db)
+	feedbacks := repositories.NewFeedbackRepository(db)
 	voice := services.NewHTTPVoiceClient(cfg)
-	svc := services.NewConversationService(repo, voice, cfg.MaxDurationSec)
+	svc := services.NewConversationService(repo, voice, cfg.MaxDurationSec, feedbacks,
+		repositories.NewScenarioRepository(db), repositories.NewPersonaRepository(db))
 	ctl := controllers.NewConversationController(svc, cfg.MaxDurationSec)
 
 	g := rg.Group("/conversations")
@@ -26,8 +30,23 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.VoiceConfig) {
 	g.POST("/:id/offer", middleware.RequireAuth(), ctl.Offer)
 	g.PATCH("/:id/offer", middleware.RequireAuth(), ctl.Offer)
 	g.POST("/:id/end", middleware.RequireAuth(), ctl.End)
+	g.POST("/:id/turns/:position/analyze", middleware.RequireAuth(), ctl.AnalyzeTurn)
 
 	cb := controllers.NewVoiceCallbackController(svc)
+	tcb := controllers.NewTurnCallbackController(svc)
 	internal := rg.Group("/internal/conversations", middleware.RequireInternalSecret(cfg.InternalSecret))
 	internal.POST("/:id/finalize", cb.Finalize)
+	// A text-only batch is small; this is a guard against a malformed or
+	// hostile request buffering itself into memory.
+	const maxTurnsBatchBytes = 4 << 20
+	internal.POST("/:id/turns", maxBodyBytes(maxTurnsBatchBytes), tcb.IngestTurns)
+}
+
+// maxBodyBytes rejects an oversized batch before it is buffered, so a bad
+// request cannot exhaust memory.
+func maxBodyBytes(limit int64) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, limit)
+		c.Next()
+	}
 }

@@ -15,6 +15,11 @@ export const TitleMaxLength = 255;
 export const TermMaxLength = 255;
 export const MeaningMaxLength = 1000;
 export const TextMaxLength = 10000;
+/**
+ * MaxTurnsPerBatch bounds one engine turn batch. A 45-minute session stays
+ * well under 500 turns; the cap is a guard, not a limit.
+ */
+export const MaxTurnsPerBatch = 500;
 
 //////////
 // source: list.go

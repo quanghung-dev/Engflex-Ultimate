@@ -9,9 +9,7 @@ from schemas import RunnerBody
 
 
 def test_runner_body_round_trip():
-    b = RunnerBody.model_validate(
-        {"userId": "u1", "conversationId": "c1", "maxDuration": 60}
-    )
+    b = RunnerBody.model_validate({"userId": "u1", "conversationId": "c1", "maxDuration": 60})
     assert b.maxDuration == 60
 
 
@@ -22,18 +20,14 @@ def test_runner_body_defaults():
 
 @pytest.mark.parametrize("value", [30, 300, 3600])
 def test_runner_body_bounds_accepted(value):
-    b = RunnerBody.model_validate(
-        {"userId": "u", "conversationId": "c", "maxDuration": value}
-    )
+    b = RunnerBody.model_validate({"userId": "u", "conversationId": "c", "maxDuration": value})
     assert b.maxDuration == value
 
 
 @pytest.mark.parametrize("value", [29, 3601])
 def test_runner_body_bounds_rejected(value):
     with pytest.raises(ValidationError):
-        RunnerBody.model_validate(
-            {"userId": "u", "conversationId": "c", "maxDuration": value}
-        )
+        RunnerBody.model_validate({"userId": "u", "conversationId": "c", "maxDuration": value})
 
 
 def test_settings_defaults():

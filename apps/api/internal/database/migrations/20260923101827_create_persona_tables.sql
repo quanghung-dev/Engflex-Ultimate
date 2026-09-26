@@ -34,6 +34,13 @@ CREATE TABLE scenarios (
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz NOT NULL DEFAULT now()
 );
+-- The bucket custom scenarios file under. Seeded (not inserted by any
+-- API) so POST /scenarios can satisfy the NOT NULL topic FK without
+-- inventing a topic per user.
+INSERT INTO scenario_topics (slug, name, position)
+VALUES ('custom', 'Custom', 999)
+ON CONFLICT (slug) DO NOTHING;
+
 CREATE INDEX idx_scenarios_topic_id ON scenarios (topic_id);
 CREATE INDEX idx_scenarios_persona_id ON scenarios (persona_id);
 CREATE INDEX idx_scenarios_user_id ON scenarios (user_id) WHERE user_id IS NOT NULL;

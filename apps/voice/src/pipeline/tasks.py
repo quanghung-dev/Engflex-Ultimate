@@ -3,11 +3,13 @@
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.worker import PipelineParams, PipelineWorker
+from pipecat.processors.aggregators import llm_response_universal as agg
 from pipecat.processors.aggregators.llm_context import LLMContext
 from pipecat.transports.base_transport import BaseTransport
 
 from config import settings
 from pipeline.services import build_llm, build_stt, build_tts
+from turns import TurnCollector
 
 
 async def create_voice_bot_worker(
@@ -16,13 +18,15 @@ async def create_voice_bot_worker(
     *,
     max_duration: int,
     conversation_id: str,
-) -> PipelineWorker:
+    collector: TurnCollector,
+) -> tuple[
+    PipelineWorker,
+    agg.LLMUserAggregator,
+    agg.LLMAssistantAggregator,
+]:
     stt = build_stt()
     llm = build_llm(conversation_id=conversation_id)
     tts = build_tts()
-
-    # Module listing (1.11.0) confirms llm_response_universal + pair names.
-    from pipecat.processors.aggregators import llm_response_universal as agg
 
     user_aggregator, assistant_aggregator = agg.LLMContextAggregatorPair(
         context,
@@ -52,4 +56,4 @@ async def create_voice_bot_worker(
         idle_timeout_secs=settings.idle_timeout_sec,
         cancel_on_idle_timeout=False,
     )
-    return worker
+    return worker, user_aggregator, assistant_aggregator

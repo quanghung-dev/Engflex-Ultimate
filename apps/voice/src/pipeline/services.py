@@ -28,9 +28,7 @@ def build_stt() -> DeepgramSTTService:
 
 def build_llm(*, conversation_id: str | None = None) -> OpenAILLMService:
     extra = (
-        {"reasoning_effort": settings.llm_reasoning_effort}
-        if settings.llm_reasoning_effort
-        else {}
+        {"reasoning_effort": settings.llm_reasoning_effort} if settings.llm_reasoning_effort else {}
     )
     headers = {"User-Agent": settings.opencode_user_agent}
     if conversation_id:
@@ -65,8 +63,7 @@ def build_context() -> LLMContext:
     # message (the greeting turn died with 400), and stuffing the prompt into
     # the context is deprecated since pipecat 1.9 — the tutor prompt travels
     # via the LLM service's system_instruction instead (single system message).
-    return LLMContext(
-        messages=[
-            {"role": "user", "content": "Hi! I'd like to practice speaking English."}
-        ]
-    )
+    # The opener is a bare greeting on purpose: anything more specific makes
+    # the model *reply* to it ("No problem—…") instead of delivering its own
+    # opening line.
+    return LLMContext(messages=[{"role": "user", "content": "Hello!"}])

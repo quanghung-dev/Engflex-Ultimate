@@ -26,6 +26,10 @@ type ConversationRepository interface {
 	SetSpeechStart(ctx context.Context, id, speechSessionID string, startResponse []byte) (int64, error)
 	SetStatus(ctx context.Context, id string, from, to enums.ConversationStatus) (int64, error)
 	SetEnded(ctx context.Context, id string, durationSec *int) (int64, error)
+	UpsertTurns(ctx context.Context, conversationID string, turns []*models.ConversationTurn) (int, error)
+	ListTurns(ctx context.Context, conversationID string) ([]*models.ConversationTurn, error)
+	GetTurnByID(ctx context.Context, turnID string) (*models.ConversationTurn, error)
+	GetTurnByPosition(ctx context.Context, conversationID string, position int) (*models.ConversationTurn, error)
 	WithTx(tx *gorm.DB) ConversationRepository
 }
 
@@ -116,6 +120,63 @@ func (r *conversationRepository) SetStatus(ctx context.Context, id string, from,
 		Where("id = ? AND status = ?", id, from).
 		Updates(map[string]any{"status": to, "updated_at": gorm.Expr("now()")})
 	return res.RowsAffected, res.Error
+}
+
+// UpsertTurns inserts the batch, skipping positions that already exist so a
+// retried finalize batch is a no-op. Returns the number of rows inserted.
+func (r *conversationRepository) UpsertTurns(ctx context.Context, conversationID string, turns []*models.ConversationTurn) (int, error) {
+	if _, err := parseID(conversationID, "conversationId"); err != nil {
+		return 0, err
+	}
+	if len(turns) == 0 {
+		return 0, nil
+	}
+	res := r.db.WithContext(ctx).
+		Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "conversation_id"}, {Name: "position"}},
+			DoNothing: true,
+		}).
+		Create(&turns)
+	if res.Error != nil {
+		return 0, res.Error
+	}
+	return int(res.RowsAffected), res.Error
+}
+
+func (r *conversationRepository) ListTurns(ctx context.Context, conversationID string) ([]*models.ConversationTurn, error) {
+	if _, err := parseID(conversationID, "conversationId"); err != nil {
+		return nil, err
+	}
+	var turns []*models.ConversationTurn
+	if err := r.db.WithContext(ctx).
+		Where("conversation_id = ?", conversationID).
+		Order("position ASC").
+		Find(&turns).Error; err != nil {
+		return nil, err
+	}
+	return turns, nil
+}
+
+func (r *conversationRepository) GetTurnByID(ctx context.Context, turnID string) (*models.ConversationTurn, error) {
+	if _, err := parseID(turnID, "turnId"); err != nil {
+		return nil, err
+	}
+	var turn models.ConversationTurn
+	if err := r.db.WithContext(ctx).First(&turn, "id = ?", turnID).Error; err != nil {
+		return nil, err
+	}
+	return &turn, nil
+}
+
+func (r *conversationRepository) GetTurnByPosition(ctx context.Context, conversationID string, position int) (*models.ConversationTurn, error) {
+	if _, err := parseConversationID(conversationID); err != nil {
+		return nil, err
+	}
+	var turn models.ConversationTurn
+	if err := r.db.WithContext(ctx).First(&turn, "conversation_id = ? AND position = ?", conversationID, position).Error; err != nil {
+		return nil, err
+	}
+	return &turn, nil
 }
 
 func (r *conversationRepository) SetEnded(ctx context.Context, id string, durationSec *int) (int64, error) {

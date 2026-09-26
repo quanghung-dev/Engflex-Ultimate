@@ -39,6 +39,7 @@ export * from './lessons-requests.ts';
 export * from './lessons-responses.ts';
 export * from './personas-requests.ts';
 export * from './personas-responses.ts';
+export * from './scenarios-requests.ts';
 export * from './conversations-requests.ts';
 export * from './conversations-responses.ts';
 export * from './vocabulary-requests.ts';

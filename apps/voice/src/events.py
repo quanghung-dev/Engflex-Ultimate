@@ -19,7 +19,9 @@ from pipecat.processors.frame_processor import FrameDirection
 from pipecat.transports.base_transport import BaseTransport
 
 from clients.go_callbacks import finalize_session
+from clients.go_turns import post_turn_batch
 from schemas import RunnerBody
+from turns import TurnCollector
 
 
 def get_custom_error_message(error: str, service_name: str = "Service") -> str:
@@ -38,9 +40,12 @@ def get_custom_error_message(error: str, service_name: str = "Service") -> str:
 def register_event_handlers(
     worker: PipelineWorker,
     transport: BaseTransport,
+    user_aggregator,
+    assistant_aggregator,
     *,
     body: RunnerBody,
     start_time: float,
+    collector: TurnCollector,
 ) -> None:
     timer_handle: dict[str, asyncio.Task] = {}
 
@@ -69,19 +74,18 @@ def register_event_handlers(
 
     @worker.event_handler("on_pipeline_error")
     async def on_pipeline_error(_worker: PipelineWorker, frame):
-        error_text = (
-            frame.error if isinstance(frame, ErrorFrame) else str(frame)
-        )
+        error_text = frame.error if isinstance(frame, ErrorFrame) else str(frame)
         # Transient blips (e.g. a single TTS context completing with no
         # audio on cold start) arrive with fatal=False and recover on their
         # own — pipecat only marks a processor unusable after repeated
         # ones. Ending the session here killed sessions that had already
         # recovered, so non-fatal frames are logged and left alone; only
         # fatal frames surface to the client and end the pipeline.
+        # Note: the RTVI processor still forwards every ErrorFrame to the
+        # client, including these non-fatal ones — the frontend's error
+        # listener ignores fatal:false and only modals on fatal/unknown.
         if isinstance(frame, ErrorFrame) and not frame.fatal:
-            logger.warning(
-                "transient pipeline error; session continues", error=error_text
-            )
+            logger.warning("transient pipeline error; session continues", error=error_text)
             return
         message = get_custom_error_message(error_text)
         logger.error("pipeline error", error=error_text, message=message)
@@ -90,7 +94,34 @@ def register_event_handlers(
         # so on_pipeline_finished still finalizes the session.
         await worker.queue_frames([ErrorFrame(message), EndWorkerFrame()])
 
+    @user_aggregator.event_handler("on_user_turn_message_added")
+    async def on_user_turn(_aggregator, message) -> None:
+        # message.content is ALWAYS populated here. Do NOT use
+        # on_user_turn_stopped for text: its content is None in realtime mode.
+        # User turns take the default was_interrupted=False: the user-side
+        # message type has no interruption field, and consecutive fragments
+        # already merge in the collector.
+        # Live upsert so the transcript (and Analyze buttons) track the
+        # session in real time. Fire-and-forget: the finalize batch covers
+        # gaps and the idempotent upsert absorbs duplicates.
+        if (record := collector.add_user_text(message.content)) is not None:
+            asyncio.create_task(post_turn_batch(body.conversationId, [record]))
+
+    @assistant_aggregator.event_handler("on_assistant_turn_stopped")
+    async def on_assistant_turn(_aggregator, message) -> None:
+        # message.content may be empty on a pre-token interruption;
+        # message.interrupted carries the flag (no separate frame watch).
+        # InterruptionFrame exists in pipecat.frames.frames, but the plan's
+        # "StartInterruptionFrame" does not -- verified zero matches in 1.11.0.
+        if (
+            record := collector.add_bot_text(message.content, was_interrupted=message.interrupted)
+        ) is not None:
+            asyncio.create_task(post_turn_batch(body.conversationId, [record]))
+
     @worker.event_handler("on_pipeline_finished")
     async def on_pipeline_finished(_worker: PipelineWorker, _frame):
+        records = collector.records()
+        if records:
+            await post_turn_batch(body.conversationId, records)
         duration = int(time.time() - start_time)
         await finalize_session(body.conversationId, duration)

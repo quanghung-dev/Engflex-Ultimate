@@ -10,14 +10,43 @@ import (
 	"time"
 
 	"engflex-api/config"
+	"engflex-api/internal/common/enums"
 	"engflex-api/internal/modules/conversations/dtos/responses"
 )
 
-// VoiceSessionBody is the per-session payload the engine parses.
+// VoiceSessionBody is the per-session payload the engine parses. Persona,
+// Scenario, and Learner are structured prompt inputs; the engine owns the
+// template (spec D1). All three stay nil for free talk.
 type VoiceSessionBody struct {
-	UserID         string `json:"userId"`
-	ConversationID string `json:"conversationId"`
-	MaxDuration    int    `json:"maxDuration"`
+	UserID         string             `json:"userId"`
+	ConversationID string             `json:"conversationId"`
+	MaxDuration    int                `json:"maxDuration"`
+	Persona        *VoicePersonaBody  `json:"persona,omitempty"`
+	Scenario       *VoiceScenarioBody `json:"scenario,omitempty"`
+	Learner        *VoiceLearnerBody  `json:"learner,omitempty"`
+}
+
+// VoicePersonaBody mirrors the engine's PersonaBody.
+type VoicePersonaBody struct {
+	Name        string `json:"name"`
+	RoleTitle   string `json:"roleTitle"`
+	Personality string `json:"personality,omitempty"`
+	Style       string `json:"style,omitempty"`
+	Objective   string `json:"objective,omitempty"`
+}
+
+// VoiceScenarioBody mirrors the engine's ScenarioBody.
+type VoiceScenarioBody struct {
+	Title     string `json:"title"`
+	Objective string `json:"objective,omitempty"`
+	CEFRLevel string `json:"cefrLevel,omitempty"`
+}
+
+// VoiceLearnerBody mirrors the engine's LearnerBody. P2 sends nil and lets
+// the engine default to B1; the profiles module is not wired yet.
+type VoiceLearnerBody struct {
+	Level string   `json:"level"`
+	Goals []string `json:"goals,omitempty"`
 }
 
 // StartRequest mirrors the Pipecat runner /start body.
@@ -33,26 +62,90 @@ type StartResponse struct {
 	ICEConfig *responses.IceConfig `json:"iceConfig,omitempty"`
 }
 
+// AnalyzeTurnRequest is the per-turn analysis payload. It carries the turn
+// text and the prior turns, and deliberately nothing else: the conversation
+// context already expresses the topic, and "is this correct English" does not
+// vary by CEFR level (spec D18 rationale).
+type AnalyzeTurnRequest struct {
+	ConversationID string
+	TurnID         string
+	Text           string
+	Context        []ContextTurn
+}
+
+// ContextTurn is one prior transcript line supplied as analysis context.
+type ContextTurn struct {
+	Role enums.TurnRole `json:"role"`
+	Text string         `json:"text"`
+}
+
+// AnalyzeTurnResponse carries the engine's feedback object verbatim.
+type AnalyzeTurnResponse struct {
+	Feedback json.RawMessage `json:"feedback"`
+}
+
 // VoiceClient talks to the Python engine (dev runner or P3 supervisor).
 type VoiceClient interface {
 	Start(ctx context.Context, req StartRequest) (*StartResponse, error)
 	Offer(ctx context.Context, engineSessionID, method string, body []byte) ([]byte, int, error)
+	AnalyzeTurn(ctx context.Context, req AnalyzeTurnRequest) (*AnalyzeTurnResponse, error)
 }
 
 type httpVoiceClient struct {
-	baseURL      string
-	http         *http.Client
-	startTimeout time.Duration
-	offerTimeout time.Duration
+	baseURL        string
+	http           *http.Client
+	startTimeout   time.Duration
+	offerTimeout   time.Duration
+	analyzeTimeout time.Duration
 }
 
 func NewHTTPVoiceClient(cfg config.VoiceConfig) VoiceClient {
 	return &httpVoiceClient{
-		baseURL:      cfg.ServiceURL,
-		http:         &http.Client{},
-		startTimeout: cfg.StartTimeout,
-		offerTimeout: cfg.OfferTimeout,
+		baseURL:        cfg.ServiceURL,
+		http:           &http.Client{},
+		startTimeout:   cfg.StartTimeout,
+		offerTimeout:   cfg.OfferTimeout,
+		analyzeTimeout: cfg.AnalyzeTimeout,
 	}
+}
+
+func (c *httpVoiceClient) AnalyzeTurn(ctx context.Context, req AnalyzeTurnRequest) (*AnalyzeTurnResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, c.analyzeTimeout)
+	defer cancel()
+
+	payload, err := json.Marshal(map[string]any{
+		"conversationId": req.ConversationID,
+		"turnId":         req.TurnID,
+		"text":           req.Text,
+		"context":        req.Context,
+	})
+	if err != nil {
+		return nil, err
+	}
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/analyze", bytes.NewReader(payload))
+	if err != nil {
+		return nil, err
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.http.Do(httpReq)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, fmt.Errorf("voice analyze failed: %d", resp.StatusCode)
+	}
+	var out AnalyzeTurnResponse
+	if err := json.Unmarshal(body, &out); err != nil {
+		return nil, err
+	}
+	return &out, nil
 }
 
 func (c *httpVoiceClient) Start(ctx context.Context, req StartRequest) (*StartResponse, error) {

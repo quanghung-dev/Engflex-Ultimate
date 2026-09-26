@@ -232,6 +232,216 @@ func (_c *MockConversationRepository_GetByID_Call) RunAndReturn(run func(ctx con
 	return _c
 }
 
+// GetTurnByID provides a mock function for the type MockConversationRepository
+func (_mock *MockConversationRepository) GetTurnByID(ctx context.Context, turnID string) (*models.ConversationTurn, error) {
+	ret := _mock.Called(ctx, turnID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetTurnByID")
+	}
+
+	var r0 *models.ConversationTurn
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*models.ConversationTurn, error)); ok {
+		return returnFunc(ctx, turnID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *models.ConversationTurn); ok {
+		r0 = returnFunc(ctx, turnID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.ConversationTurn)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, turnID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockConversationRepository_GetTurnByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetTurnByID'
+type MockConversationRepository_GetTurnByID_Call struct {
+	*mock.Call
+}
+
+// GetTurnByID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - turnID string
+func (_e *MockConversationRepository_Expecter) GetTurnByID(ctx any, turnID any) *MockConversationRepository_GetTurnByID_Call {
+	return &MockConversationRepository_GetTurnByID_Call{Call: _e.mock.On("GetTurnByID", ctx, turnID)}
+}
+
+func (_c *MockConversationRepository_GetTurnByID_Call) Run(run func(ctx context.Context, turnID string)) *MockConversationRepository_GetTurnByID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockConversationRepository_GetTurnByID_Call) Return(conversationTurn *models.ConversationTurn, err error) *MockConversationRepository_GetTurnByID_Call {
+	_c.Call.Return(conversationTurn, err)
+	return _c
+}
+
+func (_c *MockConversationRepository_GetTurnByID_Call) RunAndReturn(run func(ctx context.Context, turnID string) (*models.ConversationTurn, error)) *MockConversationRepository_GetTurnByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetTurnByPosition provides a mock function for the type MockConversationRepository
+func (_mock *MockConversationRepository) GetTurnByPosition(ctx context.Context, conversationID string, position int) (*models.ConversationTurn, error) {
+	ret := _mock.Called(ctx, conversationID, position)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetTurnByPosition")
+	}
+
+	var r0 *models.ConversationTurn
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, int) (*models.ConversationTurn, error)); ok {
+		return returnFunc(ctx, conversationID, position)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, int) *models.ConversationTurn); ok {
+		r0 = returnFunc(ctx, conversationID, position)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.ConversationTurn)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, int) error); ok {
+		r1 = returnFunc(ctx, conversationID, position)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockConversationRepository_GetTurnByPosition_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetTurnByPosition'
+type MockConversationRepository_GetTurnByPosition_Call struct {
+	*mock.Call
+}
+
+// GetTurnByPosition is a helper method to define mock.On call
+//   - ctx context.Context
+//   - conversationID string
+//   - position int
+func (_e *MockConversationRepository_Expecter) GetTurnByPosition(ctx any, conversationID any, position any) *MockConversationRepository_GetTurnByPosition_Call {
+	return &MockConversationRepository_GetTurnByPosition_Call{Call: _e.mock.On("GetTurnByPosition", ctx, conversationID, position)}
+}
+
+func (_c *MockConversationRepository_GetTurnByPosition_Call) Run(run func(ctx context.Context, conversationID string, position int)) *MockConversationRepository_GetTurnByPosition_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 int
+		if args[2] != nil {
+			arg2 = args[2].(int)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockConversationRepository_GetTurnByPosition_Call) Return(conversationTurn *models.ConversationTurn, err error) *MockConversationRepository_GetTurnByPosition_Call {
+	_c.Call.Return(conversationTurn, err)
+	return _c
+}
+
+func (_c *MockConversationRepository_GetTurnByPosition_Call) RunAndReturn(run func(ctx context.Context, conversationID string, position int) (*models.ConversationTurn, error)) *MockConversationRepository_GetTurnByPosition_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListTurns provides a mock function for the type MockConversationRepository
+func (_mock *MockConversationRepository) ListTurns(ctx context.Context, conversationID string) ([]*models.ConversationTurn, error) {
+	ret := _mock.Called(ctx, conversationID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListTurns")
+	}
+
+	var r0 []*models.ConversationTurn
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) ([]*models.ConversationTurn, error)); ok {
+		return returnFunc(ctx, conversationID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) []*models.ConversationTurn); ok {
+		r0 = returnFunc(ctx, conversationID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.ConversationTurn)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, conversationID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockConversationRepository_ListTurns_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListTurns'
+type MockConversationRepository_ListTurns_Call struct {
+	*mock.Call
+}
+
+// ListTurns is a helper method to define mock.On call
+//   - ctx context.Context
+//   - conversationID string
+func (_e *MockConversationRepository_Expecter) ListTurns(ctx any, conversationID any) *MockConversationRepository_ListTurns_Call {
+	return &MockConversationRepository_ListTurns_Call{Call: _e.mock.On("ListTurns", ctx, conversationID)}
+}
+
+func (_c *MockConversationRepository_ListTurns_Call) Run(run func(ctx context.Context, conversationID string)) *MockConversationRepository_ListTurns_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockConversationRepository_ListTurns_Call) Return(conversationTurns []*models.ConversationTurn, err error) *MockConversationRepository_ListTurns_Call {
+	_c.Call.Return(conversationTurns, err)
+	return _c
+}
+
+func (_c *MockConversationRepository_ListTurns_Call) RunAndReturn(run func(ctx context.Context, conversationID string) ([]*models.ConversationTurn, error)) *MockConversationRepository_ListTurns_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // SetEnded provides a mock function for the type MockConversationRepository
 func (_mock *MockConversationRepository) SetEnded(ctx context.Context, id string, durationSec *int) (int64, error) {
 	ret := _mock.Called(ctx, id, durationSec)
@@ -456,6 +666,78 @@ func (_c *MockConversationRepository_SetStatus_Call) Return(n int64, err error) 
 }
 
 func (_c *MockConversationRepository_SetStatus_Call) RunAndReturn(run func(ctx context.Context, id string, from enums.ConversationStatus, to enums.ConversationStatus) (int64, error)) *MockConversationRepository_SetStatus_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpsertTurns provides a mock function for the type MockConversationRepository
+func (_mock *MockConversationRepository) UpsertTurns(ctx context.Context, conversationID string, turns []*models.ConversationTurn) (int, error) {
+	ret := _mock.Called(ctx, conversationID, turns)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpsertTurns")
+	}
+
+	var r0 int
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []*models.ConversationTurn) (int, error)); ok {
+		return returnFunc(ctx, conversationID, turns)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []*models.ConversationTurn) int); ok {
+		r0 = returnFunc(ctx, conversationID, turns)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, []*models.ConversationTurn) error); ok {
+		r1 = returnFunc(ctx, conversationID, turns)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockConversationRepository_UpsertTurns_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpsertTurns'
+type MockConversationRepository_UpsertTurns_Call struct {
+	*mock.Call
+}
+
+// UpsertTurns is a helper method to define mock.On call
+//   - ctx context.Context
+//   - conversationID string
+//   - turns []*models.ConversationTurn
+func (_e *MockConversationRepository_Expecter) UpsertTurns(ctx any, conversationID any, turns any) *MockConversationRepository_UpsertTurns_Call {
+	return &MockConversationRepository_UpsertTurns_Call{Call: _e.mock.On("UpsertTurns", ctx, conversationID, turns)}
+}
+
+func (_c *MockConversationRepository_UpsertTurns_Call) Run(run func(ctx context.Context, conversationID string, turns []*models.ConversationTurn)) *MockConversationRepository_UpsertTurns_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 []*models.ConversationTurn
+		if args[2] != nil {
+			arg2 = args[2].([]*models.ConversationTurn)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockConversationRepository_UpsertTurns_Call) Return(n int, err error) *MockConversationRepository_UpsertTurns_Call {
+	_c.Call.Return(n, err)
+	return _c
+}
+
+func (_c *MockConversationRepository_UpsertTurns_Call) RunAndReturn(run func(ctx context.Context, conversationID string, turns []*models.ConversationTurn) (int, error)) *MockConversationRepository_UpsertTurns_Call {
 	_c.Call.Return(run)
 	return _c
 }

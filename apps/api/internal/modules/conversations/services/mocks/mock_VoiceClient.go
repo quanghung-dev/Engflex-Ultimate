@@ -47,6 +47,74 @@ func (_m *MockVoiceClient) EXPECT() *MockVoiceClient_Expecter {
 	return &MockVoiceClient_Expecter{mock: &_m.Mock}
 }
 
+// AnalyzeTurn provides a mock function for the type MockVoiceClient
+func (_mock *MockVoiceClient) AnalyzeTurn(ctx context.Context, req services.AnalyzeTurnRequest) (*services.AnalyzeTurnResponse, error) {
+	ret := _mock.Called(ctx, req)
+
+	if len(ret) == 0 {
+		panic("no return value specified for AnalyzeTurn")
+	}
+
+	var r0 *services.AnalyzeTurnResponse
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, services.AnalyzeTurnRequest) (*services.AnalyzeTurnResponse, error)); ok {
+		return returnFunc(ctx, req)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, services.AnalyzeTurnRequest) *services.AnalyzeTurnResponse); ok {
+		r0 = returnFunc(ctx, req)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*services.AnalyzeTurnResponse)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, services.AnalyzeTurnRequest) error); ok {
+		r1 = returnFunc(ctx, req)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockVoiceClient_AnalyzeTurn_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AnalyzeTurn'
+type MockVoiceClient_AnalyzeTurn_Call struct {
+	*mock.Call
+}
+
+// AnalyzeTurn is a helper method to define mock.On call
+//   - ctx context.Context
+//   - req services.AnalyzeTurnRequest
+func (_e *MockVoiceClient_Expecter) AnalyzeTurn(ctx any, req any) *MockVoiceClient_AnalyzeTurn_Call {
+	return &MockVoiceClient_AnalyzeTurn_Call{Call: _e.mock.On("AnalyzeTurn", ctx, req)}
+}
+
+func (_c *MockVoiceClient_AnalyzeTurn_Call) Run(run func(ctx context.Context, req services.AnalyzeTurnRequest)) *MockVoiceClient_AnalyzeTurn_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 services.AnalyzeTurnRequest
+		if args[1] != nil {
+			arg1 = args[1].(services.AnalyzeTurnRequest)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockVoiceClient_AnalyzeTurn_Call) Return(analyzeTurnResponse *services.AnalyzeTurnResponse, err error) *MockVoiceClient_AnalyzeTurn_Call {
+	_c.Call.Return(analyzeTurnResponse, err)
+	return _c
+}
+
+func (_c *MockVoiceClient_AnalyzeTurn_Call) RunAndReturn(run func(ctx context.Context, req services.AnalyzeTurnRequest) (*services.AnalyzeTurnResponse, error)) *MockVoiceClient_AnalyzeTurn_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Offer provides a mock function for the type MockVoiceClient
 func (_mock *MockVoiceClient) Offer(ctx context.Context, engineSessionID string, method string, body []byte) ([]byte, int, error) {
 	ret := _mock.Called(ctx, engineSessionID, method, body)

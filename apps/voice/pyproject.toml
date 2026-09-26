@@ -8,10 +8,17 @@ dependencies = [
   "pydantic-settings>=2.4",
   "loguru>=0.7.2",
   "aiohttp>=3.10",
+  # Imported at module level by src/analysis.py; transitive-only today via
+  # pipecat-ai, so pin it directly instead of relying on the resolver.
+  "openai>=3.19.2",
 ]
 
 [dependency-groups]
-dev = ["pytest>=8.3"]
+dev = ["pytest>=8.3", "ruff>=0.14.0"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
 
 # Transient upstream defect (2026-09): google-crc32c 1.9.0 ships macOS-only
 # wheels (no sdist, no manylinux). Pulled in via aiortc (pipecat webrtc

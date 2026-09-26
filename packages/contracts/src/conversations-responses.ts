@@ -5,13 +5,16 @@
 
 /**
  * Turn is one transcript line. The speaker display name is derived by
- * joining scenario -> persona, not stored on the turn.
+ * joining scenario -> persona, not stored on the turn. Feedback is attached
+ * after the read by matching feedbacks rows on subject id.
  */
 export interface Turn {
   id: string;
   position: number /* int */;
   role: TurnRole;
   text: string;
+  wasInterrupted: boolean;
+  feedback?: TurnFeedback;
   createdAt: string /* RFC3339 */;
 }
 /**
@@ -52,16 +55,6 @@ export interface WordMark {
   status: WordMarkStatus;
 }
 /**
- * PhonemeMark is one pronunciation diagnostic card (/θ/ in "both").
- */
-export interface PhonemeMark {
-  ipa: string;
-  word: string;
-  feature: string;
-  accuracyPct: number /* int */;
-  label: string;
-}
-/**
  * PhraseUpgrade suggests replacing original with one of replacements
  * ("primary concern" -> "decisive constraint").
  */
@@ -71,14 +64,57 @@ export interface PhraseUpgrade {
   category: string;
 }
 /**
- * TurnFeedback mirrors conversation_turns.feedback (jsonb).
+ * PhonemeMark is one pronunciation diagnostic card (/θ/ in "both"). It only
+ * ever appears inside SpeechFeedback: phoneme scores are an acoustic
+ * measurement with no source in P2 (spec D11), so the contract does not ask
+ * for them and a model cannot return a number we would have to strip.
+ */
+export interface PhonemeMark {
+  ipa: string;
+  word: string;
+  feature: string;
+  accuracyPct: number /* int */;
+  label: string;
+}
+/**
+ * TurnFeedback is the per-subject coaching payload. There is no `type`
+ * discriminator and no top-level `phonemes`: the subject-to-product mapping
+ * is a product invariant (spec D18), and phoneme scores are an acoustic
+ * measurement with no source in P2 (D11).
  */
 export interface TurnFeedback {
   annotated: string;
   marks: WordMark[];
-  phonemes: PhonemeMark[];
   upgrades: PhraseUpgrade[];
   tip: string;
+  /**
+   * Speech is reserved for a P3 provider. Always absent in P2.
+   */
+  speech?: SpeechFeedback;
+}
+/**
+ * SpeechFeedback is the acoustic assessment block produced by a provider that
+ * takes audio, not a transcript. It exists so the wire contract does not
+ * change when speech scoring arrives.
+ */
+export interface SpeechFeedback {
+  provider: string;
+  phonemes: PhonemeMark[];
+  fluency?: SpeechScore;
+  prosody?: SpeechScore;
+  overall?: SpeechScore;
+  /**
+   * Transcript is the provider's own recognition result, which may differ
+   * from the conversational STT text. Absent until a provider exists.
+   */
+  transcript?: string;
+}
+/**
+ * SpeechScore is one bounded assessment dimension.
+ */
+export interface SpeechScore {
+  score: number /* int */;
+  label: string;
 }
 
 //////////

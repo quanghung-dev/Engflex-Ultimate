@@ -7,13 +7,16 @@ import (
 )
 
 // Turn is one transcript line. The speaker display name is derived by
-// joining scenario -> persona, not stored on the turn.
+// joining scenario -> persona, not stored on the turn. Feedback is attached
+// after the read by matching feedbacks rows on subject id.
 type Turn struct {
-	ID        string         `json:"id"`
-	Position  int            `json:"position"`
-	Role      enums.TurnRole `json:"role"`
-	Text      string         `json:"text"`
-	CreatedAt time.Time      `json:"createdAt"`
+	ID             string         `json:"id"`
+	Position       int            `json:"position"`
+	Role           enums.TurnRole `json:"role"`
+	Text           string         `json:"text"`
+	WasInterrupted bool           `json:"wasInterrupted"`
+	Feedback       *TurnFeedback  `json:"feedback,omitempty"`
+	CreatedAt      time.Time      `json:"createdAt"`
 }
 
 // Conversation is a voice session with its transcript.

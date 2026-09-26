@@ -14,6 +14,7 @@ from pipecat.frames.frames import EndWorkerFrame, ErrorFrame
 
 from events import register_event_handlers
 from schemas import RunnerBody
+from turns import TurnCollector
 
 
 class _FakeEndpoint:
@@ -39,8 +40,11 @@ def _registered_worker():
     register_event_handlers(
         worker,
         _FakeEndpoint(),
+        _FakeEndpoint(),
+        _FakeEndpoint(),
         body=RunnerBody(userId="u1", conversationId="c1", maxDuration=300),
         start_time=0.0,
+        collector=TurnCollector(),
     )
     return worker
 

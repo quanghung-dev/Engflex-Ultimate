@@ -12,4 +12,8 @@ const (
 	TermMaxLength    = 255
 	MeaningMaxLength = 1000
 	TextMaxLength    = 10000
+
+	// MaxTurnsPerBatch bounds one engine turn batch. A 45-minute session stays
+	// well under 500 turns; the cap is a guard, not a limit.
+	MaxTurnsPerBatch = 500
 )

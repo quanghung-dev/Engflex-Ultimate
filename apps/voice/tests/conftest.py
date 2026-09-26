@@ -26,5 +26,10 @@ os.environ.update(
         "MAX_DURATION_SEC": "300",
         "IDLE_TIMEOUT_SEC": "300",
         "SENTRY_DSN": "",
+        "OPENCODE_USER_AGENT": "engflex-voice/0.1",
+        "TURNS_POST_TIMEOUT_SEC": "30",
+        "ANALYZE_TIMEOUT_SEC": "60",
+        "ANALYZE_SESSION_PREFIX": "engflex-analyze",
+        "ANALYSIS_STRUCTURED_OUTPUT": "True",
     }
 )

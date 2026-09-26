@@ -19,6 +19,8 @@ type VoiceConfig struct {
 	StartTimeout time.Duration
 	// OfferTimeout bounds the engine offer/ICE calls.
 	OfferTimeout time.Duration
+	// AnalyzeTimeout bounds the engine /analyze call (one LLM pass).
+	AnalyzeTimeout time.Duration
 }
 
 // LoadVoiceConfig reads the voice configuration from the environment.
@@ -29,5 +31,6 @@ func LoadVoiceConfig() VoiceConfig {
 		MaxDurationSec: utils.GetEnvInt("VOICE_MAX_DURATION_SEC", 300),
 		StartTimeout:   time.Duration(utils.GetEnvInt("VOICE_START_TIMEOUT_MS", 15000)) * time.Millisecond,
 		OfferTimeout:   time.Duration(utils.GetEnvInt("VOICE_OFFER_TIMEOUT_MS", 10000)) * time.Millisecond,
+		AnalyzeTimeout: time.Duration(utils.GetEnvInt("VOICE_ANALYZE_TIMEOUT_MS", 60000)) * time.Millisecond,
 	}
 }

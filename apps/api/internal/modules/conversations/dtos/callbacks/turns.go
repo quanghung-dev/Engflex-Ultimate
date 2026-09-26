@@ -1,0 +1,18 @@
+package callbacks
+
+import "engflex-api/internal/common/enums"
+
+// IngestTurns is the engine's finalize-time turn batch. Every field is typed
+// and owned by Go: audio (D12) and word metadata (D14) are both gone, so
+// nothing here has an unknown shape.
+type IngestTurns struct {
+	Turns []IngestTurn `json:"turns" binding:"required,min=1,max=500,dive"`
+}
+
+// IngestTurn is one transcript line from the engine.
+type IngestTurn struct {
+	Position       int            `json:"position" binding:"required,min=1"`
+	Role           enums.TurnRole `json:"role" binding:"required,oneof=user ai"`
+	Text           string         `json:"text" binding:"required,max=10000"`
+	WasInterrupted bool           `json:"wasInterrupted"`
+}

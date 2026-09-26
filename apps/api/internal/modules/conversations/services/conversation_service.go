@@ -13,6 +13,7 @@ import (
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories"
 	"engflex-api/internal/logger"
+	"engflex-api/internal/modules/conversations/dtos/callbacks"
 	"engflex-api/internal/modules/conversations/dtos/requests"
 	"engflex-api/internal/modules/conversations/dtos/responses"
 )
@@ -24,11 +25,14 @@ type ConversationService struct {
 	conversations repositories.ConversationRepository
 	voice         VoiceClient
 	maxDuration   int
+	feedbacks     repositories.FeedbackRepository
+	scenarios     repositories.ScenarioRepository
+	personas      repositories.PersonaRepository
 }
 
 // NewConversationService builds the service over repository + engine interfaces.
-func NewConversationService(conversations repositories.ConversationRepository, voice VoiceClient, maxDuration int) *ConversationService {
-	return &ConversationService{conversations: conversations, voice: voice, maxDuration: maxDuration}
+func NewConversationService(conversations repositories.ConversationRepository, voice VoiceClient, maxDuration int, feedbacks repositories.FeedbackRepository, scenarios repositories.ScenarioRepository, personas repositories.PersonaRepository) *ConversationService {
+	return &ConversationService{conversations: conversations, voice: voice, maxDuration: maxDuration, feedbacks: feedbacks, scenarios: scenarios, personas: personas}
 }
 
 // Create provisions a pending conversation. The close of the caller's other
@@ -75,6 +79,7 @@ func (s *ConversationService) Start(ctx context.Context, userID, id string) (*mo
 		}
 	}
 
+	persona, scenario := s.promptInputs(ctx, conv)
 	res, err := s.voice.Start(ctx, StartRequest{
 		Transport:               "webrtc",
 		EnableDefaultICEServers: true,
@@ -82,6 +87,8 @@ func (s *ConversationService) Start(ctx context.Context, userID, id string) (*mo
 			UserID:         userID,
 			ConversationID: conv.ID,
 			MaxDuration:    s.maxDuration,
+			Persona:        persona,
+			Scenario:       scenario,
 		},
 	})
 	if err != nil {
@@ -203,6 +210,85 @@ func (s *ConversationService) Finalize(ctx context.Context, id string, durationS
 	}
 	slog.InfoContext(ctx, "conversation finalized", "conversationID", id, "durationSec", durationSec)
 	return nil
+}
+
+// IngestTurns stores the engine's finalize-time batch. Positions are made
+// idempotent by the repository's ON CONFLICT DO NOTHING upsert, so a retried
+// batch cannot duplicate turns.
+func (s *ConversationService) IngestTurns(ctx context.Context, id string, req callbacks.IngestTurns) (int, error) {
+	if len(req.Turns) == 0 {
+		return 0, common.BadRequest("turns must not be empty")
+	}
+	if len(req.Turns) > common.MaxTurnsPerBatch {
+		return 0, common.BadRequest("too many turns in one batch")
+	}
+	if _, err := s.conversations.GetByID(ctx, id); err != nil {
+		appErr := common.FromDBError(err, "conversation")
+		logger.Report(ctx, "ingest turns: conversation lookup failed", appErr, "conversationID", id)
+		return 0, appErr
+	}
+
+	turns := make([]*models.ConversationTurn, 0, len(req.Turns))
+	for _, in := range req.Turns {
+		turns = append(turns, &models.ConversationTurn{
+			ConversationID: id,
+			Position:       in.Position,
+			Role:           in.Role,
+			Text:           in.Text,
+			WasInterrupted: in.WasInterrupted,
+		})
+	}
+
+	stored, err := s.conversations.UpsertTurns(ctx, id, turns)
+	if err != nil {
+		appErr := common.FromDBError(err, "conversation turn")
+		logger.Report(ctx, "ingest turns failed", appErr, "conversationID", id)
+		return 0, appErr
+	}
+	slog.InfoContext(ctx, "turns ingested", "conversationID", id, "received", len(turns), "stored", stored)
+	return stored, nil
+}
+
+// promptInputs resolves the conversation's scenario, persona, and learner for
+// the session prompt. A missing scenario or persona is not fatal: log a
+// warning and fall back to the engine's generic free-talk prompt, because a
+// learner who clicked through should still be able to talk.
+func (s *ConversationService) promptInputs(ctx context.Context, conv *models.Conversation) (*VoicePersonaBody, *VoiceScenarioBody) {
+	if conv.ScenarioID == nil || *conv.ScenarioID == "" {
+		return nil, nil
+	}
+	scenario, err := s.scenarios.GetByID(ctx, *conv.ScenarioID)
+	if err != nil || scenario == nil {
+		logger.Report(ctx, "resolve scenario failed", common.NotFound("scenario not found"), "scenarioID", *conv.ScenarioID)
+		return nil, nil
+	}
+	out := &VoiceScenarioBody{
+		Title:     scenario.Title,
+		Objective: scenario.Objective,
+		CEFRLevel: string(scenario.CEFRLevel),
+	}
+	if scenario.PersonaID == nil || *scenario.PersonaID == "" {
+		return nil, out
+	}
+	persona, err := s.personas.GetByID(ctx, *scenario.PersonaID)
+	if err != nil || persona == nil {
+		logger.Report(ctx, "resolve persona failed", common.NotFound("persona not found"), "personaID", *scenario.PersonaID)
+		return nil, out
+	}
+	return &VoicePersonaBody{
+		Name:        persona.Name,
+		RoleTitle:   persona.RoleTitle,
+		Personality: deref(persona.Personality),
+		Style:       deref(persona.Style),
+		Objective:   deref(persona.Objective),
+	}, out
+}
+
+func deref(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
 }
 
 func (s *ConversationService) getOwned(ctx context.Context, userID, id string) (*models.Conversation, error) {
