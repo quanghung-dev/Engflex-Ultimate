@@ -122,8 +122,14 @@ func (r *conversationRepository) SetStatus(ctx context.Context, id string, from,
 	return res.RowsAffected, res.Error
 }
 
-// UpsertTurns inserts the batch, skipping positions that already exist so a
-// retried finalize batch is a no-op. Returns the number of rows inserted.
+// UpsertTurns inserts the batch, keyed on (conversation_id, position) so a
+// retried batch stays idempotent. A position that already exists has its text
+// and interruption flag refreshed rather than skipped: the learner can correct
+// a turn they have already spoken, and the corrected transcript has to replace
+// the misheard one instead of being silently dropped. Role and position are
+// deliberately NOT updated — they are structural, and a changed role at an
+// existing position means the engine and the database disagree about history.
+// Returns the number of rows written.
 func (r *conversationRepository) UpsertTurns(ctx context.Context, conversationID string, turns []*models.ConversationTurn) (int, error) {
 	if _, err := parseID(conversationID, "conversationId"); err != nil {
 		return 0, err
@@ -133,8 +139,10 @@ func (r *conversationRepository) UpsertTurns(ctx context.Context, conversationID
 	}
 	res := r.db.WithContext(ctx).
 		Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: "conversation_id"}, {Name: "position"}},
-			DoNothing: true,
+			Columns: []clause.Column{{Name: "conversation_id"}, {Name: "position"}},
+			DoUpdates: clause.AssignmentColumns([]string{
+				"text", "was_interrupted", "updated_at",
+			}),
 		}).
 		Create(&turns)
 	if res.Error != nil {

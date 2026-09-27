@@ -16,7 +16,7 @@ import (
 
 // VoiceSessionBody is the per-session payload the engine parses. Persona,
 // Scenario, and Learner are structured prompt inputs; the engine owns the
-// template (spec D1). All three stay nil for free talk.
+// template. All three stay nil for free talk.
 type VoiceSessionBody struct {
 	UserID         string             `json:"userId"`
 	ConversationID string             `json:"conversationId"`
@@ -65,7 +65,7 @@ type StartResponse struct {
 // AnalyzeTurnRequest is the per-turn analysis payload. It carries the turn
 // text and the prior turns, and deliberately nothing else: the conversation
 // context already expresses the topic, and "is this correct English" does not
-// vary by CEFR level (spec D18 rationale).
+// vary by CEFR level.
 type AnalyzeTurnRequest struct {
 	ConversationID string
 	TurnID         string
@@ -89,6 +89,10 @@ type VoiceClient interface {
 	Start(ctx context.Context, req StartRequest) (*StartResponse, error)
 	Offer(ctx context.Context, engineSessionID, method string, body []byte) ([]byte, int, error)
 	AnalyzeTurn(ctx context.Context, req AnalyzeTurnRequest) (*AnalyzeTurnResponse, error)
+	// Transcript is the one learner-initiated, session-scoped command. The
+	// engine owns the live transcript and the window state, so Go only checks
+	// ownership and forwards.
+	Transcript(ctx context.Context, conversationID, action, text string) (*responses.TranscriptResult, error)
 }
 
 type httpVoiceClient struct {
@@ -207,4 +211,39 @@ func (c *httpVoiceClient) Offer(ctx context.Context, engineSessionID, method str
 		return nil, 0, err
 	}
 	return respBody, resp.StatusCode, nil
+}
+
+func (c *httpVoiceClient) Transcript(ctx context.Context, conversationID, action, text string) (*responses.TranscriptResult, error) {
+	body, err := json.Marshal(map[string]any{
+		"conversationId": conversationID,
+		"action":         action,
+		"text":           text,
+	})
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancel := context.WithTimeout(ctx, c.analyzeTimeout)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/transcript", bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := c.http.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, &TranscriptStatusError{Path: "/transcript", Status: resp.StatusCode, Body: raw}
+	}
+	var out responses.TranscriptResult
+	if err := json.Unmarshal(raw, &out); err != nil {
+		return nil, err
+	}
+	return &out, nil
 }

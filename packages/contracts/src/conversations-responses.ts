@@ -66,8 +66,8 @@ export interface PhraseUpgrade {
 /**
  * PhonemeMark is one pronunciation diagnostic card (/θ/ in "both"). It only
  * ever appears inside SpeechFeedback: phoneme scores are an acoustic
- * measurement with no source in P2 (spec D11), so the contract does not ask
- * for them and a model cannot return a number we would have to strip.
+ * measurement nothing currently produces, so the contract does not ask for
+ * them and a model cannot return a number we would have to strip.
  */
 export interface PhonemeMark {
   ipa: string;
@@ -79,8 +79,8 @@ export interface PhonemeMark {
 /**
  * TurnFeedback is the per-subject coaching payload. There is no `type`
  * discriminator and no top-level `phonemes`: the subject-to-product mapping
- * is a product invariant (spec D18), and phoneme scores are an acoustic
- * measurement with no source in P2 (D11).
+ * is a product invariant, and phoneme scores are an acoustic measurement
+ * nothing currently produces.
  */
 export interface TurnFeedback {
   annotated: string;
@@ -133,4 +133,33 @@ export interface IceServer {
  */
 export interface IceConfig {
   iceServers: IceServer[];
+}
+
+//////////
+// source: transcript.go
+
+/**
+ * TranscriptCommand is the web-facing request for the correction modal.
+ * The four actions are one state machine on the engine, so they are one
+ * endpoint. The client never names a turn: its row ordinal and the engine's
+ * collector position are separate bookkeeping, so the engine resolves the target
+ * and hands back its own copy of the text.
+ */
+export interface TranscriptCommand {
+  /**
+   * Action is one of review, retake, send, dismiss.
+   */
+  action: string;
+  /**
+   * Text is the learner's correction, used only by send.
+   */
+  text?: string;
+}
+/**
+ * TranscriptResult is the engine's reply: where the window is now, and the
+ * transcript text when the action produced any.
+ */
+export interface TranscriptResult {
+  state: string;
+  text?: string;
 }

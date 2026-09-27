@@ -201,3 +201,35 @@ func (h *ConversationController) AnalyzeTurn(c *gin.Context) {
 	_ = json.Unmarshal(feedback.Payload, &dto)
 	common.OK(c, "turn analyzed", dto)
 }
+
+// Transcript applies one learner-initiated correction command. The engine owns
+// the window and resolves which turn is corrected; Go only proves the
+// conversation is the caller's and forwards.
+//
+// @Summary      Apply a transcript correction command
+// @Description  One endpoint for the correction modal's four actions (review, retake, send, dismiss). The engine owns the window state.
+// @Tags         conversations
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "conversation id"
+// @Param        body body responses.TranscriptCommand true "command"
+// @Success      200 {object} common.ApiResponse{data=responses.TranscriptResult}
+// @Failure      400 {object} common.ApiResponse
+// @Failure      404 {object} common.ApiResponse
+// @Failure      409 {object} common.ApiResponse
+// @Failure      422 {object} common.ApiResponse
+// @Failure      503 {object} common.ApiResponse
+// @Router       /conversations/{id}/transcript [post]
+func (h *ConversationController) Transcript(c *gin.Context) {
+	var req responses.TranscriptCommand
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.Fail(c, common.BadRequest("invalid request body"))
+		return
+	}
+	result, err := h.service.Transcript(c.Request.Context(), middleware.UserID(c), c.Param("id"), req.Action, req.Text)
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	common.OK(c, "transcript command applied", result)
+}

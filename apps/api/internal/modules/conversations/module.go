@@ -31,6 +31,8 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.VoiceConfig) {
 	g.PATCH("/:id/offer", middleware.RequireAuth(), ctl.Offer)
 	g.POST("/:id/end", middleware.RequireAuth(), ctl.End)
 	g.POST("/:id/turns/:position/analyze", middleware.RequireAuth(), ctl.AnalyzeTurn)
+	// One command for the correction modal: the engine owns the window state.
+	g.POST("/:id/transcript", middleware.RequireAuth(), ctl.Transcript)
 
 	cb := controllers.NewVoiceCallbackController(svc)
 	tcb := controllers.NewTurnCallbackController(svc)

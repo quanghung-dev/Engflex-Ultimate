@@ -6,6 +6,7 @@ package mocks
 
 import (
 	"context"
+	"engflex-api/internal/modules/conversations/dtos/responses"
 	"engflex-api/internal/modules/conversations/services"
 
 	mock "github.com/stretchr/testify/mock"
@@ -265,6 +266,86 @@ func (_c *MockVoiceClient_Start_Call) Return(startResponse *services.StartRespon
 }
 
 func (_c *MockVoiceClient_Start_Call) RunAndReturn(run func(ctx context.Context, req services.StartRequest) (*services.StartResponse, error)) *MockVoiceClient_Start_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Transcript provides a mock function for the type MockVoiceClient
+func (_mock *MockVoiceClient) Transcript(ctx context.Context, conversationID string, action string, text string) (*responses.TranscriptResult, error) {
+	ret := _mock.Called(ctx, conversationID, action, text)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Transcript")
+	}
+
+	var r0 *responses.TranscriptResult
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string) (*responses.TranscriptResult, error)); ok {
+		return returnFunc(ctx, conversationID, action, text)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string) *responses.TranscriptResult); ok {
+		r0 = returnFunc(ctx, conversationID, action, text)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*responses.TranscriptResult)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string, string) error); ok {
+		r1 = returnFunc(ctx, conversationID, action, text)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockVoiceClient_Transcript_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Transcript'
+type MockVoiceClient_Transcript_Call struct {
+	*mock.Call
+}
+
+// Transcript is a helper method to define mock.On call
+//   - ctx context.Context
+//   - conversationID string
+//   - action string
+//   - text string
+func (_e *MockVoiceClient_Expecter) Transcript(ctx any, conversationID any, action any, text any) *MockVoiceClient_Transcript_Call {
+	return &MockVoiceClient_Transcript_Call{Call: _e.mock.On("Transcript", ctx, conversationID, action, text)}
+}
+
+func (_c *MockVoiceClient_Transcript_Call) Run(run func(ctx context.Context, conversationID string, action string, text string)) *MockVoiceClient_Transcript_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 string
+		if args[3] != nil {
+			arg3 = args[3].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *MockVoiceClient_Transcript_Call) Return(transcriptResult *responses.TranscriptResult, err error) *MockVoiceClient_Transcript_Call {
+	_c.Call.Return(transcriptResult, err)
+	return _c
+}
+
+func (_c *MockVoiceClient_Transcript_Call) RunAndReturn(run func(ctx context.Context, conversationID string, action string, text string) (*responses.TranscriptResult, error)) *MockVoiceClient_Transcript_Call {
 	_c.Call.Return(run)
 	return _c
 }

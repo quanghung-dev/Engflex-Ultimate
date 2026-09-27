@@ -18,8 +18,8 @@ type PhraseUpgrade struct {
 
 // PhonemeMark is one pronunciation diagnostic card (/θ/ in "both"). It only
 // ever appears inside SpeechFeedback: phoneme scores are an acoustic
-// measurement with no source in P2 (spec D11), so the contract does not ask
-// for them and a model cannot return a number we would have to strip.
+// measurement nothing currently produces, so the contract does not ask for
+// them and a model cannot return a number we would have to strip.
 type PhonemeMark struct {
 	IPA         string `json:"ipa"`
 	Word        string `json:"word"`
@@ -30,8 +30,8 @@ type PhonemeMark struct {
 
 // TurnFeedback is the per-subject coaching payload. There is no `type`
 // discriminator and no top-level `phonemes`: the subject-to-product mapping
-// is a product invariant (spec D18), and phoneme scores are an acoustic
-// measurement with no source in P2 (D11).
+// is a product invariant, and phoneme scores are an acoustic measurement
+// nothing currently produces.
 type TurnFeedback struct {
 	Annotated string          `json:"annotated"`
 	Marks     []WordMark      `json:"marks"`
