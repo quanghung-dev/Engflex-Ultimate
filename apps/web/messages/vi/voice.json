@@ -93,7 +93,19 @@
       "partnerFallback": "Đối tác",
       "analyzing": "Đang phân tích…",
       "analyzeFailed": "Phân tích thất bại. Hãy thử lại.",
-      "reanalyze": "Phân tích lại"
+      "reanalyze": "Phân tích lại",
+      "recovery": {
+        "title": "Nghe có đúng không?",
+        "subtitle": "Chưa gửi gì cả — bạn bấm Gửi mới gửi.",
+        "yourEdit": "Lời bạn sửa",
+        "send": "Gửi",
+        "reviewTranscript": "Xem lại lời thoại",
+        "dismiss": "Bỏ qua",
+        "speakAgain": "Nói lại",
+        "listening": "Đang nghe — nói lại đi...",
+        "sendIt": "Gửi lời này",
+        "heldSubtitle": "Đây là lời vừa nghe được. Gửi đi, hoặc gõ lại ý bạn."
+      }
     }
   }
 }

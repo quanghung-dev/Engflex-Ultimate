@@ -14,6 +14,7 @@ import { DialogueContextBox } from "#/features/dictation/components/dialogue-con
 import { TranscriptionInput } from "#/features/dictation/components/transcription-input";
 import { TranscriptionResultPanel } from "#/features/dictation/components/transcription-result-panel";
 import { PartShell } from "#/features/lessons/components/part-shell";
+import { VoiceBriefCard } from "#/features/lessons/components/voice-brief-card";
 import {
 	getLessonById,
 	getLessonDetail,
@@ -28,7 +29,6 @@ import {
 import { completePart } from "#/features/lessons/store";
 import { PassagePanel } from "#/features/reading/components/passage-panel";
 import { QuestionPanel } from "#/features/reading/components/question-panel";
-import { VoiceBriefCard } from "#/features/voice/components/voice-brief-card";
 import { getScenario } from "#/features/voice/fixtures";
 import { useCreateConversation } from "#/features/voice/queries";
 import { WritingEditorCard } from "#/features/writing/components/writing-editor-card";

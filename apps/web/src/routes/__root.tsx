@@ -8,6 +8,7 @@ import {
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { RouteNotFound } from "#/components/common/error-pages";
 import { Toaster } from "#/components/ui/sonner";
+import { TooltipProvider } from "#/components/ui/tooltip";
 import { m } from "#/paraglide/messages";
 import { getLocale } from "#/paraglide/runtime";
 
@@ -69,7 +70,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			</head>
 			<body className="font-sans antialiased [overflow-wrap:anywhere] selection:bg-primary/15">
 				<ClerkProvider>
-					{children}
+					{/* Radix tooltips need a provider ancestor, and the sidebar's own
+					    provider does not cover the main content. Icon-only buttons
+					    whose only label is a tooltip make this load-bearing. */}
+					<TooltipProvider>{children}</TooltipProvider>
 					<Toaster />
 					<TanStackDevtools
 						config={{

@@ -50,7 +50,8 @@ exactly the stale-schema failure that bit the first run (`relation
 cd apps/web
 pnpm test:e2e            # headless, boots Go API + vite automatically
 pnpm test:e2e:headed     # headed browser (debugging)
-pnpm test:e2e:live       # live engine + fake mic (see below)
+pnpm test:e2e:live       # live engine + fake mic (Analyze flow)
+pnpm test:e2e:recovery   # live engine + fake mic (transcript recovery flow)
 ```
 
 The Go server starts via `webServer` with short voice timeouts
@@ -58,24 +59,41 @@ The Go server starts via `webServer` with short voice timeouts
 real conversations through the API as the signed-in Clerk user and delete
 them afterwards; nothing else in the database is touched.
 
-## Live suite (`test:e2e:live`, `playwright.live.config.ts`)
+## Live suites (`playwright.live.config.ts`, `playwright.recovery.config.ts`)
 
-One test, `voice-live.spec.ts`: a real engine, a real WebRTC session, and a
-real Analyze round trip — fake mic → Deepgram → collector → live turn post →
-Go poll → Analyze button on the live row → engine `/analyze` → diagnostics
-card, with DB assertions that the feedback is keyed by the learner turn's
-UUID at the matching position.
+Two live suites, one shared stack (`e2e/live-stack.ts`) with dedicated ports
+(API 8010, web 3010, engine 7861) and `reuseExistingServer: false`
+everywhere: a dev server on 8000 carries its own `VOICE_SERVICE_URL` and would
+silently make the run prove nothing. Extra prerequisites: `apps/voice/.env`
+with real `STT_API_KEY`/`LLM_API_KEY` and the voice model in `models/`.
 
-Separate config and dedicated ports (API 8010, web 3010, engine 7861) with
-`reuseExistingServer: false` everywhere: a dev server on 8000 carries its own
-`VOICE_SERVICE_URL` and would silently make the run prove nothing. Extra
-prerequisites: `apps/voice/.env` with real `DEEPGRAM`/`OPENAI` keys and the
-Piper voice in `models/`.
+- `voice-live.spec.ts` (`pnpm test:e2e:live`): a real engine, a real WebRTC
+  session, and a real Analyze round trip — fake mic → Deepgram → collector →
+  live turn post → Go poll → Analyze button on the live row → engine
+  `/analyze` → diagnostics card, with DB assertions that the feedback is keyed
+  by the learner turn's UUID at the matching position. Nothing about recovery
+  is forced here, so this suite also proves the correction feature leaves normal
+  turns completely alone.
+- `voice-recovery.spec.ts` (`pnpm test:e2e:recovery`): on-demand transcript
+  correction, driven exactly as a learner drives it — the fake-mic turn commits
+  on its own with **no card** (nothing is forced, so this also proves no signal
+  interrupts the learner mid-sentence) → **Review transcript** opens the card →
+  an edit rewrites that turn *in place* at the same position (DB ground truth)
+  and the panel redraws to match → **Speak again** makes the engine listen while
+  the field stays editable, a spoken attempt becomes the field, a second attempt
+  is accepted, and sending corrects the turn in place again → **Dismiss** closes
+  the window and normal turns resume.
+
+The two configs are now identical: no engine env override exists, because the
+learner is the only trigger. Nothing in the engine decides on the learner's
+behalf that a turn was misheard — a backend uncertainty signal is not a reason
+to interrupt someone mid-sentence — so there is no engine-side switch to force.
 
 Fake mic: Chromium's built-in fake capture is a 440 Hz tone, which STT
 rejects, so the suite feeds `--use-file-for-fake-audio-capture` a WAV
 synthesized offline by `apps/voice/scripts/make_fake_mic_audio.py`
-(Piper, no network), generated into `playwright/.fake-mic/` (gitignored) on
+(a local Piper voice, no network and no key — the engine's own TTS is
+independent of it), generated into `playwright/.fake-mic/` (gitignored) on
 first run. Flag pairing matters: `--use-fake-device-for-media-stream` selects
 the fake device (without it Chrome uses the real mic and the file flag is
 silently ignored — this cost several runs, which transcribed the room:
@@ -157,6 +175,19 @@ script, or the engine's boot path.
 7. **Phase is uncontrolled.** File playback starts at browser launch; the
    session starts ~20 s later. Never assert absolute positions — the
    structural invariant is group ordinal == DB position.
+8. **`process_frame` must call `super()`.** A custom `FrameProcessor` that
+   overrides `process_frame` without `await super().process_frame(frame,
+   direction)` never runs the base `StartFrame` handler, so it never creates
+   its own process task: its input queue is never drained and it silently
+   swallows every frame it is handed. Symptom: STT finals *and* the greeting
+   `LLMRunFrame` vanish with no error anywhere, and audio still arrives (the
+   VAD/STT services upstream keep working). Found by the recovery suite.
+9. **The raw STT text commits on the normal path.** Only the turn under review
+   is rewritten. Later positions are loop audio and are *supposed* to commit, so
+   assert the correction at position 1, never "no turn carries the raw text".
+10. **Barge-in is normal.** The looped fixture keeps "speaking" after a turn
+   ends, so a bot reply can be cut off mid-sentence by the next VAD episode.
+   Assert conversation outcomes in the DB, not transient UI rows.
 
 ## Layout
 
@@ -166,15 +197,19 @@ script, or the engine's boot path.
   `webServer.command` (see above for why it cannot be a setup step).
 - `helpers.ts` — authed API calls via server-minted Clerk JWTs, turn/feedback
   seeding and cleanup over `DATABASE_URL` (`pg`), plus `dbListTurns` /
-  `dbLearnerTurns` read-backs for the live suite.
+  `dbLearnerTurns` read-backs for the live suites.
+- `live-stack.ts` — shared live stack (env loading, ports, DB parts, Chrome
+  flags, `defineLiveConfig`) for both live configs.
 - `live-boundaries.mjs` — boundary report (see Debugging above).
 - `voice-room.spec.ts` — service-fail modal, ended-session review, analyze
   error + seeded feedback card.
 - `voice-live.spec.ts` + `fake-mic.ts` + `playwright.live.config.ts` — the
-  live suite above.
+  live Analyze suite above.
+- `voice-recovery.spec.ts` + `playwright.recovery.config.ts` — the live
+  recovery suite above.
 
 Desktop Chromium only, one worker (serial against the live backend).
 Default suite uses the tone-based fake device
 (`--use-fake-device-for-media-stream` / `--use-fake-ui-for-media-stream`) so
-`initDevicesOnMount` never blocks; the live suite uses the file-based fake
+`initDevicesOnMount` never blocks; both live suites use the file-based fake
 audio capture instead.

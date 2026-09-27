@@ -1,7 +1,7 @@
 import type { TurnFeedback, WordMarkStatus } from "@engflex/contracts";
 import { cn } from "cn";
 import { Lightbulb, Sparkles } from "lucide-react";
-import { Button } from "#/components/ui/button";
+import { SubmitButton } from "#/components/common/submit-button";
 import { m } from "#/paraglide/messages";
 
 const MARK_TONE: Record<WordMarkStatus, string> = {
@@ -25,16 +25,17 @@ export function TurnDiagnosticsCard({
 				<span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
 					{m["voice.room.annotated"]()}
 				</span>
-				<Button
+				<SubmitButton
 					type="button"
 					variant="ghost"
 					size="sm"
-					disabled={pending}
+					pending={pending}
+					loadingLabel={m["voice.room.analyzing"]()}
 					onClick={onReanalyze}
 				>
 					<Sparkles data-icon="inline-start" />
-					{pending ? m["voice.room.analyzing"]() : m["voice.room.reanalyze"]()}
-				</Button>
+					{m["voice.room.reanalyze"]()}
+				</SubmitButton>
 			</div>
 			<div className="flex flex-col gap-2">
 				<p className="flex flex-wrap gap-x-1.5 gap-y-1 text-sm">

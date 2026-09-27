@@ -25,9 +25,9 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "#/components/ui/select";
-import { CustomScenarioBanner } from "#/features/voice/components/custom-scenario-banner";
-import { ScenarioCard } from "#/features/voice/components/scenario-card";
-import { TopicBanner } from "#/features/voice/components/topic-banner";
+import { CustomScenarioBanner } from "#/features/voice/components/scenarios/custom-scenario-banner";
+import { ScenarioCard } from "#/features/voice/components/scenarios/scenario-card";
+import { TopicBanner } from "#/features/voice/components/scenarios/topic-banner";
 import { SCENARIO_TOPICS, TOPIC_IMAGES } from "#/features/voice/fixtures";
 import {
 	useCreateConversation,

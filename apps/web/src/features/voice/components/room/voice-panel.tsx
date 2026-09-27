@@ -4,6 +4,7 @@ import {
 } from "@pipecat-ai/client-react";
 import { CircularWaveform } from "@pipecat-ai/voice-ui-kit";
 import { Mic, MicOff, PhoneOff } from "lucide-react";
+import { SubmitButton } from "#/components/common/submit-button";
 import { Button } from "#/components/ui/button";
 import {
 	Card,
@@ -20,10 +21,10 @@ import {
 import { m } from "#/paraglide/messages";
 
 /**
- * Left half of the dual-panel room (sona VoicePanel equivalent): live audio
- * visual plus mic / end controls. The kit visualizer renders inside
- * .vkui-root only — the kit scoped stylesheet redefines shared utilities and
- * would stomp the app theme otherwise. Our own controls stay outside.
+ * The call surface: live audio visual plus mic / end controls. The kit
+ * visualizer renders inside .vkui-root only — the kit scoped stylesheet
+ * redefines shared utilities and would stomp the app theme otherwise. Our own
+ * controls stay outside.
  *
  * The waveform is always driven by a real track — the bot's audio in a live
  * session, or the local mic when `waveformSource="mic"`. No thinking mock:
@@ -94,16 +95,16 @@ export function VoicePanel({
 					</PipecatClientMicToggle>
 					<Tooltip>
 						<TooltipTrigger asChild>
-							<Button
+							<SubmitButton
 								type="button"
 								variant="destructive"
 								size="icon-lg"
-								disabled={ending}
+								pending={ending}
 								onClick={onEnd}
 								aria-label={m["voice.room.micEnd"]()}
 							>
 								<PhoneOff />
-							</Button>
+							</SubmitButton>
 						</TooltipTrigger>
 						<TooltipContent>{m["voice.room.micEnd"]()}</TooltipContent>
 					</Tooltip>

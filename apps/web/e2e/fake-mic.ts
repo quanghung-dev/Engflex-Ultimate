@@ -5,8 +5,9 @@ import path from "node:path";
 /**
  * Chromium's `--use-fake-device-for-media-stream` plays a 440 Hz tone, which
  * STT rejects — no transcript, no turn, nothing to analyze. The live suite
- * feeds a real speech WAV instead, synthesized offline by the engine's own
- * Piper voice (see apps/voice/scripts/make_fake_mic_audio.py).
+ * feeds a real speech WAV instead, synthesized offline with a local Piper
+ * voice (see apps/voice/scripts/make_fake_mic_audio.py) — independent of
+ * whatever TTS the engine itself is configured to use.
  *
  * Both the config (Chrome flag) and the spec (generation) resolve the path
  * here so they cannot drift.

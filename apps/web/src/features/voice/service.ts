@@ -6,10 +6,14 @@ import type {
 	Persona,
 	Scenario,
 	StartConversation,
+	TranscriptResult,
 	TurnFeedback,
 } from "@engflex/contracts";
 import { API_ROUTES } from "#/app/api-routes";
 import { api, apiPage } from "#/lib/api";
+
+/** The four actions of the correction window, in the engine's vocabulary. */
+export type TranscriptAction = "review" | "retake" | "send" | "dismiss";
 
 export function createConversation(
 	input: StartConversation,
@@ -47,6 +51,22 @@ export function analyzeTurn(
 	return api<TurnFeedback>(
 		API_ROUTES.CONVERSATIONS.ANALYZE_TURN(conversationId, position),
 		{ method: "POST" },
+		{ withCredentials: true },
+	);
+}
+
+/**
+ * The correction modal's one command. The engine owns the window state and
+ * resolves which turn is corrected, so nothing here names a turn.
+ */
+export function transcriptCommand(
+	conversationId: string,
+	action: TranscriptAction,
+	text?: string,
+): Promise<TranscriptResult> {
+	return api<TranscriptResult>(
+		API_ROUTES.CONVERSATIONS.TRANSCRIPT(conversationId),
+		{ method: "POST", body: JSON.stringify({ action, text: text ?? "" }) },
 		{ withCredentials: true },
 	);
 }

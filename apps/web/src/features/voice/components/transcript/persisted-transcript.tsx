@@ -5,8 +5,8 @@ import { ScrollArea } from "#/components/ui/scroll-area";
 import {
 	type TranscriptRow,
 	TranscriptRows,
-} from "#/features/voice/components/transcript-panel";
-import { TurnFeedbackPanel } from "#/features/voice/components/turn-feedback";
+} from "#/features/voice/components/transcript/transcript-panel";
+import { TurnFeedbackPanel } from "#/features/voice/components/transcript/turn-feedback";
 import { REVIEW_MOCK_TURNS } from "#/features/voice/fixtures";
 import { useAnalyzeTurn, useConversation } from "#/features/voice/queries";
 import { cn } from "#/lib/utils";

@@ -52,7 +52,10 @@ test.beforeEach(async ({ context }) => {
 	]);
 });
 
-test.afterEach(async (_fixtures, testInfo) => {
+test.afterEach(async ({ browser }, testInfo) => {
+	// `browser` is destructured because Playwright requires the object
+	// pattern here; the hook only needs testInfo.
+	void browser;
 	// Keep the conversation when the test fails: the boundary report
 	// (e2e/live-boundaries.mjs) reads its turns/feedback from the DB, and
 	// afterEach deletion would turn its db/analyze rows misleadingly red.

@@ -93,7 +93,19 @@
       "partnerFallback": "Partner",
       "analyzing": "Analyzing…",
       "analyzeFailed": "Analysis failed. Try again.",
-      "reanalyze": "Analyze again"
+      "reanalyze": "Analyze again",
+      "recovery": {
+        "title": "Did we hear you right?",
+        "subtitle": "Nothing is sent unless you press Send.",
+        "yourEdit": "Your correction",
+        "send": "Send",
+        "reviewTranscript": "Review transcript",
+        "dismiss": "Dismiss",
+        "speakAgain": "Speak again",
+        "listening": "Listening — say it again…",
+        "sendIt": "Send it",
+        "heldSubtitle": "That's what we heard this time. Send it, or type what you meant."
+      }
     }
   }
 }

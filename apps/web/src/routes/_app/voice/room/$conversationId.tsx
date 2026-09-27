@@ -18,11 +18,11 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from "#/components/ui/sheet";
-import { PersistedTranscript } from "#/features/voice/components/persisted-transcript";
-import { SessionModal } from "#/features/voice/components/session-modal";
-import { TranscriptPanel } from "#/features/voice/components/transcript-panel";
-import { VoicePanel } from "#/features/voice/components/voice-panel";
-import { VoiceRoomSkeleton } from "#/features/voice/components/voice-room-skeleton";
+import { SessionModal } from "#/features/voice/components/room/session-modal";
+import { VoicePanel } from "#/features/voice/components/room/voice-panel";
+import { VoiceRoomSkeleton } from "#/features/voice/components/room/voice-room-skeleton";
+import { PersistedTranscript } from "#/features/voice/components/transcript/persisted-transcript";
+import { TranscriptPanel } from "#/features/voice/components/transcript/transcript-panel";
 import { useConversation, useEndConversation } from "#/features/voice/queries";
 import { API_URL } from "#/lib/api";
 import { authToken } from "#/lib/auth-token";

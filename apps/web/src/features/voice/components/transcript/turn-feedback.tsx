@@ -1,12 +1,12 @@
 import type { TurnFeedback } from "@engflex/contracts";
 import { Sparkles } from "lucide-react";
-import { Button } from "#/components/ui/button";
+import { SubmitButton } from "#/components/common/submit-button";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
 } from "#/components/ui/tooltip";
-import { TurnDiagnosticsCard } from "#/features/voice/components/turn-diagnostics-card";
+import { TurnDiagnosticsCard } from "#/features/voice/components/transcript/turn-diagnostics-card";
 import { m } from "#/paraglide/messages";
 
 /** Analyze affordance and result for one learner turn. Pending and error
@@ -36,18 +36,20 @@ export function TurnFeedbackPanel({
 		<div className="flex flex-col items-start gap-1">
 			<Tooltip>
 				<TooltipTrigger asChild>
-					<Button
+					<SubmitButton
 						type="button"
 						variant="outline"
-						size="sm"
-						disabled={pending}
+						size="icon-sm"
+						pending={pending}
+						aria-label={m["voice.room.analyze"]()}
 						onClick={onAnalyze}
 					>
-						<Sparkles data-icon="inline-start" />
-						{pending ? m["voice.room.analyzing"]() : m["voice.room.analyze"]()}
-					</Button>
+						<Sparkles />
+					</SubmitButton>
 				</TooltipTrigger>
-				<TooltipContent>{m["voice.room.analyze"]()}</TooltipContent>
+				<TooltipContent>
+					{pending ? m["voice.room.analyzing"]() : m["voice.room.analyze"]()}
+				</TooltipContent>
 			</Tooltip>
 			{failed ? (
 				<p className="text-xs text-destructive">
