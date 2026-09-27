@@ -3,9 +3,9 @@
 import pytest
 from pydantic import ValidationError
 
+from app.schemas import RunnerBody
 from config import settings
 from observability import bind_session, get_metrics, init_sentry
-from schemas import RunnerBody
 
 
 def test_runner_body_round_trip():
@@ -32,7 +32,7 @@ def test_runner_body_bounds_rejected(value):
 
 def test_settings_defaults():
     assert settings.api_url == "http://localhost:8000"
-    assert settings.llm_name == "gpt-4o-mini"
+    assert settings.llm_model == "gpt-4o-mini"
     assert settings.max_duration_sec == 300
     assert settings.idle_timeout_sec == 300
 

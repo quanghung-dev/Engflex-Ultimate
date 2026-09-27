@@ -1,8 +1,11 @@
+from typing import Any
+
 import pytest
 from pydantic import ValidationError
 
 from analysis import (
     AnalyzeRequest,
+    ContextTurn,
     TurnFeedback,
     _messages,
     build_feedback_prompt,
@@ -16,7 +19,7 @@ def _request() -> AnalyzeRequest:
         conversationId="c1",
         turnId="t1",
         text="I go to the office yesterday.",
-        context=[{"role": "ai", "text": "What did you do yesterday?"}],
+        context=[ContextTurn(role="ai", text="What did you do yesterday?")],
     )
 
 
@@ -26,10 +29,10 @@ def test_messages_include_a_user_message():
     # system prompt already carries the utterance; the user message repeats
     # it as the review target so the request is never system-only.
     messages = _messages(_request())
-    assert messages[0]["role"] == "system"
-    user = [m for m in messages if m["role"] == "user"]
+    assert messages[0].get("role") == "system"
+    user = [m for m in messages if m.get("role") == "user"]
     assert len(user) == 1
-    assert "yesterday" in user[0]["content"]
+    assert "yesterday" in str(user[0].get("content", ""))
 
 
 def test_prompt_demands_the_four_keys():
@@ -40,7 +43,7 @@ def test_prompt_demands_the_four_keys():
 
 
 def test_prompt_never_asks_for_phonemes():
-    # Phonemes are an acoustic measurement with no source in P2 (D11). The
+    # Phonemes are an acoustic measurement nothing currently produces. The
     # contract must not ask for them, or the model invents scores.
     assert "phoneme" not in build_feedback_prompt(_request()).lower()
 
@@ -82,8 +85,8 @@ def test_parse_validates_a_clean_object():
 
 
 def test_parse_survives_a_bolded_reply():
-    # Probed 2026-09-25: the model ignores response_format and answers in
-    # markdown with a JSON object inside (D19).
+    # The model ignores response_format on this route and answers in
+    # markdown with a JSON object inside.
     raw = (
         "**Corrected sentence:** I **went** to the office yesterday.\n\n"
         '{"annotated": "I went yesterday.", "marks": [], "upgrades": [], "tip": "past"}'
@@ -114,12 +117,16 @@ def test_models_derive_a_valid_strict_schema():
     # Verified against openai 3.19.2.
     from openai.lib._parsing._completions import type_to_response_format_param
 
-    param = type_to_response_format_param(TurnFeedback)["json_schema"]
-    schema = param["schema"]
+    # The helper returns a union of response-format TypedDicts; the JSON
+    # schema variant is the one this test inspects.
+    response_format: Any = type_to_response_format_param(TurnFeedback)
+    param: dict[str, Any] = response_format["json_schema"]
+    schema: dict[str, Any] = param["schema"]
 
     assert param["strict"] is True
     assert set(schema["required"]) == {"annotated", "marks", "upgrades", "tip"}
     assert schema["additionalProperties"] is False
-    for name, definition in schema["$defs"].items():
+    defs: dict[str, Any] = schema["$defs"]
+    for name, definition in defs.items():
         assert definition["additionalProperties"] is False, f"{name} must forbid extras"
     assert "$schema" not in schema

@@ -9,12 +9,12 @@ import aiohttp
 from loguru import logger
 
 from config import settings
-from turns import TurnRecord
+from transcript.capture import TurnRecord
 
 INTERNAL_HEADER = "X-Internal-Secret"
 
 
-def _serialize(records: list[TurnRecord]) -> dict:
+def _serialize(records: list[TurnRecord]) -> dict[str, object]:
     return {
         "turns": [
             {

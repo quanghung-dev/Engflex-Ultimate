@@ -18,10 +18,10 @@ from pipecat.pipeline.worker import PipelineWorker
 from pipecat.processors.frame_processor import FrameDirection
 from pipecat.transports.base_transport import BaseTransport
 
+from app.schemas import RunnerBody
 from clients.go_callbacks import finalize_session
 from clients.go_turns import post_turn_batch
-from schemas import RunnerBody
-from turns import TurnCollector
+from transcript.capture import TurnCollector
 
 
 def get_custom_error_message(error: str, service_name: str = "Service") -> str:
@@ -46,8 +46,9 @@ def register_event_handlers(
     body: RunnerBody,
     start_time: float,
     collector: TurnCollector,
+    recovery=None,
 ) -> None:
-    timer_handle: dict[str, asyncio.Task] = {}
+    timer_handle: dict[str, asyncio.Task[None]] = {}
 
     @transport.event_handler("on_client_connected")
     async def on_client_connected(_transport: BaseTransport, _client):
@@ -68,6 +69,8 @@ def register_event_handlers(
     @transport.event_handler("on_client_disconnected")
     async def on_client_disconnected(_transport: BaseTransport, _client):
         logger.info("client disconnected", conversation_id=body.conversationId)
+        if recovery is not None:
+            recovery.close()
         if (pending := timer_handle.get("task")) is not None:
             pending.cancel()
         await worker.cancel()

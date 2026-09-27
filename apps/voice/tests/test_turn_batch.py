@@ -1,7 +1,7 @@
 import asyncio
 
 from clients import go_turns
-from turns import TurnCollector
+from transcript.capture import TurnCollector
 
 
 class _FakeResponse:

@@ -7,12 +7,15 @@ and status codes for refusal vs. unusable reply vs. transport failure.
 
 import pytest
 from fastapi.testclient import TestClient
-from pipecat.runner.run import app
+
+# Named for what it is: the runner's FastAPI singleton, not our app package.
+from pipecat.runner.run import app as runner_app
 from pydantic import ValidationError
 
 import analysis
-import routes
+import app.routes  # noqa: F401 -- side effect: registers the routes
 from analysis import TurnFeedback
+from app import routes
 
 
 def _payload(**overrides):
@@ -26,15 +29,15 @@ def _payload(**overrides):
     return body
 
 
-def _feedback(**overrides):
-    data = {
+def _feedback(**overrides: object) -> TurnFeedback:
+    data: dict[str, object] = {
         "annotated": "I went yesterday.",
         "marks": [],
         "upgrades": [],
         "tip": "past tense",
     }
     data.update(overrides)
-    return TurnFeedback(**data)
+    return TurnFeedback.model_validate(data)
 
 
 def test_analyze_returns_feedback_envelope(monkeypatch):
@@ -44,7 +47,7 @@ def test_analyze_returns_feedback_envelope(monkeypatch):
         return _feedback()
 
     monkeypatch.setattr(routes, "analyze_turn", fake_analyze)
-    resp = TestClient(app).post("/analyze", json=_payload())
+    resp = TestClient(runner_app).post("/analyze", json=_payload())
     assert resp.status_code == 200, resp.text
     assert resp.json()["feedback"]["tip"] == "past tense"
 
@@ -54,7 +57,7 @@ def test_analyze_refusal_is_422(monkeypatch):
         raise analysis.AnalysisRefused("declined")
 
     monkeypatch.setattr(routes, "analyze_turn", fake_analyze)
-    resp = TestClient(app).post("/analyze", json=_payload())
+    resp = TestClient(runner_app).post("/analyze", json=_payload())
     assert resp.status_code == 422
 
 
@@ -63,7 +66,7 @@ def test_analyze_unusable_reply_is_422(monkeypatch):
         raise ValueError("no JSON object")
 
     monkeypatch.setattr(routes, "analyze_turn", fake_analyze)
-    resp = TestClient(app).post("/analyze", json=_payload())
+    resp = TestClient(runner_app).post("/analyze", json=_payload())
     assert resp.status_code == 422
 
 
@@ -72,15 +75,17 @@ def test_analyze_transport_failure_is_500(monkeypatch):
         raise RuntimeError("connection reset")
 
     monkeypatch.setattr(routes, "analyze_turn", fake_analyze)
-    resp = TestClient(app).post("/analyze", json=_payload())
+    resp = TestClient(runner_app).post("/analyze", json=_payload())
     assert resp.status_code == 500
 
 
 def test_analyze_rejects_missing_text():
-    resp = TestClient(app).post("/analyze", json={"conversationId": "c1", "turnId": "t1"})
+    resp = TestClient(runner_app).post("/analyze", json={"conversationId": "c1", "turnId": "t1"})
     assert resp.status_code == 422
 
 
 def test_validation_error_shape_is_rejected():
     with pytest.raises(ValidationError):
-        TurnFeedback(annotated="a", tip="t")
+        # `marks` and `upgrades` are required by the schema, which is the
+        # point of this test — model_validate keeps the type checker happy.
+        TurnFeedback.model_validate({"annotated": "a", "tip": "t"})

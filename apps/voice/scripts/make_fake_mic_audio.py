@@ -3,8 +3,8 @@
 Chromium's built-in fake capture is a 440 Hz tone, which STT rejects: no
 transcript, no turn, nothing to analyze. The live suite therefore feeds
 ``--use-file-for-fake-audio-capture`` a real speech WAV, synthesized here with
-the same offline Piper voice the bot speaks with (model in ``models/``, no
-network, no key).
+a local Piper voice (model in ``models/``, no network, no key) — a test
+asset, independent of the TTS the engine itself is configured to use.
 
 Leading silence is deliberate: it gives the bot greeting (LLM ~4s + TTS) time
 to finish before the VAD sees speech, so the assistant turn is recorded first
@@ -45,7 +45,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from piper import PiperVoice
 
-from config import settings
+# The fixture is a test asset, not runtime config: it always synthesizes
+# with this local voice, independent of whatever TTS the engine is
+# configured to use (the engine's own voice may be a hosted model).
+FIXTURE_VOICE = "en_US-lessac-high"
+MODELS_DIR = Path("models")
 
 # Learner sentence with a fixable past-tense error, so the live Analyze run
 # has the same defect the seeded-feedback e2e asserts on. The "Well," is a
@@ -66,14 +70,14 @@ TARGET_RATE = 48000
 
 
 def models_dir() -> Path:
-    path = Path(settings.models_dir)
+    path = MODELS_DIR
     return path if path.is_absolute() else Path(__file__).resolve().parent.parent / path
 
 
 def render(text: str) -> tuple[tuple[int, int, int, int, str, str], bytes]:
     voice = PiperVoice.load(
-        models_dir() / f"{settings.piper_voice}.onnx",
-        models_dir() / f"{settings.piper_voice}.onnx.json",
+        models_dir() / f"{FIXTURE_VOICE}.onnx",
+        models_dir() / f"{FIXTURE_VOICE}.onnx.json",
     )
     buffer = io.BytesIO()
     with wave.open(buffer, "wb") as out:
@@ -83,12 +87,12 @@ def render(text: str) -> tuple[tuple[int, int, int, int, str, str], bytes]:
         return spoken.getparams(), spoken.readframes(spoken.getnframes())
 
 
-def resample_mono_s16(samples: array.array, src_rate: int, dst_rate: int) -> array.array:
+def resample_mono_s16(samples: array.array[int], src_rate: int, dst_rate: int) -> array.array[int]:
     """Linear-interpolation resample of signed-16-bit mono samples."""
     if src_rate == dst_rate:
         return samples
     count = round(len(samples) * dst_rate / src_rate)
-    out = array.array("h")
+    out: array.array[int] = array.array("h")
     for i in range(count):
         pos = i * len(samples) / count
         lo = int(pos)
@@ -99,15 +103,17 @@ def resample_mono_s16(samples: array.array, src_rate: int, dst_rate: int) -> arr
 
 
 def write_wav(path: Path, text: str) -> None:
-    params, frames = render(text)
-    assert params.nchannels == 1 and params.sampwidth == 2, (
-        f"unexpected Piper format: {params.nchannels}ch x {params.sampwidth * 8}-bit"
+    # wave.getparams() is a plain 6-tuple since 3.11
+    # (nchannels, sampwidth, framerate, nframes, comptype, compname).
+    (channels, sample_width, rate, _nframes, _comptype, _compname), frames = render(text)
+    assert channels == 1 and sample_width == 2, (
+        f"unexpected Piper format: {channels}ch x {sample_width * 8}-bit"
     )
-    speech = array.array("h")
+    speech: array.array[int] = array.array("h")
     speech.frombytes(frames)
     if sys.byteorder == "big":
         speech.byteswap()
-    speech48 = resample_mono_s16(speech, params.framerate, TARGET_RATE)
+    speech48 = resample_mono_s16(speech, rate, TARGET_RATE)
     silence_sec = b"\x00" * (TARGET_RATE * 2)
     track = silence_sec * int(LEAD_SILENCE_SEC)
     gap = silence_sec * int(GAP_SILENCE_SEC)

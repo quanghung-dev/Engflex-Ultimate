@@ -1,7 +1,7 @@
 """On-demand per-turn feedback.
 
-Go calls this route synchronously when the learner taps Analyze on one turn
-(spec D9/D10). It talks to the LLM through the `openai` SDK directly rather
+Go calls this route synchronously when the learner taps Analyze on one turn.
+It talks to the LLM through the `openai` SDK directly rather
 than the pipecat LLM service: the analysis is a one-shot offline
 classification, so the streaming service's frames, context management,
 interruption handling, and metrics are all irrelevant overhead.
@@ -14,8 +14,7 @@ Two paths, both validating:
 2. Fallback: the prompt demands a bare JSON object, the reply is scanned for
    its first balanced `{...}` block, and `model_validate_json` validates it.
 
-Path 2 exists because structured output is NOT available on this route
-(D19). Probed 2026-09-25 against space-bunny-free via the zen proxy:
+Path 2 exists because structured output is NOT available on this route:
 `response_format` in both strict `json_schema` and `json_object` form is
 accepted by the proxy but ignored by the upstream model, which answers in
 markdown. Path 1 is still attempted first so the code is correct-by-
@@ -34,6 +33,7 @@ from typing import Literal
 
 from loguru import logger
 from openai import AsyncOpenAI
+from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel, Field
 
 from config import settings
@@ -86,7 +86,7 @@ class AnalyzeRequest(BaseModel):
 
 
 class AnalyzeResponse(BaseModel):
-    feedback: dict
+    feedback: dict[str, object]
 
 
 class AnalysisRefused(Exception):
@@ -160,17 +160,17 @@ def parse_feedback(raw: str) -> TurnFeedback:
 
 def _client() -> AsyncOpenAI:
     return AsyncOpenAI(
-        api_key=settings.openai_api_key,
-        base_url=settings.openai_base_url,
+        api_key=settings.llm_api_key,
+        base_url=settings.llm_base_url,
         timeout=settings.analyze_timeout_sec,
         default_headers={
-            "User-Agent": settings.opencode_user_agent,
+            "User-Agent": settings.llm_user_agent,
             "x-opencode-session": settings.analyze_session_prefix,
         },
     )
 
 
-def _messages(req: AnalyzeRequest) -> list[dict]:
+def _messages(req: AnalyzeRequest) -> list[ChatCompletionMessageParam]:
     # The system prompt carries the full review brief, but the request must
     # never be system-only: the upstream provider rejects user-less requests
     # with a 400 (the same constraint that forces the "Hello!" opener on the
@@ -191,7 +191,7 @@ async def _structured(client: AsyncOpenAI, req: AnalyzeRequest) -> TurnFeedback:
     missing result as a fallback trigger.
     """
     completion = await client.chat.completions.parse(
-        model=settings.llm_name,
+        model=settings.llm_model,
         messages=_messages(req),
         response_format=TurnFeedback,
         temperature=0.2,
@@ -207,7 +207,7 @@ async def _structured(client: AsyncOpenAI, req: AnalyzeRequest) -> TurnFeedback:
 async def _extraction(client: AsyncOpenAI, req: AnalyzeRequest) -> TurnFeedback:
     """Fallback: prompt-forced JSON, then extract and validate."""
     completion = await client.chat.completions.create(
-        model=settings.llm_name,
+        model=settings.llm_model,
         messages=_messages(req),
         temperature=0.2,
     )
@@ -229,14 +229,14 @@ async def analyze_turn(req: AnalyzeRequest) -> TurnFeedback:
     except _StructuredUnsupported:
         logger.info(
             "structured output unsupported on this route; using extraction",
-            model=settings.llm_name,
+            model=settings.llm_model,
         )
     except AnalysisRefused:
         raise
     except Exception as exc:  # noqa: BLE001 - route may not support the param at all
         logger.warning(
             "structured output call failed; using extraction",
-            model=settings.llm_name,
+            model=settings.llm_model,
             error=str(exc)[:200],
         )
     return await _extraction(client, req)

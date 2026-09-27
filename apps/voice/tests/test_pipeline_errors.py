@@ -9,12 +9,13 @@ frames may surface to the client and end the pipeline.
 """
 
 import asyncio
+from typing import Any, cast
 
 from pipecat.frames.frames import EndWorkerFrame, ErrorFrame
 
+from app.schemas import RunnerBody
 from events import register_event_handlers
-from schemas import RunnerBody
-from turns import TurnCollector
+from transcript.capture import TurnCollector
 
 
 class _FakeEndpoint:
@@ -37,11 +38,15 @@ class _FakeEndpoint:
 
 def _registered_worker():
     worker = _FakeEndpoint()
+    # The fakes stand in for the worker/transport/aggregators: only
+    # `event_handler` + `queue_frames` are exercised by these tests, so the
+    # stand-ins are cast through Any rather than pretending to subclass.
+    fake = cast(Any, worker)
     register_event_handlers(
-        worker,
-        _FakeEndpoint(),
-        _FakeEndpoint(),
-        _FakeEndpoint(),
+        fake,
+        fake,
+        fake,
+        fake,
         body=RunnerBody(userId="u1", conversationId="c1", maxDuration=300),
         start_time=0.0,
         collector=TurnCollector(),

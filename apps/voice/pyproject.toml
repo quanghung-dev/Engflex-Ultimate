@@ -4,7 +4,11 @@ version = "0.1.0"
 description = "EngFlex Pipecat voice engine"
 requires-python = ">=3.12"
 dependencies = [
-  "pipecat-ai[deepgram,piper,runner,sentry,silero,webrtc]>=1.8.0",
+  "pipecat-ai[deepgram,fish,runner,sentry,silero,webrtc]>=1.8.0",
+  # piper-tts is NOT used by the engine: the live e2e fixture
+  # (scripts/make_fake_mic_audio.py) synthesizes its fake-mic WAV offline
+  # with it, which must stay network-free and key-free.
+  "piper-tts>=1.8.0",
   "pydantic-settings>=2.4",
   "loguru>=0.7.2",
   "aiohttp>=3.10",
