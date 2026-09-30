@@ -21,7 +21,7 @@ import { LESSONS } from "#/features/lessons/fixtures";
 import { lessonsStore, progressFrom } from "#/features/lessons/store";
 import { m } from "#/paraglide/messages";
 
-export const Route = createFileRoute("/_app/lessons/")({
+export const Route = createFileRoute("/_app/lessons-practice/")({
 	staticData: breadcrumb(() => m["nav.lessons"]()),
 	component: LessonsPage,
 });

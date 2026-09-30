@@ -17,14 +17,14 @@ type Attempt struct {
 	ID               string            `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
 	UserID           string            `gorm:"not null" json:"userId"`
 	LessonPracticeID *string           `gorm:"column:lesson_practice_id;type:uuid" json:"lessonPracticeId"`
-	ActivityID     *string           `gorm:"type:uuid" json:"activityId"`
-	ConversationID *string           `gorm:"type:uuid" json:"conversationId"`
-	Type           enums.AttemptType `gorm:"not null" json:"type"`
-	Score          *float64          `gorm:"type:numeric(5,2)" json:"score"`
-	Result         datatypes.JSON    `gorm:"type:jsonb;not null;default:'{}'" json:"result"`
-	DurationSec    *int              `json:"durationSec"`
-	CreatedAt      time.Time         `gorm:"autoCreateTime" json:"createdAt"`
-	UpdatedAt      time.Time         `gorm:"autoUpdateTime" json:"updatedAt"`
+	ActivityID       *string           `gorm:"type:uuid" json:"activityId"`
+	ConversationID   *string           `gorm:"type:uuid" json:"conversationId"`
+	Type             enums.AttemptType `gorm:"not null" json:"type"`
+	Score            *float64          `gorm:"type:numeric(5,2)" json:"score"`
+	Result           datatypes.JSON    `gorm:"type:jsonb;not null;default:'{}'" json:"result"`
+	DurationSec      *int              `json:"durationSec"`
+	CreatedAt        time.Time         `gorm:"autoCreateTime" json:"createdAt"`
+	UpdatedAt        time.Time         `gorm:"autoUpdateTime" json:"updatedAt"`
 }
 
 func (Attempt) TableName() string { return "attempts" }

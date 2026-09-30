@@ -8,9 +8,9 @@ import "engflex-api/internal/common/enums"
 type CreateAttempt struct {
 	LessonPracticeID *string           `json:"lessonPracticeId" binding:"omitempty,uuid"`
 	ActivityID       *string           `json:"activityId" binding:"omitempty,uuid"`
-	ConversationID *string           `json:"conversationId" binding:"omitempty,uuid"`
-	Type           enums.AttemptType `json:"type" binding:"required,oneof=reading dictation writing voice shadowing flashcard benchmark"`
-	Score          *float64          `json:"score"`
-	Result         map[string]any    `json:"result"`
-	DurationSec    *int              `json:"durationSec" binding:"omitempty,min=0"`
+	ConversationID   *string           `json:"conversationId" binding:"omitempty,uuid"`
+	Type             enums.AttemptType `json:"type" binding:"required,oneof=reading dictation writing voice shadowing flashcard benchmark"`
+	Score            *float64          `json:"score"`
+	Result           map[string]any    `json:"result"`
+	DurationSec      *int              `json:"durationSec" binding:"omitempty,min=0"`
 }
