@@ -20,7 +20,7 @@ export interface Question {
   options: QuestionOption[];
 }
 /**
- * ReadingPayload is lesson_activities.config for type=reading.
+ * ReadingPayload is lesson_practice_activities.config for type=reading.
  */
 export interface ReadingPayload {
   passage: string;
@@ -36,13 +36,13 @@ export interface DictationSentence {
   durationMs: number /* int */;
 }
 /**
- * DictationPayload is lesson_activities.config for type=dictation.
+ * DictationPayload is lesson_practice_activities.config for type=dictation.
  */
 export interface DictationPayload {
   sentences: DictationSentence[];
 }
 /**
- * WritingPayload is lesson_activities.config for type=writing.
+ * WritingPayload is lesson_practice_activities.config for type=writing.
  */
 export interface WritingPayload {
   title: string;
@@ -51,7 +51,7 @@ export interface WritingPayload {
   contextQuestions: string[];
 }
 /**
- * VoicePayload is lesson_activities.config for type=voice.
+ * VoicePayload is lesson_practice_activities.config for type=voice.
  */
 export interface VoicePayload {
   scenarioId: string;
@@ -75,30 +75,30 @@ export interface Activity {
 }
 
 //////////
-// source: lesson.go
+// source: lesson_practice.go
 
 /**
- * Category is a lesson_categories row.
+ * LessonPracticeCategory is a lesson_practice_categories row.
  */
-export interface Category {
+export interface LessonPracticeCategory {
   id: string;
   slug: string;
   name: string;
 }
 /**
- * LessonDetails mirrors lessons.details (jsonb).
+ * LessonPracticeDetails mirrors lessons_practice.details (jsonb).
  */
-export interface LessonDetails {
+export interface LessonPracticeDetails {
   estimatedDurationMin?: number /* int */;
   acousticTargetPct?: number /* int */;
   coverImageUrl: string;
   skill?: ActivityType;
 }
 /**
- * LessonProgress is the user-specific state derived from attempts and
+ * LessonPracticeProgress is the user-specific state derived from attempts and
  * bookmarks (nil when the user has no interaction with the lesson).
  */
-export interface LessonProgress {
+export interface LessonPracticeProgress {
   status: LessonStatus;
   percent: number /* int */;
   partsCompleted: number /* int */;
@@ -107,16 +107,16 @@ export interface LessonProgress {
   savedAt?: string /* RFC3339 */;
 }
 /**
- * Lesson is a lesson hub card and the lesson detail header.
+ * LessonPractice is a lesson hub card and the lesson detail header.
  */
-export interface Lesson {
+export interface LessonPractice {
   id: string;
   slug: string;
   title: string;
-  category?: Category;
+  category?: LessonPracticeCategory;
   cefrLevel: CEFR;
   description: string;
-  details: LessonDetails;
+  details: LessonPracticeDetails;
   partCount: number /* int */;
-  progress?: LessonProgress;
+  progress?: LessonPracticeProgress;
 }

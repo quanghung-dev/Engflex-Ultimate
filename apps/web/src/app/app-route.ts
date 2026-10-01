@@ -2,9 +2,9 @@
 export const APP_ROUTES = {
 	HOME: "/",
 	ONBOARDING: "/onboarding",
-	LESSONS: "/lessons",
-	LESSON_DETAIL: "/lessons/$lessonId",
-	LESSON_PART: "/lessons/$lessonId/parts/$part",
+	LESSONS: "/lessons-practice",
+	LESSON_DETAIL: "/lessons-practice/$lessonId",
+	LESSON_PART: "/lessons-practice/$lessonId/parts/$part",
 	VOCABULARY: "/vocabulary",
 	VOCABULARY_ITEM: "/vocabulary/$itemId",
 	VOICE: "/voice",

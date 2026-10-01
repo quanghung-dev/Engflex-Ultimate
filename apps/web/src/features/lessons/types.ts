@@ -1,4 +1,4 @@
-import type { Activity, Lesson } from "@engflex/contracts";
+import type { Activity, LessonPractice } from "@engflex/contracts";
 
 /** mock-only: no contract type yet — outcomes card data (Spec 2 §4.4). */
 export interface LessonOutcome {
@@ -6,7 +6,7 @@ export interface LessonOutcome {
 }
 
 export interface LessonDetailFixture {
-	lesson: Lesson;
+	lesson: LessonPractice;
 	activities: Activity[];
 	outcomes: string[];
 }

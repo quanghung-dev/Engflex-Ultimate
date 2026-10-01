@@ -1,19 +1,23 @@
 package requests
 
-import (
-	"engflex-api/internal/common"
-	"engflex-api/internal/common/enums"
-)
+type CreateLesson struct {
+	CategoryID   *uint   `json:"category_id"`
+	Title        string  `json:"title"`
+	Description  string  `json:"description"`
+	VideoURL     string  `json:"video_url"`
+	YoutubeURL   string  `json:"youtube_url"`
+	ThumbnailURL string  `json:"thumbnail_url"`
+	Level        string  `json:"level"`
+	Duration     float64 `json:"duration"`
+}
 
-// ListLessons filters the lesson hub (level, category, skill tab,
-// completion status). Pagination/search come from the embedded
-// common.ListParams (tstype:",extends" -> `interface ListLessons extends
-// ListParams`); json tags mirror the query keys so the generated TS field
-// names match the wire.
-type ListLessons struct {
-	common.ListParams `tstype:",extends"`
-	Level             enums.CEFR         `form:"level" json:"level" binding:"omitempty,oneof=A1 A2 B1 B2 C1 C2"`
-	CategorySlug      string             `form:"categorySlug" json:"categorySlug"`
-	Skill             enums.ActivityType `form:"skill" json:"skill" binding:"omitempty,oneof=reading dictation writing voice"`
-	Status            enums.LessonStatus `form:"status" json:"status" binding:"omitempty,oneof=unstarted in_progress completed"`
+type UpdateLesson struct {
+	CategoryID   *uint   `json:"category_id"`
+	Title        string  `json:"title"`
+	Description  string  `json:"description"`
+	VideoURL     string  `json:"video_url"`
+	YoutubeURL   string  `json:"youtube_url"`
+	ThumbnailURL string  `json:"thumbnail_url"`
+	Level        string  `json:"level"`
+	Duration     float64 `json:"duration"`
 }

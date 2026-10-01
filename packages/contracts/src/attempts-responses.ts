@@ -11,7 +11,7 @@
 export interface Attempt {
   id: string;
   userId: string;
-  lessonId?: string;
+  lessonPracticeId?: string;
   activityId?: string;
   conversationId?: string;
   type: AttemptType;

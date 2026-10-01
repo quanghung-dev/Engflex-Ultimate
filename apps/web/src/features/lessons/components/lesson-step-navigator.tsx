@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
 import { cn } from "cn";
 import { CircleCheck } from "lucide-react";
+import { APP_ROUTES } from "#/app/app-route";
 import { type LessonPart, PART_META } from "#/features/lessons/parts";
 import { lessonsStore } from "#/features/lessons/store";
 import { m } from "#/paraglide/messages";
@@ -32,7 +33,7 @@ export function LessonStepNavigator({
 				return (
 					<Link
 						key={activity.id}
-						to="/lessons/$lessonId/parts/$part"
+						to={APP_ROUTES.LESSON_PART}
 						params={{ lessonId, part }}
 						className={cn(
 							"flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition",

@@ -49,11 +49,11 @@ packages:
     output_path: "../../packages/contracts/src/profiles-responses.ts"
     fallback_type: "unknown"
 
-  - path: "engflex-api/internal/modules/lessons/dtos/requests"
-    output_path: "../../packages/contracts/src/lessons-requests.ts"
+  - path: "engflex-api/internal/modules/lesson_practice/dtos/requests"
+    output_path: "../../packages/contracts/src/lesson-practice-requests.ts"
     fallback_type: "unknown"
-  - path: "engflex-api/internal/modules/lessons/dtos/responses"
-    output_path: "../../packages/contracts/src/lessons-responses.ts"
+  - path: "engflex-api/internal/modules/lesson_practice/dtos/responses"
+    output_path: "../../packages/contracts/src/lesson-practice-responses.ts"
     fallback_type: "unknown"
 
   - path: "engflex-api/internal/modules/personas/dtos/requests"
