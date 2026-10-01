@@ -10,16 +10,16 @@ import (
 // result stays loosely typed this phase; typed per-practice schemas come
 // with the practice endpoints.
 type Attempt struct {
-	ID             string            `json:"id"`
-	UserID         string            `json:"userId"`
-	LessonID       *string           `json:"lessonId"`
-	ActivityID     *string           `json:"activityId"`
-	ConversationID *string           `json:"conversationId"`
-	Type           enums.AttemptType `json:"type"`
-	Score          *float64          `json:"score"`
-	Result         map[string]any    `json:"result"`
-	DurationSec    *int              `json:"durationSec"`
-	CreatedAt      time.Time         `json:"createdAt"`
+	ID               string            `json:"id"`
+	UserID           string            `json:"userId"`
+	LessonPracticeID *string           `json:"lessonPracticeId"`
+	ActivityID       *string           `json:"activityId"`
+	ConversationID   *string           `json:"conversationId"`
+	Type             enums.AttemptType `json:"type"`
+	Score            *float64          `json:"score"`
+	Result           map[string]any    `json:"result"`
+	DurationSec      *int              `json:"durationSec"`
+	CreatedAt        time.Time         `json:"createdAt"`
 }
 
 // ProgressSummary is the dashboard rollup, composed later by services from

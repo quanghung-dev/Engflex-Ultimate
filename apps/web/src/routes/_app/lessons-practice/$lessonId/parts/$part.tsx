@@ -34,7 +34,9 @@ import {
 } from "#/features/writing/fixtures";
 import { m } from "#/paraglide/messages";
 
-export const Route = createFileRoute("/_app/lessons/$lessonId/parts/$part")({
+export const Route = createFileRoute(
+	"/_app/lessons-practice/$lessonId/parts/$part",
+)({
 	staticData: breadcrumb([
 		{ label: () => m["nav.lessons"](), target: { to: APP_ROUTES.LESSONS } },
 		{
@@ -48,14 +50,14 @@ export const Route = createFileRoute("/_app/lessons/$lessonId/parts/$part")({
 	]),
 	beforeLoad: ({ params }) => {
 		if (!getLessonById(params.lessonId)) {
-			throw redirect({ href: "/lessons" });
+			throw redirect({ to: APP_ROUTES.LESSONS });
 		}
 		if (
 			!isLessonPart(params.part) ||
 			!hasActivityForPart(params.lessonId, params.part)
 		) {
 			throw redirect({
-				to: "/lessons/$lessonId",
+				to: APP_ROUTES.LESSON_DETAIL,
 				params: { lessonId: params.lessonId },
 			});
 		}
@@ -126,11 +128,11 @@ function WritingActivity({
 		completePart(lessonId, activity.partNumber);
 		if (nextPart) {
 			navigate({
-				to: "/lessons/$lessonId/parts/$part",
+				to: APP_ROUTES.LESSON_PART,
 				params: { lessonId, part: nextPart },
 			});
 		} else {
-			navigate({ to: "/lessons/$lessonId", params: { lessonId } });
+			navigate({ to: APP_ROUTES.LESSON_DETAIL, params: { lessonId } });
 		}
 	}
 
@@ -222,11 +224,11 @@ function DictationActivity({
 		completePart(lessonId, activity.partNumber);
 		if (nextPart) {
 			navigate({
-				to: "/lessons/$lessonId/parts/$part",
+				to: APP_ROUTES.LESSON_PART,
 				params: { lessonId, part: nextPart },
 			});
 		} else {
-			navigate({ to: "/lessons/$lessonId", params: { lessonId } });
+			navigate({ to: APP_ROUTES.LESSON_DETAIL, params: { lessonId } });
 		}
 	}
 
@@ -288,11 +290,11 @@ function ReadingActivity({
 		const nextPart = getNextPart("reading", partCount);
 		if (nextPart) {
 			navigate({
-				to: "/lessons/$lessonId/parts/$part",
+				to: APP_ROUTES.LESSON_PART,
 				params: { lessonId, part: nextPart },
 			});
 		} else {
-			navigate({ to: "/lessons/$lessonId", params: { lessonId } });
+			navigate({ to: APP_ROUTES.LESSON_DETAIL, params: { lessonId } });
 		}
 	}
 

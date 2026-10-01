@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
 import { ArrowRight } from "lucide-react";
+import { APP_ROUTES } from "#/app/app-route";
 import { ProgressBar } from "#/components/common/progress-bar";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
@@ -46,7 +47,7 @@ export function ActiveLessonCard() {
 					<ProgressBar value={progress.percent} />
 				</div>
 				<Button asChild className="w-fit">
-					<Link to="/lessons/$lessonId" params={{ lessonId: lesson.id }}>
+					<Link to={APP_ROUTES.LESSON_DETAIL} params={{ lessonId: lesson.id }}>
 						{m["dashboard.activeLesson.continue"]()}
 						<ArrowRight data-icon="inline-end" />
 					</Link>

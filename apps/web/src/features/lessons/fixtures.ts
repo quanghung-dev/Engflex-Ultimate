@@ -1,9 +1,9 @@
 import type {
 	Activity,
 	ActivityType,
-	Category,
 	DictationPayload,
-	Lesson,
+	LessonPractice,
+	LessonPracticeCategory,
 	ReadingPayload,
 	VoicePayload,
 	WritingPayload,
@@ -22,7 +22,7 @@ export const TOPIC_COVERS = [
 	productPitch,
 ] as const;
 
-export const CATEGORIES: Category[] = [
+export const CATEGORIES: LessonPracticeCategory[] = [
 	{
 		id: "cat-1",
 		slug: "workplace-communication",
@@ -45,14 +45,14 @@ export const CATEGORIES: Category[] = [
 	{ id: "cat-8", slug: "financial-literacy", name: "Financial literacy" },
 ];
 
-const categoryBySlug = (slug: string): Category | undefined =>
+const categoryBySlug = (slug: string): LessonPracticeCategory | undefined =>
 	CATEGORIES.find((category) => category.slug === slug);
 
 interface LessonSeed {
 	id: string;
 	title: string;
 	categorySlug: string;
-	cefrLevel: Lesson["cefrLevel"];
+	cefrLevel: LessonPractice["cefrLevel"];
 	estimatedDurationMin: number;
 	partCount: number;
 	skill: ActivityType;
@@ -162,7 +162,7 @@ const LESSON_SEEDS: LessonSeed[] = [
 	},
 ];
 
-export const LESSONS: Lesson[] = LESSON_SEEDS.map((seed, index) => ({
+export const LESSONS: LessonPractice[] = LESSON_SEEDS.map((seed, index) => ({
 	id: seed.id,
 	slug: seed.id,
 	title: seed.title,
@@ -391,7 +391,7 @@ export const LESSON_DETAILS: Record<string, LessonDetailFixture> =
 		]),
 	);
 
-export function getLessonById(id: string): Lesson | undefined {
+export function getLessonById(id: string): LessonPractice | undefined {
 	return LESSONS.find((lesson) => lesson.id === id);
 }
 

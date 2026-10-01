@@ -1,6 +1,7 @@
 import type { Activity } from "@engflex/contracts";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Clock3 } from "lucide-react";
+import { APP_ROUTES } from "#/app/app-route";
 import { Button } from "#/components/ui/button";
 import { type LessonPart, PART_META } from "#/features/lessons/parts";
 import { m } from "#/paraglide/messages";
@@ -38,7 +39,7 @@ export function ActivityRow({
 			</div>
 			<Button asChild variant="outline" size="sm" className="sm:ml-auto">
 				<Link
-					to="/lessons/$lessonId/parts/$part"
+					to={APP_ROUTES.LESSON_PART}
 					params={{ lessonId, part: activity.type }}
 				>
 					{m["lessons.start"]()}

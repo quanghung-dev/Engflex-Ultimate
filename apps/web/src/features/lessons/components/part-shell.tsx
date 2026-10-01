@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
+import { APP_ROUTES } from "#/app/app-route";
 import { CefrBadge } from "#/components/common/cefr-badge";
 import { getLessonDetail } from "#/features/lessons/fixtures";
 import { type LessonPart, PART_META } from "#/features/lessons/parts";
@@ -29,7 +30,7 @@ export function PartShell({
 			<div className="flex flex-col gap-4 rounded-xl border bg-card p-5">
 				<div className="flex flex-col gap-2">
 					<Link
-						to="/lessons/$lessonId"
+						to={APP_ROUTES.LESSON_DETAIL}
 						params={{ lessonId }}
 						className="inline-flex w-fit items-center gap-1 text-xs font-medium text-muted-foreground transition hover:text-primary"
 					>

@@ -1,6 +1,7 @@
-import type { Lesson, LessonProgress } from "@engflex/contracts";
+import type { LessonPractice, LessonPracticeProgress } from "@engflex/contracts";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
+import { APP_ROUTES } from "#/app/app-route";
 import { CefrBadge } from "#/components/common/cefr-badge";
 import { ProgressBar } from "#/components/common/progress-bar";
 import { m } from "#/paraglide/messages";
@@ -9,12 +10,12 @@ export function LessonCard({
 	lesson,
 	progress,
 }: {
-	lesson: Lesson;
-	progress: LessonProgress;
+	lesson: LessonPractice;
+	progress: LessonPracticeProgress;
 }) {
 	return (
 		<Link
-			to="/lessons/$lessonId"
+			to={APP_ROUTES.LESSON_DETAIL}
 			params={{ lessonId: lesson.id }}
 			className="flex h-full flex-col gap-3 rounded-xl border bg-card p-4 transition hover:border-primary/40 hover:bg-secondary/40"
 		>

@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { cn } from "cn";
 import { CircleCheck, Clock3 } from "lucide-react";
 import { toast } from "sonner";
+import { APP_ROUTES } from "#/app/app-route";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import type { SequenceCard as SequenceCardFixture } from "#/features/attempts/fixtures";
@@ -109,7 +110,7 @@ export function SequenceCard({ card }: { card: SequenceCardFixture }) {
 					card.target.kind === "lesson" ? (
 						<Button asChild variant="ghost" size="sm">
 							<Link
-								to="/lessons/$lessonId"
+								to={APP_ROUTES.LESSON_DETAIL}
 								params={{ lessonId: card.target.lessonId }}
 							>
 								{copy?.cta()}

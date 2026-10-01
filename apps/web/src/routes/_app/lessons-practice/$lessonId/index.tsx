@@ -18,14 +18,14 @@ import {
 } from "#/features/lessons/store";
 import { m } from "#/paraglide/messages";
 
-export const Route = createFileRoute("/_app/lessons/$lessonId/")({
+export const Route = createFileRoute("/_app/lessons-practice/$lessonId/")({
 	staticData: breadcrumb([
 		{ label: () => m["nav.lessons"](), target: { to: APP_ROUTES.LESSONS } },
 		lessonCrumbLabel,
 	]),
 	beforeLoad: ({ params }) => {
 		if (!getLessonById(params.lessonId)) {
-			throw redirect({ to: "/lessons" });
+			throw redirect({ to: APP_ROUTES.LESSONS });
 		}
 	},
 	component: LessonDetailPage,

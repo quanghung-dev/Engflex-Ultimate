@@ -1,6 +1,7 @@
 import type { Scenario } from "@engflex/contracts";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Play } from "lucide-react";
+import { APP_ROUTES } from "#/app/app-route";
 import { CefrBadge } from "#/components/common/cefr-badge";
 import { Button } from "#/components/ui/button";
 import { m } from "#/paraglide/messages";
@@ -45,7 +46,7 @@ export function VoiceBriefCard({
 					{m["voice.card.start"]()}
 				</Button>
 				<Button asChild variant="outline">
-					<Link to="/lessons/$lessonId" params={{ lessonId }}>
+					<Link to={APP_ROUTES.LESSON_DETAIL} params={{ lessonId }}>
 						<ArrowLeft data-icon="inline-start" />
 						{m["lessons.backToLesson"]()}
 					</Link>

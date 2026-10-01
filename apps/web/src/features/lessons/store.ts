@@ -1,4 +1,4 @@
-import type { LessonProgress, LessonStatus } from "@engflex/contracts";
+import type { LessonPracticeProgress, LessonStatus } from "@engflex/contracts";
 import { Store } from "@tanstack/store";
 import type { LessonPart } from "#/features/lessons/parts";
 import { LESSON_PART_TYPES } from "#/features/lessons/parts";
@@ -34,7 +34,7 @@ export const lessonsStore = new Store<LessonsState>(SEEDS);
 export function progressFrom(
 	state: LessonsState,
 	lessonId: string,
-): LessonProgress {
+): LessonPracticeProgress {
 	const lesson = LESSONS.find((item) => item.id === lessonId);
 	const total = lesson?.partCount ?? 0;
 	const completed = state.completedParts[lessonId] ?? [];
@@ -53,7 +53,7 @@ export function progressFrom(
 	};
 }
 
-export function getLessonProgress(lessonId: string): LessonProgress {
+export function getLessonProgress(lessonId: string): LessonPracticeProgress {
 	return progressFrom(lessonsStore.state, lessonId);
 }
 

@@ -9,7 +9,7 @@
  * optional; free talk has no score.
  */
 export interface CreateAttempt {
-  lessonId?: string;
+  lessonPracticeId?: string;
   activityId?: string;
   conversationId?: string;
   type: AttemptType;
