@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"io"
+	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -203,11 +204,11 @@ func (h *ConversationController) AnalyzeTurn(c *gin.Context) {
 }
 
 // Transcript applies one learner-initiated correction command. The engine owns
-// the window and resolves which turn is corrected; Go only proves the
+// the reviewed turn and resolves which turn is corrected; Go only proves the
 // conversation is the caller's and forwards.
 //
 // @Summary      Apply a transcript correction command
-// @Description  One endpoint for the correction modal's four actions (review, retake, send, dismiss). The engine owns the window state.
+// @Description  One endpoint for the correction modal's three actions (review, send, dismiss). The engine owns the reviewed turn.
 // @Tags         conversations
 // @Accept       json
 // @Produce      json
@@ -232,4 +233,110 @@ func (h *ConversationController) Transcript(c *gin.Context) {
 		return
 	}
 	common.OK(c, "transcript command applied", result)
+}
+
+// Transcribe transcribes one modal re-speak. Multipart audio in, sentence out;
+// the engine owns transcription, Go proves ownership and enforces the cap.
+//
+// @Summary      Transcribe a correction retake
+// @Description  Recorded re-speak audio for the correction modal; returns the sentence for the field. Nothing is committed.
+// @Tags         conversations
+// @Accept       multipart/form-data
+// @Produce      json
+// @Param        id path string true "conversation id"
+// @Param        audio formData file true "recorded re-speak"
+// @Success      200 {object} common.ApiResponse{data=responses.TranscribeResult}
+// @Failure      400 {object} common.ApiResponse
+// @Failure      404 {object} common.ApiResponse
+// @Failure      413 {object} common.ApiResponse
+// @Failure      422 {object} common.ApiResponse
+// @Failure      502 {object} common.ApiResponse
+// @Failure      503 {object} common.ApiResponse
+// @Router       /conversations/{id}/transcribe [post]
+func (h *ConversationController) Transcribe(c *gin.Context) {
+	file, err := c.FormFile("audio")
+	if err != nil {
+		common.Fail(c, common.BadRequest("audio is required"))
+		return
+	}
+	if file.Size > int64(services.MaxTranscribeBytes) {
+		common.Fail(c, common.New(http.StatusRequestEntityTooLarge, "audio too large"))
+		return
+	}
+	f, err := file.Open()
+	if err != nil {
+		common.Fail(c, common.BadRequest("audio is required"))
+		return
+	}
+	defer f.Close()
+	audio, err := io.ReadAll(io.LimitReader(f, int64(services.MaxTranscribeBytes)+1))
+	if err != nil {
+		common.Fail(c, common.BadRequest("audio is required"))
+		return
+	}
+	result, err := h.service.Transcribe(c.Request.Context(), middleware.UserID(c), c.Param("id"), audio, file.Header.Get("Content-Type"))
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	common.OK(c, "retake transcribed", result)
+}
+
+// Pronounce scores one exercise attempt against its reference sentence.
+// Multipart audio in, assessment out; the engine owns scoring, Go proves
+// ownership and enforces the cap.
+//
+// @Summary      Score a pronunciation attempt
+// @Description  Attempt audio plus the reference sentence; returns the score with per-word errors. Nothing is committed.
+// @Tags         conversations
+// @Accept       multipart/form-data
+// @Produce      json
+// @Param        id path string true "conversation id"
+// @Param        audio formData file true "recorded attempt"
+// @Param        expected_text formData string true "reference sentence"
+// @Param        lang formData string false "language code (default en)"
+// @Success      200 {object} common.ApiResponse{data=responses.PronounceResult}
+// @Failure      400 {object} common.ApiResponse
+// @Failure      404 {object} common.ApiResponse
+// @Failure      413 {object} common.ApiResponse
+// @Failure      422 {object} common.ApiResponse
+// @Failure      502 {object} common.ApiResponse
+// @Failure      503 {object} common.ApiResponse
+// @Router       /conversations/{id}/pronounce [post]
+func (h *ConversationController) Pronounce(c *gin.Context) {
+	file, err := c.FormFile("audio")
+	if err != nil {
+		common.Fail(c, common.BadRequest("audio is required"))
+		return
+	}
+	if file.Size > int64(services.MaxPronounceBytes) {
+		common.Fail(c, common.New(http.StatusRequestEntityTooLarge, "audio too large"))
+		return
+	}
+	f, err := file.Open()
+	if err != nil {
+		common.Fail(c, common.BadRequest("audio is required"))
+		return
+	}
+	defer f.Close()
+	audio, err := io.ReadAll(io.LimitReader(f, int64(services.MaxPronounceBytes)+1))
+	if err != nil {
+		common.Fail(c, common.BadRequest("audio is required"))
+		return
+	}
+	expectedText := c.PostForm("expected_text")
+	if expectedText == "" {
+		common.Fail(c, common.BadRequest("expected_text is required"))
+		return
+	}
+	lang := c.PostForm("lang")
+	if lang == "" {
+		lang = "en"
+	}
+	result, err := h.service.Pronounce(c.Request.Context(), middleware.UserID(c), c.Param("id"), expectedText, lang, audio, file.Header.Get("Content-Type"))
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	common.OK(c, "attempt scored", result)
 }

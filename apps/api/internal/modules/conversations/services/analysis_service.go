@@ -19,19 +19,18 @@ import (
 // coherence, cheap enough to stay inside the caller's 60s budget.
 const analysisContextTurns = 5
 
-// NormalizeLanguageFeedback validates the engine payload, fills the arrays
-// the UI iterates, and drops any speech block. P2 has no acoustic source, so
-// a speech score here would be fabricated by the model (spec D11). The
-// engine already validated with pydantic; this is the last gate before the
-// database. Exported so the service's external test package can reach it.
+// NormalizeLanguageFeedback validates the engine payload and fills the
+// arrays the UI iterates. The engine already validated with pydantic; this
+// is the last gate before the database. Exported so the service's external
+// test package can reach it.
 func NormalizeLanguageFeedback(raw json.RawMessage) (datatypes.JSON, error) {
 	var present map[string]json.RawMessage
 	if err := json.Unmarshal(raw, &present); err != nil {
 		return nil, err
 	}
-	// All four keys must be present: the engine contract guarantees them, so
+	// All five keys must be present: the engine contract guarantees them, so
 	// a missing key means validation was bypassed or the shape drifted.
-	for _, key := range []string{"annotated", "marks", "upgrades", "tip"} {
+	for _, key := range []string{"corrected", "spans", "relevance", "alternatives", "tip"} {
 		if _, ok := present[key]; !ok {
 			return nil, common.BadRequest("feedback is missing " + key)
 		}
@@ -40,16 +39,12 @@ func NormalizeLanguageFeedback(raw json.RawMessage) (datatypes.JSON, error) {
 	if err := json.Unmarshal(raw, &fb); err != nil {
 		return nil, err
 	}
-	if fb.Annotated == "" || fb.Tip == "" {
+	if fb.Corrected == "" || fb.Tip == "" {
 		// The two fields the UI cannot render without.
-		return nil, common.BadRequest("feedback is missing annotated or tip")
+		return nil, common.BadRequest("feedback is missing corrected or tip")
 	}
-	fb.Speech = nil
-	if fb.Marks == nil {
-		fb.Marks = []responses.WordMark{}
-	}
-	if fb.Upgrades == nil {
-		fb.Upgrades = []responses.PhraseUpgrade{}
+	if fb.Spans == nil {
+		fb.Spans = []responses.AnalysisSpan{}
 	}
 	out, err := json.Marshal(fb)
 	if err != nil {

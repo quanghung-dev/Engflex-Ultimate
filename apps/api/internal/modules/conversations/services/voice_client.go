@@ -6,7 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
+	"net/textproto"
 	"time"
 
 	"engflex-api/config"
@@ -42,8 +44,8 @@ type VoiceScenarioBody struct {
 	CEFRLevel string `json:"cefrLevel,omitempty"`
 }
 
-// VoiceLearnerBody mirrors the engine's LearnerBody. P2 sends nil and lets
-// the engine default to B1; the profiles module is not wired yet.
+// VoiceLearnerBody mirrors the engine's LearnerBody. Nil selects the engine
+// default (B1).
 type VoiceLearnerBody struct {
 	Level string   `json:"level"`
 	Goals []string `json:"goals,omitempty"`
@@ -84,15 +86,21 @@ type AnalyzeTurnResponse struct {
 	Feedback json.RawMessage `json:"feedback"`
 }
 
-// VoiceClient talks to the Python engine (dev runner or P3 supervisor).
+// VoiceClient talks to the Python voice engine.
 type VoiceClient interface {
 	Start(ctx context.Context, req StartRequest) (*StartResponse, error)
 	Offer(ctx context.Context, engineSessionID, method string, body []byte) ([]byte, int, error)
 	AnalyzeTurn(ctx context.Context, req AnalyzeTurnRequest) (*AnalyzeTurnResponse, error)
 	// Transcript is the one learner-initiated, session-scoped command. The
-	// engine owns the live transcript and the window state, so Go only checks
+	// engine owns the live transcript and the reviewed turn, so Go only checks
 	// ownership and forwards.
 	Transcript(ctx context.Context, conversationID, action, text string) (*responses.TranscriptResult, error)
+	// Transcribe sends one recorded re-speak for isolated transcription. The
+	// engine owns Deepgram, so Go only checks ownership and forwards.
+	Transcribe(ctx context.Context, conversationID string, audio []byte, mime string) (*responses.TranscribeResult, error)
+	// Pronounce scores one exercise attempt against its reference sentence.
+	// The engine owns scoring, so Go only checks ownership and forwards.
+	Pronounce(ctx context.Context, expectedText, lang string, audio []byte, mime string) (*responses.PronounceResult, error)
 }
 
 type httpVoiceClient struct {
@@ -246,4 +254,103 @@ func (c *httpVoiceClient) Transcript(ctx context.Context, conversationID, action
 		return nil, err
 	}
 	return &out, nil
+}
+
+func (c *httpVoiceClient) Transcribe(ctx context.Context, conversationID string, audio []byte, mime string) (*responses.TranscribeResult, error) {
+	var body bytes.Buffer
+	w := multipart.NewWriter(&body)
+	// CreatePart, not CreateFormFile: the latter labels every part
+	// application/octet-stream, and the engine gates on the real container.
+	partHeader := textproto.MIMEHeader{}
+	partHeader.Set("Content-Disposition", `form-data; name="audio"; filename="retake"`)
+	partHeader.Set("Content-Type", mime)
+	fw, err := w.CreatePart(partHeader)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := fw.Write(audio); err != nil {
+		return nil, err
+	}
+	if err := w.WriteField("conversationId", conversationID); err != nil {
+		return nil, err
+	}
+	if err := w.Close(); err != nil {
+		return nil, err
+	}
+	ctx, cancel := context.WithTimeout(ctx, c.analyzeTimeout)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/transcribe", &body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", w.FormDataContentType())
+	resp, err := c.http.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, &TranscriptStatusError{Path: "/transcribe", Status: resp.StatusCode, Body: raw}
+	}
+	var out responses.TranscribeResult
+	if err := json.Unmarshal(raw, &out); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *httpVoiceClient) Pronounce(ctx context.Context, expectedText, lang string, audio []byte, mime string) (*responses.PronounceResult, error) {
+	var body bytes.Buffer
+	w := multipart.NewWriter(&body)
+	// CreatePart, not CreateFormFile: the latter labels every part
+	// application/octet-stream, and the engine gates on the real container.
+	partHeader := textproto.MIMEHeader{}
+	partHeader.Set("Content-Disposition", `form-data; name="audio"; filename="attempt"`)
+	partHeader.Set("Content-Type", mime)
+	fw, err := w.CreatePart(partHeader)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := fw.Write(audio); err != nil {
+		return nil, err
+	}
+	if err := w.WriteField("expected_text", expectedText); err != nil {
+		return nil, err
+	}
+	if err := w.WriteField("lang", lang); err != nil {
+		return nil, err
+	}
+	if err := w.Close(); err != nil {
+		return nil, err
+	}
+	ctx, cancel := context.WithTimeout(ctx, c.analyzeTimeout)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/pronounce", &body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", w.FormDataContentType())
+	resp, err := c.http.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, &TranscriptStatusError{Path: "/pronounce", Status: resp.StatusCode, Body: raw}
+	}
+	var envelope struct {
+		Assessment responses.PronounceResult `json:"assessment"`
+	}
+	if err := json.Unmarshal(raw, &envelope); err != nil {
+		return nil, err
+	}
+	return &envelope.Assessment, nil
 }

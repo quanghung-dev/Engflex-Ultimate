@@ -3,7 +3,7 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
-from analysis import (
+from transcript.analyze import (
     AnalyzeRequest,
     ContextTurn,
     TurnFeedback,
@@ -23,6 +23,20 @@ def _request() -> AnalyzeRequest:
     )
 
 
+def _payload(**overrides: object) -> str:
+    import json
+
+    data: dict[str, object] = {
+        "corrected": "I went to the office yesterday.",
+        "spans": [],
+        "relevance": {"status": "relevant", "reason": None},
+        "alternatives": {"language": None, "contextual": None},
+        "tip": "Use the past tense for finished time.",
+    }
+    data.update(overrides)
+    return json.dumps(data)
+
+
 def test_messages_include_a_user_message():
     # The upstream provider rejects requests with no user message (the same
     # 400 that killed the greeting turn before the "Hello!" opener). The
@@ -35,16 +49,17 @@ def test_messages_include_a_user_message():
     assert "yesterday" in str(user[0].get("content", ""))
 
 
-def test_prompt_demands_the_four_keys():
+def test_prompt_demands_the_five_keys():
     prompt = build_feedback_prompt(_request())
-    for key in ("annotated", "marks", "upgrades", "tip"):
+    for key in ("corrected", "spans", "relevance", "alternatives", "tip"):
         assert key in prompt
     assert "yesterday" in prompt
 
 
 def test_prompt_never_asks_for_phonemes():
-    # Phonemes are an acoustic measurement nothing currently produces. The
-    # contract must not ask for them, or the model invents scores.
+    # Spans are word-level language spans, never phonemes: nothing on this
+    # route produces acoustic measurements, so the contract must not ask for
+    # them, or the model invents scores.
     assert "phoneme" not in build_feedback_prompt(_request()).lower()
 
 
@@ -62,13 +77,13 @@ def test_prompt_carries_no_level_or_objective():
 
 
 def test_extract_returns_a_bare_object():
-    raw = '{"annotated": "a", "marks": [], "upgrades": [], "tip": "t"}'
+    raw = '{"corrected": "a", "spans": [], "relevance": {"status": "relevant", "reason": null}, "alternatives": {"language": null, "contextual": null}, "tip": "t"}'
     assert extract_json_object(raw) == raw
 
 
 def test_extract_ignores_prose_around_the_object():
-    raw = 'Sure!\n{"annotated": "a"}\nHope that helps.'
-    assert extract_json_object(raw) == '{"annotated": "a"}'
+    raw = 'Sure!\n{"corrected": "a"}\nHope that helps.'
+    assert extract_json_object(raw) == '{"corrected": "a"}'
 
 
 def test_extract_raises_when_there_is_no_json_block():
@@ -77,33 +92,74 @@ def test_extract_raises_when_there_is_no_json_block():
 
 
 def test_parse_validates_a_clean_object():
+    fb = parse_feedback(_payload())
+    assert fb.corrected == "I went to the office yesterday."
+    assert fb.spans == []
+    assert fb.relevance.status == "relevant"
+    assert fb.alternatives.language is None
+
+
+def test_parse_accepts_a_span_with_occurrence():
     fb = parse_feedback(
-        '{"annotated": "I went yesterday.", "marks": [], "upgrades": [], "tip": "past"}'
+        _payload(
+            spans=[
+                {
+                    "text": "didn't went",
+                    "occurrence": 2,
+                    "status": "incorrect",
+                    "correction": "didn't go",
+                    "reason": "Use the base form after did or didn't.",
+                }
+            ]
+        )
     )
-    assert fb.annotated == "I went yesterday."
-    assert fb.marks == []
+    assert fb.spans[0].occurrence == 2
+    assert fb.spans[0].correction == "didn't go"
 
 
 def test_parse_survives_a_bolded_reply():
     # The model ignores response_format on this route and answers in
     # markdown with a JSON object inside.
-    raw = (
-        "**Corrected sentence:** I **went** to the office yesterday.\n\n"
-        '{"annotated": "I went yesterday.", "marks": [], "upgrades": [], "tip": "past"}'
-    )
-    assert parse_feedback(raw).tip == "past"
+    raw = "**Corrected sentence:** I **went** to the office yesterday.\n\n" + _payload()
+    assert parse_feedback(raw).tip == "Use the past tense for finished time."
 
 
 def test_parse_raises_on_an_unexpected_shape():
     with pytest.raises(ValidationError):
-        parse_feedback('{"annotated": "a", "tip": "t"}')  # marks/upgrades missing
+        parse_feedback('{"corrected": "a", "tip": "t"}')  # spans/relevance/alternatives missing
 
 
-def test_parse_raises_when_a_mark_has_an_unknown_status():
+def test_parse_raises_when_a_span_has_an_unknown_status():
     with pytest.raises(ValidationError):
         parse_feedback(
-            '{"annotated": "a", "marks": [{"word": "go", "status": "great"}],'
-            ' "upgrades": [], "tip": "t"}'
+            _payload(
+                spans=[
+                    {
+                        "text": "go",
+                        "occurrence": 1,
+                        "status": "error",
+                        "correction": "went",
+                        "reason": "Past tense.",
+                    }
+                ]
+            )
+        )
+
+
+def test_parse_raises_when_occurrence_is_not_positive():
+    with pytest.raises(ValidationError):
+        parse_feedback(
+            _payload(
+                spans=[
+                    {
+                        "text": "go",
+                        "occurrence": 0,
+                        "status": "incorrect",
+                        "correction": "went",
+                        "reason": "Past tense.",
+                    }
+                ]
+            )
         )
 
 
@@ -124,7 +180,13 @@ def test_models_derive_a_valid_strict_schema():
     schema: dict[str, Any] = param["schema"]
 
     assert param["strict"] is True
-    assert set(schema["required"]) == {"annotated", "marks", "upgrades", "tip"}
+    assert set(schema["required"]) == {
+        "corrected",
+        "spans",
+        "relevance",
+        "alternatives",
+        "tip",
+    }
     assert schema["additionalProperties"] is False
     defs: dict[str, Any] = schema["$defs"]
     for name, definition in defs.items():

@@ -60,7 +60,7 @@ async def bot(runner_args: RunnerArguments):
     start_time = time.time()
     context = build_context()
     collector = TurnCollector()
-    worker, user_aggregator, assistant_aggregator, recovery = await create_voice_bot_worker(
+    worker, user_aggregator, assistant_aggregator = await create_voice_bot_worker(
         transport,
         context,
         max_duration=body.maxDuration,
@@ -73,7 +73,6 @@ async def bot(runner_args: RunnerArguments):
             conversation_id=body.conversationId,
             worker=worker,
             collector=collector,
-            recovery=recovery,
         ),
     )
     try:
@@ -85,7 +84,6 @@ async def bot(runner_args: RunnerArguments):
             body=body,
             start_time=start_time,
             collector=collector,
-            recovery=recovery,
         )
 
         from pipecat.workers.runner import WorkerRunner

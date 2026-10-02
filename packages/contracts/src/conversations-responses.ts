@@ -48,73 +48,49 @@ export interface ConversationSession {
 // source: feedback.go
 
 /**
- * WordMark highlights one word inside an analyzed turn (feedback.marks[]).
+ * AnalysisSpan is one problematic span: the smallest meaningful unit,
+ * located by exact substring plus 1-based occurrence.
  */
-export interface WordMark {
-  word: string;
-  status: WordMarkStatus;
+export interface AnalysisSpan {
+  text: string;
+  occurrence: number /* int */;
+  status: SpanStatus;
+  correction: string;
+  reason: string;
 }
 /**
- * PhraseUpgrade suggests replacing original with one of replacements
- * ("primary concern" -> "decisive constraint").
+ * Relevance judges whether a learner turn answers its conversation context.
  */
-export interface PhraseUpgrade {
-  original: string;
-  replacements: string[];
-  category: string;
+export interface Relevance {
+  status: RelevanceStatus;
+  reason?: string;
 }
 /**
- * PhonemeMark is one pronunciation diagnostic card (/θ/ in "both"). It only
- * ever appears inside SpeechFeedback: phoneme scores are an acoustic
- * measurement nothing currently produces, so the contract does not ask for
- * them and a model cannot return a number we would have to strip.
+ * Alternative is one better phrasing or answer with its reason.
  */
-export interface PhonemeMark {
-  ipa: string;
-  word: string;
-  feature: string;
-  accuracyPct: number /* int */;
-  label: string;
+export interface Alternative {
+  text: string;
+  reason: string;
 }
 /**
- * TurnFeedback is the per-subject coaching payload. There is no `type`
- * discriminator and no top-level `phonemes`: the subject-to-product mapping
- * is a product invariant, and phoneme scores are an acoustic measurement
- * nothing currently produces.
+ * SpanAlternatives holds the singular alternatives: language preserves the
+ * learner's meaning, contextual answers the conversation better. Null means
+ * not produced.
+ */
+export interface SpanAlternatives {
+  language?: Alternative;
+  contextual?: Alternative;
+}
+/**
+ * TurnFeedback is the conversation-aware English feedback payload:
+ * language spans, conversational relevance, and alternatives.
  */
 export interface TurnFeedback {
-  annotated: string;
-  marks: WordMark[];
-  upgrades: PhraseUpgrade[];
+  corrected: string;
+  spans: AnalysisSpan[];
+  relevance: Relevance;
+  alternatives: SpanAlternatives;
   tip: string;
-  /**
-   * Speech is reserved for a P3 provider. Always absent in P2.
-   */
-  speech?: SpeechFeedback;
-}
-/**
- * SpeechFeedback is the acoustic assessment block produced by a provider that
- * takes audio, not a transcript. It exists so the wire contract does not
- * change when speech scoring arrives.
- */
-export interface SpeechFeedback {
-  provider: string;
-  phonemes: PhonemeMark[];
-  fluency?: SpeechScore;
-  prosody?: SpeechScore;
-  overall?: SpeechScore;
-  /**
-   * Transcript is the provider's own recognition result, which may differ
-   * from the conversational STT text. Absent until a provider exists.
-   */
-  transcript?: string;
-}
-/**
- * SpeechScore is one bounded assessment dimension.
- */
-export interface SpeechScore {
-  score: number /* int */;
-  label: string;
 }
 
 //////////
@@ -140,14 +116,14 @@ export interface IceConfig {
 
 /**
  * TranscriptCommand is the web-facing request for the correction modal.
- * The four actions are one state machine on the engine, so they are one
+ * The three actions share the reviewed turn on the engine, so they are one
  * endpoint. The client never names a turn: its row ordinal and the engine's
  * collector position are separate bookkeeping, so the engine resolves the target
  * and hands back its own copy of the text.
  */
 export interface TranscriptCommand {
   /**
-   * Action is one of review, retake, send, dismiss.
+   * Action is one of review, send, dismiss.
    */
   action: string;
   /**
@@ -156,10 +132,37 @@ export interface TranscriptCommand {
   text?: string;
 }
 /**
- * TranscriptResult is the engine's reply: where the window is now, and the
+ * TranscriptResult is the engine's reply: where the review is now, and the
  * transcript text when the action produced any.
  */
 export interface TranscriptResult {
   state: string;
   text?: string;
+}
+/**
+ * TranscribeResult is the engine's reply to a retake upload: the sentence it heard.
+ */
+export interface TranscribeResult {
+  text: string;
+}
+/**
+ * MispronouncedWord is one engine-flagged word: expected vs heard IPA.
+ */
+export interface MispronouncedWord {
+  word: string;
+  expected: string;
+  heard: string;
+  confidence: number /* float64 */;
+}
+/**
+ * PronounceResult is the engine's reply to an exercise attempt: the score
+ * plus per-word errors. The engine owns scoring; Go forwards verbatim.
+ */
+export interface PronounceResult {
+  score: number /* float64 */;
+  transcription: string;
+  phonemeErrorRate: number /* float64 */;
+  wordErrorRate: number /* float64 */;
+  acousticDistance: number /* float64 */;
+  errors: MispronouncedWord[];
 }

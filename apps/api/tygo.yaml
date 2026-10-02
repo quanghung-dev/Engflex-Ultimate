@@ -24,7 +24,8 @@ type_mappings:
   "enums.VocabularyDomain": "VocabularyDomain"
   "enums.VocabularySort": "VocabularySort"
   "enums.VocabularySource": "VocabularySource"
-  "enums.WordMarkStatus": "WordMarkStatus"
+  "enums.SpanStatus": "SpanStatus"
+  "enums.RelevanceStatus": "RelevanceStatus"
   # embedded by list request DTOs tagged `tstype:",extends"`
   "common.ListParams": "ListParams"
 

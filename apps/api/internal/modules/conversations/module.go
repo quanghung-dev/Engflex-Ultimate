@@ -31,8 +31,13 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.VoiceConfig) {
 	g.PATCH("/:id/offer", middleware.RequireAuth(), ctl.Offer)
 	g.POST("/:id/end", middleware.RequireAuth(), ctl.End)
 	g.POST("/:id/turns/:position/analyze", middleware.RequireAuth(), ctl.AnalyzeTurn)
-	// One command for the correction modal: the engine owns the window state.
+	// One command for the correction modal: the engine owns the reviewed turn.
+	// Retake audio uploads here; gin buffers the multipart file in memory, so
+	// the controller caps the declared size and the service re-checks the
+	// actual bytes before proxying.
 	g.POST("/:id/transcript", middleware.RequireAuth(), ctl.Transcript)
+	g.POST("/:id/transcribe", middleware.RequireAuth(), ctl.Transcribe)
+	g.POST("/:id/pronounce", middleware.RequireAuth(), ctl.Pronounce)
 
 	cb := controllers.NewVoiceCallbackController(svc)
 	tcb := controllers.NewTurnCallbackController(svc)

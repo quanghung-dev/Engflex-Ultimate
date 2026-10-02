@@ -72,11 +72,11 @@ def build_tts() -> TTSService:
 
 
 def build_context() -> LLMContext:
-    # One seeded user opener, zero system messages. Two constraints from the
-    # upstream provider (probed 2026-09-25): it rejects requests with no user
-    # message (the greeting turn died with 400), and stuffing the prompt into
-    # the context is deprecated since pipecat 1.9 — the tutor prompt travels
-    # via the LLM service's system_instruction instead (single system message).
+    # One seeded user opener, zero system messages. Two upstream constraints:
+    # requests with no user message are rejected with 400, and stuffing the
+    # prompt into the context is deprecated since pipecat 1.9 — the tutor
+    # prompt travels via the LLM service's system_instruction instead (single
+    # system message).
     # The opener is a bare greeting on purpose: anything more specific makes
     # the model *reply* to it ("No problem—…") instead of delivering its own
     # opening line.

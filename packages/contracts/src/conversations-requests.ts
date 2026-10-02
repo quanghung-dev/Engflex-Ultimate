@@ -12,41 +12,45 @@ export interface StartConversation {
   scenarioId?: string;
 }
 /**
- * WordMarkInput highlights one word inside an analyzed turn. Request-side
- * shapes carry an Input suffix so the contracts barrel can re-export both
- * requests and responses without name collisions (see spec §6).
+ * AnalysisSpanInput is one problematic span in an ingested analysis.
  */
-export interface WordMarkInput {
-  word: string;
-  status: WordMarkStatus;
+export interface AnalysisSpanInput {
+  text: string;
+  occurrence: number /* int */;
+  status: SpanStatus;
+  correction: string;
+  reason: string;
 }
 /**
- * PhonemeMarkInput is one pronunciation diagnostic card (/θ/ in "both").
+ * RelevanceInput judges whether a learner turn answers its context.
  */
-export interface PhonemeMarkInput {
-  ipa: string;
-  word: string;
-  feature: string;
-  accuracyPct: number /* int */;
-  label: string;
+export interface RelevanceInput {
+  status: RelevanceStatus;
+  reason?: string;
 }
 /**
- * PhraseUpgradeInput suggests replacing original with one of replacements.
+ * AlternativeInput is one better phrasing or answer with its reason.
  */
-export interface PhraseUpgradeInput {
-  original: string;
-  replacements: string[];
-  category: string;
+export interface AlternativeInput {
+  text: string;
+  reason: string;
 }
 /**
- * TurnFeedbackInput carries per-turn analysis (word marks, phoneme
- * accuracy, phrase upgrades, coaching tip).
+ * SpanAlternativesInput holds the singular alternatives; null means not produced.
+ */
+export interface SpanAlternativesInput {
+  language?: AlternativeInput;
+  contextual?: AlternativeInput;
+}
+/**
+ * TurnFeedbackInput carries per-turn analysis (spans, relevance,
+ * alternatives, coaching tip).
  */
 export interface TurnFeedbackInput {
-  annotated: string;
-  marks: WordMarkInput[];
-  phonemes: PhonemeMarkInput[];
-  upgrades: PhraseUpgradeInput[];
+  corrected: string;
+  spans: AnalysisSpanInput[];
+  relevance: RelevanceInput;
+  alternatives: SpanAlternativesInput;
   tip: string;
 }
 /**

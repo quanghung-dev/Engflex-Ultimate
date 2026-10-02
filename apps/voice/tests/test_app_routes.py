@@ -12,10 +12,10 @@ from fastapi.testclient import TestClient
 from pipecat.runner.run import app as runner_app
 from pydantic import ValidationError
 
-import analysis
 import app.routes  # noqa: F401 -- side effect: registers the routes
-from analysis import TurnFeedback
+import transcript.analyze as analysis
 from app import routes
+from transcript.analyze import TurnFeedback
 
 
 def _payload(**overrides):
@@ -31,9 +31,10 @@ def _payload(**overrides):
 
 def _feedback(**overrides: object) -> TurnFeedback:
     data: dict[str, object] = {
-        "annotated": "I went yesterday.",
-        "marks": [],
-        "upgrades": [],
+        "corrected": "I went yesterday.",
+        "spans": [],
+        "relevance": {"status": "relevant", "reason": None},
+        "alternatives": {"language": None, "contextual": None},
         "tip": "past tense",
     }
     data.update(overrides)
@@ -86,6 +87,7 @@ def test_analyze_rejects_missing_text():
 
 def test_validation_error_shape_is_rejected():
     with pytest.raises(ValidationError):
-        # `marks` and `upgrades` are required by the schema, which is the
-        # point of this test — model_validate keeps the type checker happy.
-        TurnFeedback.model_validate({"annotated": "a", "tip": "t"})
+        # `spans`, `relevance` and `alternatives` are required by the schema,
+        # which is the point of this test — model_validate keeps the type
+        # checker happy.
+        TurnFeedback.model_validate({"corrected": "a", "tip": "t"})

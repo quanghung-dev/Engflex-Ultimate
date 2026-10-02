@@ -13,11 +13,11 @@ and the UI group ordinal keeps matching the persisted ``position``.
 The output is 48 kHz mono 16-bit: Chromium's ``--use-file-for-fake-audio-
 capture`` runs its capture pipeline at 48 kHz, and feeding it the voice's
 native 22050 Hz makes it play ~2.2x fast (chipmunk), which STT transcribes as
-garbage — observed live as "on contact we check it right" for "I go to the
-office yesterday". Resampling here (linear, stdlib-only) keeps the fixture
+garbage (e.g. "on contact we check it right" for "I go to the
+office yesterday"). Resampling here (linear, stdlib-only) keeps the fixture
 self-contained with no ffmpeg dependency.
 
-Two more hardening details (both verified live):
+Two more hardening details:
 
 - The sentence starts with a sacrificial "Well,": onset clipping eats the
   filler, never the error under test.
@@ -26,10 +26,10 @@ Two more hardening details (both verified live):
   can each cost an instance; the survivors still carry "yesterday".
 
 The lead and gaps are DIGITAL SILENCE, deliberately. A −45 dBFS comfort-noise
-floor (tried first for AGC settling) made streaming STT emit a sustained
-hallucinated narrative — a new poetic "turn" every few seconds, drowning the
-real instances — while absolute silence yields finals only on speech. With
-Opus DTX the silence costs no packets either.
+floor makes streaming STT emit a sustained hallucinated narrative — a new
+poetic "turn" every few seconds, drowning the real instances — while absolute
+silence yields finals only on speech. With Opus DTX the silence costs no
+packets either.
 
 Run from ``apps/voice`` (the .env is cwd-relative):
 ``uv run python scripts/make_fake_mic_audio.py <out.wav>``

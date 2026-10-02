@@ -12,7 +12,6 @@ from dataclasses import dataclass
 from pipecat.pipeline.worker import PipelineWorker
 
 from transcript.capture import TurnCollector
-from transcript.window import TranscriptRecoveryProcessor
 
 
 @dataclass
@@ -27,7 +26,6 @@ class SessionControl:
     conversation_id: str
     worker: PipelineWorker
     collector: TurnCollector
-    recovery: TranscriptRecoveryProcessor
 
 
 _SESSIONS: dict[str, SessionControl] = {}

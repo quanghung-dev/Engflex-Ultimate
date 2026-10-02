@@ -20,9 +20,10 @@ func testVoiceClient(t *testing.T, handler http.HandlerFunc) services.VoiceClien
 	srv := httptest.NewServer(handler)
 	t.Cleanup(srv.Close)
 	return services.NewHTTPVoiceClient(config.VoiceConfig{
-		ServiceURL:   srv.URL,
-		StartTimeout: 2 * time.Second,
-		OfferTimeout: 2 * time.Second,
+		ServiceURL:     srv.URL,
+		StartTimeout:   2 * time.Second,
+		OfferTimeout:   2 * time.Second,
+		AnalyzeTimeout: 2 * time.Second,
 	})
 }
 
@@ -79,4 +80,62 @@ func TestVoiceClientOfferPassThrough(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, status)
 	assert.JSONEq(t, `{"echo": true}`, string(body))
+}
+
+func TestVoiceClientTranscribeForwardsTheRealContainer(t *testing.T) {
+	// The engine gates on the part's Content-Type. multipart.CreateFormFile
+	// labels everything application/octet-stream, which the engine refuses —
+	// so the client must set the real container on the part.
+	client := testVoiceClient(t, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "/transcribe", r.URL.Path)
+		require.NoError(t, r.ParseMultipartForm(1<<20))
+		_, header, err := r.FormFile("audio")
+		require.NoError(t, err)
+		assert.Equal(t, "audio/wav", header.Header.Get("Content-Type"))
+		assert.Equal(t, "c1", r.FormValue("conversationId"))
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"text":"Well, I went."}`))
+	})
+
+	res, err := client.Transcribe(context.Background(), "c1", []byte("fake-wav"), "audio/wav")
+	require.NoError(t, err)
+	assert.Equal(t, "Well, I went.", res.Text)
+}
+
+func TestVoiceClientPronounce(t *testing.T) {
+	tests := []struct {
+		name      string
+		status    int
+		body      string
+		wantErr   bool
+		wantScore float64
+	}{
+		{name: "ok", status: http.StatusOK, body: `{"assessment":{"score":91.11,"transcription":"I WENT YESTERDAY","phonemeErrorRate":0.0,"wordErrorRate":0.0,"acousticDistance":7.289,"errors":[]}}`, wantScore: 91.11},
+		{name: "engine 422", status: http.StatusUnprocessableEntity, body: `{"message":"no speech decoded"}`, wantErr: true},
+		{name: "malformed json", status: http.StatusOK, body: `{`, wantErr: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			client := testVoiceClient(t, func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, "/pronounce", r.URL.Path)
+				require.NoError(t, r.ParseMultipartForm(1<<20))
+				_, header, err := r.FormFile("audio")
+				require.NoError(t, err)
+				assert.Equal(t, "audio/webm", header.Header.Get("Content-Type"))
+				assert.Equal(t, "I went yesterday.", r.FormValue("expected_text"))
+				assert.Equal(t, "en", r.FormValue("lang"))
+				w.WriteHeader(tt.status)
+				_, _ = w.Write([]byte(tt.body))
+			})
+
+			res, err := client.Pronounce(context.Background(), "I went yesterday.", "en", []byte("fake-webm"), "audio/webm")
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantScore, res.Score)
+		})
+	}
 }

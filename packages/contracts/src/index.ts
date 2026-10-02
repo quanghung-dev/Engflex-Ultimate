@@ -25,10 +25,11 @@ declare global {
   type ListParams = Common.ListParams;
   type ScenarioDifficulty = Enums.ScenarioDifficulty;
   type TurnRole = Enums.TurnRole;
+  type SpanStatus = Enums.SpanStatus;
+  type RelevanceStatus = Enums.RelevanceStatus;
   type VocabularyDomain = Enums.VocabularyDomain;
   type VocabularySort = Enums.VocabularySort;
   type VocabularySource = Enums.VocabularySource;
-  type WordMarkStatus = Enums.WordMarkStatus;
 }
 
 export * from './common.ts';

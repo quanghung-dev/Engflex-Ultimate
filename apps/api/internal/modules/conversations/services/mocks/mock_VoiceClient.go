@@ -202,6 +202,92 @@ func (_c *MockVoiceClient_Offer_Call) RunAndReturn(run func(ctx context.Context,
 	return _c
 }
 
+// Pronounce provides a mock function for the type MockVoiceClient
+func (_mock *MockVoiceClient) Pronounce(ctx context.Context, expectedText string, lang string, audio []byte, mime string) (*responses.PronounceResult, error) {
+	ret := _mock.Called(ctx, expectedText, lang, audio, mime)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Pronounce")
+	}
+
+	var r0 *responses.PronounceResult
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, []byte, string) (*responses.PronounceResult, error)); ok {
+		return returnFunc(ctx, expectedText, lang, audio, mime)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, []byte, string) *responses.PronounceResult); ok {
+		r0 = returnFunc(ctx, expectedText, lang, audio, mime)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*responses.PronounceResult)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string, []byte, string) error); ok {
+		r1 = returnFunc(ctx, expectedText, lang, audio, mime)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockVoiceClient_Pronounce_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Pronounce'
+type MockVoiceClient_Pronounce_Call struct {
+	*mock.Call
+}
+
+// Pronounce is a helper method to define mock.On call
+//   - ctx context.Context
+//   - expectedText string
+//   - lang string
+//   - audio []byte
+//   - mime string
+func (_e *MockVoiceClient_Expecter) Pronounce(ctx any, expectedText any, lang any, audio any, mime any) *MockVoiceClient_Pronounce_Call {
+	return &MockVoiceClient_Pronounce_Call{Call: _e.mock.On("Pronounce", ctx, expectedText, lang, audio, mime)}
+}
+
+func (_c *MockVoiceClient_Pronounce_Call) Run(run func(ctx context.Context, expectedText string, lang string, audio []byte, mime string)) *MockVoiceClient_Pronounce_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 []byte
+		if args[3] != nil {
+			arg3 = args[3].([]byte)
+		}
+		var arg4 string
+		if args[4] != nil {
+			arg4 = args[4].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+		)
+	})
+	return _c
+}
+
+func (_c *MockVoiceClient_Pronounce_Call) Return(pronounceResult *responses.PronounceResult, err error) *MockVoiceClient_Pronounce_Call {
+	_c.Call.Return(pronounceResult, err)
+	return _c
+}
+
+func (_c *MockVoiceClient_Pronounce_Call) RunAndReturn(run func(ctx context.Context, expectedText string, lang string, audio []byte, mime string) (*responses.PronounceResult, error)) *MockVoiceClient_Pronounce_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Start provides a mock function for the type MockVoiceClient
 func (_mock *MockVoiceClient) Start(ctx context.Context, req services.StartRequest) (*services.StartResponse, error) {
 	ret := _mock.Called(ctx, req)
@@ -266,6 +352,86 @@ func (_c *MockVoiceClient_Start_Call) Return(startResponse *services.StartRespon
 }
 
 func (_c *MockVoiceClient_Start_Call) RunAndReturn(run func(ctx context.Context, req services.StartRequest) (*services.StartResponse, error)) *MockVoiceClient_Start_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Transcribe provides a mock function for the type MockVoiceClient
+func (_mock *MockVoiceClient) Transcribe(ctx context.Context, conversationID string, audio []byte, mime string) (*responses.TranscribeResult, error) {
+	ret := _mock.Called(ctx, conversationID, audio, mime)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Transcribe")
+	}
+
+	var r0 *responses.TranscribeResult
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []byte, string) (*responses.TranscribeResult, error)); ok {
+		return returnFunc(ctx, conversationID, audio, mime)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []byte, string) *responses.TranscribeResult); ok {
+		r0 = returnFunc(ctx, conversationID, audio, mime)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*responses.TranscribeResult)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, []byte, string) error); ok {
+		r1 = returnFunc(ctx, conversationID, audio, mime)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockVoiceClient_Transcribe_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Transcribe'
+type MockVoiceClient_Transcribe_Call struct {
+	*mock.Call
+}
+
+// Transcribe is a helper method to define mock.On call
+//   - ctx context.Context
+//   - conversationID string
+//   - audio []byte
+//   - mime string
+func (_e *MockVoiceClient_Expecter) Transcribe(ctx any, conversationID any, audio any, mime any) *MockVoiceClient_Transcribe_Call {
+	return &MockVoiceClient_Transcribe_Call{Call: _e.mock.On("Transcribe", ctx, conversationID, audio, mime)}
+}
+
+func (_c *MockVoiceClient_Transcribe_Call) Run(run func(ctx context.Context, conversationID string, audio []byte, mime string)) *MockVoiceClient_Transcribe_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 []byte
+		if args[2] != nil {
+			arg2 = args[2].([]byte)
+		}
+		var arg3 string
+		if args[3] != nil {
+			arg3 = args[3].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *MockVoiceClient_Transcribe_Call) Return(transcribeResult *responses.TranscribeResult, err error) *MockVoiceClient_Transcribe_Call {
+	_c.Call.Return(transcribeResult, err)
+	return _c
+}
+
+func (_c *MockVoiceClient_Transcribe_Call) RunAndReturn(run func(ctx context.Context, conversationID string, audio []byte, mime string) (*responses.TranscribeResult, error)) *MockVoiceClient_Transcribe_Call {
 	_c.Call.Return(run)
 	return _c
 }

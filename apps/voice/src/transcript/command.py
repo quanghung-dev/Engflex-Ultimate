@@ -1,12 +1,14 @@
-"""The transcript command: one endpoint, four actions, one window.
+"""The transcript command: one endpoint, three actions, one reviewed turn.
 
 Everything here acts on a live session and is reached from an HTTP route that Go
 proxies. There is one operation: **rewriting** the turn under review. The field
-holds one sentence however the learner filled it, so typing it and speaking it
-mean the same thing — the turn's text is replaced, everything after it is
-dropped, and inference re-runs so the tutor answers the new words.
+holds one sentence however the learner filled it — typed, or transcribed from
+an isolated re-speak that never entered the pipeline — so both mean the same
+thing: the turn's text is replaced, everything after it is dropped, and
+inference re-runs so the tutor answers the new words.
 
-Nothing here reads STT confidence. It no longer decides anything.
+The reviewed turn is tracked as a position on the collector, not as pipeline
+state. `review` marks it, `send` rewrites it, `dismiss` forgets it.
 """
 
 from typing import Any
@@ -20,13 +22,12 @@ from pipecat.frames.frames import (
 
 from transcript.correction import replace_last_user_message
 from transcript.sessions import SessionControl, get
-from transcript.window import RecoveryState
 
 # A correction is a sentence or two, not an essay; the cap stops a paste from
 # becoming a context bomb.
 MAX_CORRECTION_CHARS = 2000
 
-ACTIONS = ("review", "retake", "send", "dismiss")
+ACTIONS = ("review", "send", "dismiss")
 
 
 def require_session(conversation_id: str) -> SessionControl:
@@ -39,30 +40,20 @@ def require_session(conversation_id: str) -> SessionControl:
 # --- actions -----------------------------------------------------------------
 
 
-def _review(control: SessionControl) -> dict[str, Any]:
-    """Open the window on the latest learner turn and hand back its text."""
+async def _review(control: SessionControl) -> dict[str, Any]:
+    """Hand back the latest learner turn and mark it as the one under review."""
     record = control.collector.latest_user_record()
     if record is None:
         raise HTTPException(status_code=409, detail="no user turn to review")
-    control.recovery.open(record.position)
-    logger.info(f"transcript_window_opened position={record.position}")
-    return {"state": control.recovery.state.value, "text": record.text}
+    control.collector.mark_reviewed(record.position)
+    logger.info(f"transcript_reviewed position={record.position}")
+    return {"state": "reviewing", "text": record.text}
 
 
-def _retake(control: SessionControl) -> dict[str, Any]:
-    """Listen for the next utterance instead of committing it."""
-    try:
-        control.recovery.start_listening()
-    except ValueError as exc:
-        raise HTTPException(status_code=409, detail=str(exc)) from exc
-    logger.info("transcript_listening_started")
-    return {"state": control.recovery.state.value}
-
-
-def _dismiss(control: SessionControl) -> dict[str, Any]:
-    """Close the window. Records nothing — the utterance was never kept."""
-    control.recovery.close()
-    return {"state": control.recovery.state.value}
+async def _dismiss(control: SessionControl) -> dict[str, Any]:
+    """Forget the review. Records nothing — the utterance was never kept."""
+    control.collector.clear_reviewed()
+    return {"state": "idle"}
 
 
 async def _send(control: SessionControl, text: str) -> dict[str, Any]:
@@ -73,30 +64,13 @@ async def _send(control: SessionControl, text: str) -> dict[str, Any]:
         raise HTTPException(status_code=422, detail="text too long")
 
     # There is one operation, not two. The field holds one sentence however it
-    # was filled, so a spoken correction and a typed one both mean "this is what
-    # I said", and both replace the turn under review.
-    if control.recovery.state not in (RecoveryState.REVIEWING, RecoveryState.HOLDING):
+    # was filled, so a transcribed re-speak and a typed edit both mean "this is
+    # what I said", and both replace the turn under review.
+    position = control.collector.reviewed_position
+    if position is None:
         raise HTTPException(status_code=409, detail="no correction in progress")
-    return await _rewrite(control, cleaned)
-
-
-# --- the operation ------------------------------------------------------------
-
-
-async def _rewrite(control: SessionControl, cleaned: str) -> dict[str, Any]:
-    """Rewrite the reviewed turn in place and regenerate the tutor's reply."""
-    # The window remembers which turn the learner is looking at. Normally it is
-    # also the latest, because the learner's mic is muted for the whole window
-    # so no new turn can land underneath the modal. Verify rather than assume:
-    # rewriting "whatever is newest" is how a correction lands on the wrong
-    # turn, which is the one failure this design exists to prevent.
-    target_position = control.recovery.target_position
     record = next(
-        (
-            r
-            for r in control.collector.records()
-            if r.position == target_position and r.role == "user"
-        ),
+        (r for r in control.collector.records() if r.position == position and r.role == "user"),
         None,
     )
     if record is None:
@@ -106,12 +80,19 @@ async def _rewrite(control: SessionControl, cleaned: str) -> dict[str, Any]:
         # spoken reply, so refuse instead of regenerating the same answer.
         raise HTTPException(status_code=422, detail="text unchanged")
     if control.collector.latest_user_record() is not record:
-        # Something committed after the window opened. Refuse: the learner is
-        # looking at one turn and we would rewrite another.
+        # Something committed after the review. Refuse: the learner is looking
+        # at one turn and we would rewrite another.
         raise HTTPException(status_code=409, detail="a newer turn was committed")
+    return await _rewrite(control, cleaned)
 
+
+# --- the operation ------------------------------------------------------------
+
+
+async def _rewrite(control: SessionControl, cleaned: str) -> dict[str, Any]:
+    """Rewrite the reviewed turn in place and regenerate the tutor's reply."""
     position = control.collector.begin_correction(cleaned)
-    if position is None:  # pragma: no cover - record exists a line above
+    if position is None:  # pragma: no cover - send resolved the record above
         raise HTTPException(status_code=409, detail="no user turn to correct")
 
     # The in-flight reply answered text that no longer exists. A no-op when the
@@ -125,11 +106,9 @@ async def _rewrite(control: SessionControl, cleaned: str) -> dict[str, Any]:
         LLMMessagesTransformFrame(transform=_correction_transform(cleaned), run_llm=True)
     )
     await _repost_corrected(control, position)
-    # The window is over: leaving it open would keep the learner muted for the
-    # rest of the session.
-    control.recovery.close()
+    control.collector.clear_reviewed()
     logger.info(f"transcript_corrected position={position} chars={len(cleaned)}")
-    return {"state": control.recovery.state.value, "text": cleaned}
+    return {"state": "idle", "text": cleaned}
 
 
 def _correction_transform(corrected_text: str) -> Any:
@@ -169,11 +148,9 @@ async def run_action(conversation_id: str, action: str, text: str | None) -> dic
     control = require_session(conversation_id)
     match action:
         case "review":
-            return _review(control)
-        case "retake":
-            return _retake(control)
+            return await _review(control)
         case "dismiss":
-            return _dismiss(control)
+            return await _dismiss(control)
         case "send":
             return await _send(control, text or "")
     raise HTTPException(status_code=422, detail="unknown action")  # pragma: no cover

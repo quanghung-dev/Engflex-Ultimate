@@ -2,61 +2,42 @@ package responses
 
 import "engflex-api/internal/common/enums"
 
-// WordMark highlights one word inside an analyzed turn (feedback.marks[]).
-type WordMark struct {
-	Word   string               `json:"word"`
-	Status enums.WordMarkStatus `json:"status"`
+// AnalysisSpan is one problematic span: the smallest meaningful unit,
+// located by exact substring plus 1-based occurrence.
+type AnalysisSpan struct {
+	Text       string           `json:"text"`
+	Occurrence int              `json:"occurrence"`
+	Status     enums.SpanStatus `json:"status"`
+	Correction string           `json:"correction"`
+	Reason     string           `json:"reason"`
 }
 
-// PhraseUpgrade suggests replacing original with one of replacements
-// ("primary concern" -> "decisive constraint").
-type PhraseUpgrade struct {
-	Original     string   `json:"original"`
-	Replacements []string `json:"replacements"`
-	Category     string   `json:"category"`
+// Relevance judges whether a learner turn answers its conversation context.
+type Relevance struct {
+	Status enums.RelevanceStatus `json:"status"`
+	Reason *string               `json:"reason"`
 }
 
-// PhonemeMark is one pronunciation diagnostic card (/θ/ in "both"). It only
-// ever appears inside SpeechFeedback: phoneme scores are an acoustic
-// measurement nothing currently produces, so the contract does not ask for
-// them and a model cannot return a number we would have to strip.
-type PhonemeMark struct {
-	IPA         string `json:"ipa"`
-	Word        string `json:"word"`
-	Feature     string `json:"feature"`
-	AccuracyPct int    `json:"accuracyPct"`
-	Label       string `json:"label"`
+// Alternative is one better phrasing or answer with its reason.
+type Alternative struct {
+	Text   string `json:"text"`
+	Reason string `json:"reason"`
 }
 
-// TurnFeedback is the per-subject coaching payload. There is no `type`
-// discriminator and no top-level `phonemes`: the subject-to-product mapping
-// is a product invariant, and phoneme scores are an acoustic measurement
-// nothing currently produces.
+// SpanAlternatives holds the singular alternatives: language preserves the
+// learner's meaning, contextual answers the conversation better. Null means
+// not produced.
+type SpanAlternatives struct {
+	Language   *Alternative `json:"language"`
+	Contextual *Alternative `json:"contextual"`
+}
+
+// TurnFeedback is the conversation-aware English feedback payload:
+// language spans, conversational relevance, and alternatives.
 type TurnFeedback struct {
-	Annotated string          `json:"annotated"`
-	Marks     []WordMark      `json:"marks"`
-	Upgrades  []PhraseUpgrade `json:"upgrades"`
-	Tip       string          `json:"tip"`
-	// Speech is reserved for a P3 provider. Always absent in P2.
-	Speech *SpeechFeedback `json:"speech,omitempty"`
-}
-
-// SpeechFeedback is the acoustic assessment block produced by a provider that
-// takes audio, not a transcript. It exists so the wire contract does not
-// change when speech scoring arrives.
-type SpeechFeedback struct {
-	Provider string        `json:"provider"`
-	Phonemes []PhonemeMark `json:"phonemes"`
-	Fluency  *SpeechScore  `json:"fluency,omitempty"`
-	Prosody  *SpeechScore  `json:"prosody,omitempty"`
-	Overall  *SpeechScore  `json:"overall,omitempty"`
-	// Transcript is the provider's own recognition result, which may differ
-	// from the conversational STT text. Absent until a provider exists.
-	Transcript string `json:"transcript,omitempty"`
-}
-
-// SpeechScore is one bounded assessment dimension.
-type SpeechScore struct {
-	Score int    `json:"score"`
-	Label string `json:"label"`
+	Corrected    string           `json:"corrected"`
+	Spans        []AnalysisSpan   `json:"spans"`
+	Relevance    Relevance        `json:"relevance"`
+	Alternatives SpanAlternatives `json:"alternatives"`
+	Tip          string           `json:"tip"`
 }

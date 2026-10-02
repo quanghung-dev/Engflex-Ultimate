@@ -36,14 +36,13 @@ class RunnerBody(BaseModel):
 class TranscriptCommandBody(BaseModel):
     """One transcript command.
 
-    The four actions are one state machine, so they are one endpoint:
+    Three actions on the reviewed turn, so they are one endpoint:
 
-    - ``review``  open the window on the latest learner turn; the reply carries
-      the engine's own copy of that text, so the modal edits exactly what will
-      be rewritten.
-    - ``retake``  capture the next utterance instead of committing it.
-    - ``send``    commit ``text``: rewrite the reviewed turn, or send a capture.
-    - ``dismiss`` close the window, dropping anything captured.
+    - ``review``  hand back the latest learner turn and mark it as the one
+      under review; the reply carries the engine's own copy of that text, so
+      the modal edits exactly what will be rewritten.
+    - ``send``    rewrite the marked turn with ``text`` and regenerate.
+    - ``dismiss`` forget the mark. Records nothing.
 
     The client never names a turn: its row ordinal and the engine's collector
     position are separate bookkeeping, so the engine resolves the target.

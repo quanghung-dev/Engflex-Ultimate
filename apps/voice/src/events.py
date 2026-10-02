@@ -46,7 +46,6 @@ def register_event_handlers(
     body: RunnerBody,
     start_time: float,
     collector: TurnCollector,
-    recovery=None,
 ) -> None:
     timer_handle: dict[str, asyncio.Task[None]] = {}
 
@@ -69,8 +68,6 @@ def register_event_handlers(
     @transport.event_handler("on_client_disconnected")
     async def on_client_disconnected(_transport: BaseTransport, _client):
         logger.info("client disconnected", conversation_id=body.conversationId)
-        if recovery is not None:
-            recovery.close()
         if (pending := timer_handle.get("task")) is not None:
             pending.cancel()
         await worker.cancel()
@@ -114,8 +111,8 @@ def register_event_handlers(
     async def on_assistant_turn(_aggregator, message) -> None:
         # message.content may be empty on a pre-token interruption;
         # message.interrupted carries the flag (no separate frame watch).
-        # InterruptionFrame exists in pipecat.frames.frames, but the plan's
-        # "StartInterruptionFrame" does not -- verified zero matches in 1.11.0.
+        # InterruptionFrame exists in pipecat.frames.frames; there is no
+        # StartInterruptionFrame in 1.11.0.
         if (
             record := collector.add_bot_text(message.content, was_interrupted=message.interrupted)
         ) is not None:

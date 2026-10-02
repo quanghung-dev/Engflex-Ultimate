@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"net/http"
@@ -172,4 +173,137 @@ func TestTranscriptDoesNotOwnTheState(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Equal(t, "idle", got.State)
+}
+
+func TestTranscribe(t *testing.T) {
+	audio := []byte("fake-webm-bytes")
+	tests := []struct {
+		name       string
+		audio      []byte
+		setup      func(*repomocks.MockConversationRepository, *svcmocks.MockVoiceClient)
+		wantStatus int
+		check      func(*testing.T, *responses.TranscribeResult)
+	}{
+		{
+			name:  "forwards audio and returns the sentence",
+			audio: audio,
+			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient) {
+				ownedBy(repo)
+				voice.On("Transcribe", mock.Anything, convID, audio, "audio/webm").
+					Return(&responses.TranscribeResult{Text: "I went yesterday."}, nil)
+			},
+			check: func(t *testing.T, got *responses.TranscribeResult) {
+				assert.Equal(t, "I went yesterday.", got.Text)
+			},
+		},
+		{
+			name:  "oversize audio never reaches the engine",
+			audio: bytes.Repeat([]byte("x"), services.MaxTranscribeBytes+1),
+			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient) {
+				ownedBy(repo)
+			},
+			wantStatus: http.StatusRequestEntityTooLarge,
+		},
+		{
+			name:  "engine 404 stays 404",
+			audio: audio,
+			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient) {
+				ownedBy(repo)
+				voice.On("Transcribe", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+					Return(nil, &services.TranscriptStatusError{Path: "/transcribe", Status: http.StatusNotFound})
+			},
+			wantStatus: http.StatusNotFound,
+		},
+		{
+			name:  "engine 502 stays unavailable",
+			audio: audio,
+			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient) {
+				ownedBy(repo)
+				voice.On("Transcribe", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+					Return(nil, &services.TranscriptStatusError{Path: "/transcribe", Status: http.StatusBadGateway})
+			},
+			wantStatus: http.StatusServiceUnavailable,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc, repo, voice := newTranscriptService(t)
+			tt.setup(repo, voice)
+			got, err := svc.Transcribe(context.Background(), userID, convID, tt.audio, "audio/webm")
+			if tt.wantStatus != 0 {
+				requireAppError(t, err, tt.wantStatus)
+				assert.Nil(t, got)
+				return
+			}
+			require.NoError(t, err)
+			tt.check(t, got)
+		})
+	}
+}
+
+func TestPronounce(t *testing.T) {
+	audio := []byte("fake-webm-bytes")
+	scored := &responses.PronounceResult{Score: 91.11, Transcription: "I WENT YESTERDAY"}
+	tests := []struct {
+		name       string
+		audio      []byte
+		setup      func(*repomocks.MockConversationRepository, *svcmocks.MockVoiceClient)
+		wantStatus int
+		check      func(*testing.T, *responses.PronounceResult)
+	}{
+		{
+			name:  "forwards attempt and returns the assessment",
+			audio: audio,
+			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient) {
+				ownedBy(repo)
+				voice.On("Pronounce", mock.Anything, "I went yesterday.", "en", audio, "audio/webm").
+					Return(scored, nil)
+			},
+			check: func(t *testing.T, got *responses.PronounceResult) {
+				assert.Equal(t, 91.11, got.Score)
+			},
+		},
+		{
+			name:  "oversize audio never reaches the engine",
+			audio: bytes.Repeat([]byte("x"), services.MaxPronounceBytes+1),
+			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient) {
+				ownedBy(repo)
+			},
+			wantStatus: http.StatusRequestEntityTooLarge,
+		},
+		{
+			name:  "engine 422 stays 422",
+			audio: audio,
+			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient) {
+				ownedBy(repo)
+				voice.On("Pronounce", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+					Return(nil, &services.TranscriptStatusError{Path: "/pronounce", Status: http.StatusUnprocessableEntity})
+			},
+			wantStatus: http.StatusUnprocessableEntity,
+		},
+		{
+			name:  "engine 502 stays unavailable",
+			audio: audio,
+			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient) {
+				ownedBy(repo)
+				voice.On("Pronounce", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+					Return(nil, &services.TranscriptStatusError{Path: "/pronounce", Status: http.StatusBadGateway})
+			},
+			wantStatus: http.StatusServiceUnavailable,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc, repo, voice := newTranscriptService(t)
+			tt.setup(repo, voice)
+			got, err := svc.Pronounce(context.Background(), userID, convID, "I went yesterday.", "en", tt.audio, "audio/webm")
+			if tt.wantStatus != 0 {
+				requireAppError(t, err, tt.wantStatus)
+				assert.Nil(t, got)
+				return
+			}
+			require.NoError(t, err)
+			tt.check(t, got)
+		})
+	}
 }

@@ -43,8 +43,8 @@ def test_interruption_is_ored_across_merged_fragments():
 
 
 def test_records_expose_only_the_four_fields():
-    # P2 captures no audio and no word metadata (D12/D14): the record must not
-    # grow fields that later code would assume are populated.
+    # The record carries no audio and no word metadata: it must not grow
+    # fields that later code would assume are populated.
     c = TurnCollector()
     c.add_user_text("hi")
     assert set(vars(c.records()[0])) == {

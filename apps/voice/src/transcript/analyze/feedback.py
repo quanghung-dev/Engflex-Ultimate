@@ -24,9 +24,9 @@ flag rather than a rewrite.
 Note: OpenAI's preferred surface is `responses.parse(text_format=...)`, but
 the Responses endpoint is not served here. Do not migrate.
 
-The prompt asks for exactly four keys. It deliberately does NOT ask for
-phonemes or a speech block: those are acoustic measurements with no source in
-P2 (D11/D12), and a model asked for them will confidently invent numbers.
+The prompt asks for exactly five keys. It deliberately does NOT ask for
+phonemes or a speech block: those are acoustic measurements with no source
+on this route, and a model asked for them will confidently invent numbers.
 """
 
 from typing import Literal
@@ -39,30 +39,50 @@ from pydantic import BaseModel, Field
 from config import settings
 
 
-class WordMark(BaseModel):
-    word: str
-    status: Literal["accurate", "warning", "error"]
+class AnalysisSpan(BaseModel):
+    """One problematic span: the smallest meaningful unit, located by exact
+    substring plus 1-based occurrence so the frontend derives offsets."""
+
+    text: str
+    occurrence: int = Field(ge=1)
+    status: Literal["incorrect", "awkward"]
+    correction: str
+    reason: str
 
 
-class PhraseUpgrade(BaseModel):
-    original: str
-    replacements: list[str]
-    category: str
+class Relevance(BaseModel):
+    status: Literal["relevant", "partially_relevant", "off_topic", "not_applicable"]
+    reason: str | None = None
+
+
+class Alternative(BaseModel):
+    text: str
+    reason: str
+
+
+class SpanAlternatives(BaseModel):
+    """Singular alternatives: language preserves the learner's meaning,
+    contextual answers the conversation better. Null means not produced."""
+
+    language: Alternative | None = None
+    contextual: Alternative | None = None
 
 
 class TurnFeedback(BaseModel):
-    """The four language keys. No speech block: nothing can populate it yet.
+    """Conversation-aware English feedback: language spans, conversational
+    relevance, meaning-preserving or conversation-improving alternatives.
 
-    All four are required, with no defaults: the SDK derives a strict JSON
+    All five are required, with no defaults: the SDK derives a strict JSON
     schema from this model and lists every property in `required`, so a
     default here would make the model and its own schema disagree about
-    whether `marks` may be absent. Nothing constructs this type directly, so
+    whether a key may be absent. Nothing constructs this type directly, so
     there is nothing for a default to serve.
     """
 
-    annotated: str
-    marks: list[WordMark]
-    upgrades: list[PhraseUpgrade]
+    corrected: str
+    spans: list[AnalysisSpan]
+    relevance: Relevance
+    alternatives: SpanAlternatives
     tip: str
 
 
@@ -101,19 +121,42 @@ def build_feedback_prompt(req: AnalyzeRequest) -> str:
     context_lines = "\n".join(f"  {t.role}: {t.text}" for t in req.context) or "  (none)"
     return (
         "You are an English coach reviewing ONE learner utterance in a live "
-        "spoken conversation. Judge only this utterance.\n\n"
+        "spoken conversation. Judge on two axes: (1) Language — span-level "
+        "problems in the utterance itself. (2) Conversation — whether the "
+        "utterance answers the preceding context.\n\n"
         "Conversation so far (most recent last):\n"
         f"{context_lines}\n\n"
         f"Utterance to review: {req.text}\n\n"
+        "Rules: spans hold the smallest meaningful problematic span; text "
+        "must be an EXACT substring of the utterance; occurrence is 1-based "
+        "(1 when it appears once); correction fixes only that span. status "
+        'is exactly "incorrect" for a grammar mistake or "awkward" for '
+        'grammatical-but-unnatural phrasing — never "error", "grammar_error", '
+        '"grammar", or any other value. relevance is relevant / '
+        "partially_relevant / off_topic, or not_applicable when there is no "
+        "conversational question to answer; reason is null when relevant. "
+        "alternatives.language is a better way to express what the learner "
+        "already meant — the meaning MUST be preserved; null unless a genuine "
+        "improvement exists beyond the span corrections, never a rewrite "
+        "merely to sound more sophisticated. alternatives.contextual is a "
+        "better answer to the conversation — ONLY when the response is weak, "
+        "partial, or off-topic; null when the answer is already relevant and "
+        "sufficient. tip is the single most useful lesson; do not repeat a "
+        "span reason. Never mention model names.\n\n"
         "Reply with a single JSON object and nothing else. No prose, no "
         "explanation, no code fences, no markdown. The object must have "
-        "exactly these four keys:\n"
-        '  "annotated": the utterance with the learner\'s own words kept, lightly '
-        "corrected where it reads or sounds wrong;\n"
-        '  "marks": [{"word": "<word as spoken>", "status": '
-        '"accurate|warning|error"}];\n'
-        '  "upgrades": [{"original": "<phrase>", "replacements": ["<better>"], '
-        '"category": "<grammar|vocabulary|phrasing|naturalness>"}];\n'
+        "exactly these five keys:\n"
+        '  "corrected": the utterance with the learner\'s own words kept, '
+        "lightly corrected where it reads wrong;\n"
+        '  "spans": [{"text": "<exact substring>", "occurrence": <1-based>, '
+        '"status": "incorrect|awkward", "correction": "<fix>", '
+        '"reason": "<why>"}];\n'
+        '  "relevance": {"status": '
+        '"relevant|partially_relevant|off_topic|not_applicable", '
+        '"reason": "<why or null>"};\n'
+        '  "alternatives": {"language": {"text": "<better phrasing>", '
+        '"reason": "<why>"} or null, "contextual": {"text": "<better '
+        'answer>", "reason": "<why>"} or null};\n'
         '  "tip": one short sentence of coaching.\n'
         "Never mention model names."
     )

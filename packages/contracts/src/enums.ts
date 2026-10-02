@@ -147,6 +147,19 @@ export const LevelAdvanced = "advanced";
 export type Level = typeof LevelBeginner | typeof LevelIntermediate | typeof LevelAdvanced;
 
 //////////
+// source: relevance_status.go
+
+/**
+ * RelevanceStatus judges whether a learner turn answers its conversation
+ * context (conversation_turns.feedback.relevance.status).
+ */
+export type RelevanceStatus = string;
+export const RelevanceRelevant: RelevanceStatus = "relevant";
+export const RelevancePartiallyRelevant: RelevanceStatus = "partially_relevant";
+export const RelevanceOffTopic: RelevanceStatus = "off_topic";
+export const RelevanceNotApplicable: RelevanceStatus = "not_applicable";
+
+//////////
 // source: scenario_difficulty.go
 
 /**
@@ -157,6 +170,17 @@ export const ScenarioDifficultyB1Plus = "B1+";
 export const ScenarioDifficultyB2 = "B2";
 export const ScenarioDifficultyC1 = "C1";
 export type ScenarioDifficulty = typeof ScenarioDifficultyB1Plus | typeof ScenarioDifficultyB2 | typeof ScenarioDifficultyC1;
+
+//////////
+// source: span_status.go
+
+/**
+ * SpanStatus is the severity of one analysis span
+ * (conversation_turns.feedback.spans[].status).
+ */
+export const SpanStatusIncorrect = "incorrect";
+export const SpanStatusAwkward = "awkward";
+export type SpanStatus = typeof SpanStatusIncorrect | typeof SpanStatusAwkward;
 
 //////////
 // source: turn_role.go
@@ -207,15 +231,3 @@ export const VocabularySourceLesson = "lesson";
 export const VocabularySourceConversation = "conversation";
 export const VocabularySourceManual = "manual";
 export type VocabularySource = typeof VocabularySourceLesson | typeof VocabularySourceConversation | typeof VocabularySourceManual;
-
-//////////
-// source: word_mark_status.go
-
-/**
- * WordMarkStatus is the per-word highlight status inside
- * conversation_turns.feedback.marks[].status (API-only, nested jsonb).
- */
-export const WordMarkStatusAccurate = "accurate";
-export const WordMarkStatusWarning = "warning";
-export const WordMarkStatusError = "error";
-export type WordMarkStatus = typeof WordMarkStatusAccurate | typeof WordMarkStatusWarning | typeof WordMarkStatusError;

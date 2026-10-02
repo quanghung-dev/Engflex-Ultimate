@@ -12,7 +12,6 @@ from pipecat.transports.base_transport import BaseTransport
 from config import settings
 from pipeline.services import build_llm, build_stt, build_tts
 from transcript.capture import TurnCollector
-from transcript.window import RecoveryUserMuteStrategy, TranscriptRecoveryProcessor
 
 
 async def create_voice_bot_worker(
@@ -26,25 +25,15 @@ async def create_voice_bot_worker(
     PipelineWorker,
     agg.LLMUserAggregator,
     agg.LLMAssistantAggregator,
-    TranscriptRecoveryProcessor,
 ]:
     stt = build_stt()
     llm = build_llm(conversation_id=conversation_id)
     tts = build_tts()
 
-    # Built first: the user aggregator's mute strategy reads the window's
-    # state, so the pair cannot be constructed until `recovery` exists. The
-    # window is opened by an HTTP command; nothing here is automatic.
-    recovery = TranscriptRecoveryProcessor()
-    # "Mic paused while clarifying" in pipecat's own terms: for as long as the
-    # correction modal is open the aggregator mutes the learner's frames, so
-    # nothing they say can add a turn or interrupt the tutor mid-sentence. The
-    # tutor's own output is untouched.
     user_agg, assistant_agg = agg.LLMContextAggregatorPair(
         context,
         user_params=agg.LLMUserAggregatorParams(
             vad_analyzer=SileroVADAnalyzer(),
-            user_mute_strategies=[RecoveryUserMuteStrategy(recovery)],
         ),
     )
 
@@ -57,7 +46,6 @@ async def create_voice_bot_worker(
         [
             transport.input(),
             stt,
-            recovery,
             user_aggregator,
             llm,
             tts,
@@ -77,4 +65,4 @@ async def create_voice_bot_worker(
         idle_timeout_secs=settings.idle_timeout_sec,
         cancel_on_idle_timeout=False,
     )
-    return worker, user_aggregator, assistant_aggregator, recovery
+    return worker, user_aggregator, assistant_aggregator

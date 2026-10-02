@@ -6,21 +6,19 @@ from pipecat.pipeline.worker import PipelineWorker
 
 from transcript.capture import TurnCollector
 from transcript.sessions import SessionControl, get, register, unregister
-from transcript.window import TranscriptRecoveryProcessor
 
 
 def _control() -> SessionControl:
-    """A real SessionControl with inert stand-ins for the live pipeline parts.
+    """A real SessionControl with an inert stand-in for the live worker.
 
-    The registry only stores and returns the handle, so the collaborators do
-    not need behaviour here; Task 5's route tests build fakes with real
-    behaviour for the ones they exercise.
+    The registry only stores and returns the handle, so the collaborator does
+    not need behaviour here; the route tests build fakes with real behaviour
+    for the ones they exercise.
     """
     return SessionControl(
         conversation_id="c1",
         worker=cast(PipelineWorker, object()),
         collector=TurnCollector(),
-        recovery=TranscriptRecoveryProcessor(),
     )
 
 

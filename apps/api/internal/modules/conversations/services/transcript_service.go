@@ -42,6 +42,9 @@ func transcriptError(ctx context.Context, action, conversationID string, err err
 		case http.StatusUnprocessableEntity, http.StatusBadRequest:
 			logger.Report(ctx, "transcript refused", common.UnprocessableEntity("unusable correction"), "conversationID", conversationID)
 			return common.UnprocessableEntity("unusable correction")
+		case http.StatusRequestEntityTooLarge:
+			logger.Report(ctx, "transcript refused", common.New(http.StatusRequestEntityTooLarge, "audio too large"), "conversationID", conversationID)
+			return common.New(http.StatusRequestEntityTooLarge, "audio too large")
 		}
 	}
 	logger.Report(ctx, "transcript engine call failed", common.ServiceUnavailable("transcript unavailable"), "conversationID", conversationID)
@@ -49,7 +52,7 @@ func transcriptError(ctx context.Context, action, conversationID string, err err
 }
 
 // Transcript applies one learner-initiated correction command. It is a
-// pass-through on purpose: the engine owns the window state, resolves which turn
+// pass-through on purpose: the engine owns the reviewed turn, resolves which turn
 // is being corrected, and hands back its own copy of the text. Go checks that
 // the conversation is the caller's, forwards, and maps the answer.
 func (s *ConversationService) Transcript(ctx context.Context, userID, conversationID, action, text string) (*responses.TranscriptResult, error) {
@@ -62,5 +65,47 @@ func (s *ConversationService) Transcript(ctx context.Context, userID, conversati
 	}
 	slog.InfoContext(ctx, "transcript command applied",
 		"conversationID", conversationID, "action", action, "state", res.State)
+	return res, nil
+}
+
+// MaxTranscribeBytes mirrors the engine's MAX_AUDIO_BYTES: refuse before
+// proxying so an oversize upload never reaches the engine. Exported: the
+// controller enforces the same cap on the declared file size.
+const MaxTranscribeBytes = 2 * 1024 * 1024
+
+// MaxPronounceBytes mirrors the engine's MAX_AUDIO_BYTES on /pronounce: same
+// browser source, same cap, separate name so each route reads clearly.
+const MaxPronounceBytes = 2 * 1024 * 1024
+
+func (s *ConversationService) Transcribe(ctx context.Context, userID, conversationID string, audio []byte, mime string) (*responses.TranscribeResult, error) {
+	if _, err := s.getOwned(ctx, userID, conversationID); err != nil {
+		return nil, err
+	}
+	if len(audio) > MaxTranscribeBytes {
+		return nil, common.New(http.StatusRequestEntityTooLarge, "audio too large")
+	}
+	res, err := s.voice.Transcribe(ctx, conversationID, audio, mime)
+	if err != nil || res == nil {
+		return nil, transcriptError(ctx, "transcribe", conversationID, err)
+	}
+	return res, nil
+}
+
+// Pronounce scores one exercise attempt against its reference sentence. Like
+// Transcribe it is a pass-through: Go proves the conversation is the
+// caller's, refuses oversize uploads, and maps the engine's answer.
+func (s *ConversationService) Pronounce(ctx context.Context, userID, conversationID, expectedText, lang string, audio []byte, mime string) (*responses.PronounceResult, error) {
+	if _, err := s.getOwned(ctx, userID, conversationID); err != nil {
+		return nil, err
+	}
+	if len(audio) > MaxPronounceBytes {
+		return nil, common.New(http.StatusRequestEntityTooLarge, "audio too large")
+	}
+	res, err := s.voice.Pronounce(ctx, expectedText, lang, audio, mime)
+	if err != nil || res == nil {
+		return nil, transcriptError(ctx, "pronounce", conversationID, err)
+	}
+	slog.InfoContext(ctx, "pronunciation scored",
+		"conversationID", conversationID, "score", res.Score)
 	return res, nil
 }

@@ -6,15 +6,20 @@ is registered here via the runner's shared `app` singleton, which must be
 imported before `pipecat.runner.run.main()` runs (see `bot.py`).
 """
 
-from fastapi import HTTPException
+from fastapi import File, Form, HTTPException, UploadFile
 from loguru import logger
 
 # Named for what it is: the runner's FastAPI singleton, not our app package.
 from pipecat.runner.run import app as runner_app
 from pydantic import ValidationError
 
-from analysis import AnalysisRefused, AnalyzeRequest, analyze_turn
 from app.schemas import TranscriptCommandBody
+from transcript.analyze import (
+    AnalysisRefused,
+    AnalyzeRequest,
+    analyze_turn,
+    assess_audio_bytes_async,
+)
 
 
 @runner_app.post("/analyze")
@@ -36,17 +41,75 @@ async def analyze(req: AnalyzeRequest):
 
 
 # --- Transcript commands -----------------------------------------------------
-# All four are learner-initiated and session-scoped. Each refuses with its own
+# All three are learner-initiated and session-scoped. Each refuses with its own
 # status (404 no live session, 409 nothing to act on, 422 unusable input) and
 # lets anything unexpected become a 500, mirroring /analyze above.
+
+
+@runner_app.post("/transcribe")
+async def transcribe(
+    conversationId: str = Form(...),
+    audio: UploadFile = File(...),  # noqa: B008 - standard FastAPI idiom
+):
+    """Transcribe one modal re-speak. Stateless: no window, no frames.
+
+    Refusals mirror /transcript's vocabulary: 404 no live session, 413 over
+    the cap, 422 the audio held nothing usable, 502 Deepgram failed.
+    """
+    from transcript import prerecorded
+    from transcript.command import require_session
+
+    require_session(conversationId)
+    raw = await audio.read()
+    if len(raw) > prerecorded.MAX_AUDIO_BYTES:
+        raise HTTPException(status_code=413, detail="audio too large")
+    try:
+        text = await prerecorded.transcribe_bytes(raw, audio.content_type or "")
+    except prerecorded.EmptyTranscriptError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except prerecorded.TranscribeRefusedError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except prerecorded.TranscribeUnavailableError as exc:
+        raise HTTPException(status_code=502, detail="transcription unavailable") from exc
+    return {"text": text}
+
+
+@runner_app.post("/pronounce")
+async def pronounce(
+    expected_text: str = Form(...),
+    lang: str = Form("en"),
+    audio: UploadFile = File(...),  # noqa: B008 - standard FastAPI idiom
+):
+    """Score one exercise attempt against its reference sentence.
+
+    Session-independent like /analyze: exercises live in Go, so no live
+    voice session is required. Refusals mirror /transcribe: 413 over the
+    cap, 422 empty reference or unscorable audio.
+    """
+    from transcript import prerecorded
+    from transcript.analyze.pronunciation import EmptyReferenceError, UnscorableAudioError
+
+    raw = await audio.read()
+    if len(raw) > prerecorded.MAX_AUDIO_BYTES:
+        raise HTTPException(status_code=413, detail="audio too large")
+    try:
+        assessment = await assess_audio_bytes_async(
+            raw, expected_text, audio.content_type or "", lang
+        )
+    except (EmptyReferenceError, UnscorableAudioError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("pronunciation assessment failed")
+        raise HTTPException(status_code=500, detail="pronunciation assessment failed") from exc
+    return {"assessment": assessment.model_dump()}
 
 
 @runner_app.post("/transcript")
 async def transcript(req: TranscriptCommandBody):
     """One learner-initiated transcript command.
 
-    The four actions (review / retake / send / dismiss) are one state machine,
-    so they are one endpoint. Each refuses with its own status: 404 no live
+    The three actions (review / send / dismiss) share the reviewed turn, so
+    they are one endpoint. Each refuses with its own status: 404 no live
     session, 409 illegal for the current state, 422 unusable text.
     """
     from transcript.command import run_action

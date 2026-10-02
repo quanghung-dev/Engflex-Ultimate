@@ -3,8 +3,8 @@ package callbacks
 import "engflex-api/internal/common/enums"
 
 // IngestTurns is the engine's finalize-time turn batch. Every field is typed
-// and owned by Go: audio (D12) and word metadata (D14) are both gone, so
-// nothing here has an unknown shape.
+// and owned by Go: audio and word metadata are out of scope here, so nothing
+// has an unknown shape.
 type IngestTurns struct {
 	Turns []IngestTurn `json:"turns" binding:"required,min=1,max=500,dive"`
 }

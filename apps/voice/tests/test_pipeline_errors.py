@@ -54,6 +54,38 @@ def _registered_worker():
     return worker
 
 
+def _registered_with_collector():
+    """A worker plus the collector its handlers write through."""
+    worker = _FakeEndpoint()
+    collector = TurnCollector()
+    fake = cast(Any, worker)
+    register_event_handlers(
+        fake,
+        fake,
+        fake,
+        fake,
+        body=RunnerBody(userId="u1", conversationId="c1", maxDuration=300),
+        start_time=0.0,
+        collector=collector,
+    )
+    return worker, collector
+
+
+def _user_turn(worker) -> None:
+    """Fire the aggregator's user-turn event, the way a committed turn does."""
+
+    class _Message:
+        content = "hello there"
+
+    asyncio.run(worker.handlers["on_user_turn_message_added"](worker, _Message()))
+
+
+def test_a_user_turn_is_recorded():
+    worker, collector = _registered_with_collector()
+    _user_turn(worker)
+    assert [r.text for r in collector.records()] == ["hello there"]
+
+
 def test_non_fatal_error_keeps_session_alive():
     worker = _registered_worker()
     asyncio.run(

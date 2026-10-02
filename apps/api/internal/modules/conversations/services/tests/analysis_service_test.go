@@ -36,7 +36,7 @@ func newAnalysisService(t *testing.T) (*services.ConversationService, *repomocks
 	return services.NewConversationService(repo, voice, 300, feedback, repomocks.NewMockScenarioRepository(t), repomocks.NewMockPersonaRepository(t)), repo, voice, feedback
 }
 
-const goodFeedback = `{"annotated":"I went yesterday.","marks":[],"upgrades":[],"tip":"past tense"}`
+const goodFeedback = `{"corrected":"I went yesterday.","spans":[],"relevance":{"status":"relevant","reason":null},"alternatives":{"language":null,"contextual":null},"tip":"past tense"}`
 
 func TestAnalyzeTurn(t *testing.T) {
 	tests := []struct {
@@ -133,7 +133,7 @@ func TestAnalyzeTurn(t *testing.T) {
 				// Go is the last gate before the database.
 				voice.On("AnalyzeTurn", mock.Anything, mock.Anything).
 					Return(&services.AnalyzeTurnResponse{
-						Feedback: json.RawMessage(`{"annotated":"a","tip":"t"}`),
+						Feedback: json.RawMessage(`{"corrected":"a","tip":"t"}`),
 					}, nil)
 			},
 			wantStatus: http.StatusServiceUnavailable,

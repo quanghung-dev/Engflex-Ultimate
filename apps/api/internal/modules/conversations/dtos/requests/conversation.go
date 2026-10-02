@@ -9,38 +9,41 @@ type StartConversation struct {
 	ScenarioID *string                `json:"scenarioId" binding:"omitempty,uuid"`
 }
 
-// WordMarkInput highlights one word inside an analyzed turn. Request-side
-// shapes carry an Input suffix so the contracts barrel can re-export both
-// requests and responses without name collisions (see spec §6).
-type WordMarkInput struct {
-	Word   string               `json:"word"`
-	Status enums.WordMarkStatus `json:"status"`
+// AnalysisSpanInput is one problematic span in an ingested analysis.
+type AnalysisSpanInput struct {
+	Text       string           `json:"text"`
+	Occurrence int              `json:"occurrence"`
+	Status     enums.SpanStatus `json:"status"`
+	Correction string           `json:"correction"`
+	Reason     string           `json:"reason"`
 }
 
-// PhonemeMarkInput is one pronunciation diagnostic card (/θ/ in "both").
-type PhonemeMarkInput struct {
-	IPA         string `json:"ipa"`
-	Word        string `json:"word"`
-	Feature     string `json:"feature"`
-	AccuracyPct int    `json:"accuracyPct"`
-	Label       string `json:"label"`
+// RelevanceInput judges whether a learner turn answers its context.
+type RelevanceInput struct {
+	Status enums.RelevanceStatus `json:"status"`
+	Reason *string               `json:"reason"`
 }
 
-// PhraseUpgradeInput suggests replacing original with one of replacements.
-type PhraseUpgradeInput struct {
-	Original     string   `json:"original"`
-	Replacements []string `json:"replacements"`
-	Category     string   `json:"category"`
+// AlternativeInput is one better phrasing or answer with its reason.
+type AlternativeInput struct {
+	Text   string `json:"text"`
+	Reason string `json:"reason"`
 }
 
-// TurnFeedbackInput carries per-turn analysis (word marks, phoneme
-// accuracy, phrase upgrades, coaching tip).
+// SpanAlternativesInput holds the singular alternatives; null means not produced.
+type SpanAlternativesInput struct {
+	Language   *AlternativeInput `json:"language"`
+	Contextual *AlternativeInput `json:"contextual"`
+}
+
+// TurnFeedbackInput carries per-turn analysis (spans, relevance,
+// alternatives, coaching tip).
 type TurnFeedbackInput struct {
-	Annotated string               `json:"annotated"`
-	Marks     []WordMarkInput      `json:"marks"`
-	Phonemes  []PhonemeMarkInput   `json:"phonemes"`
-	Upgrades  []PhraseUpgradeInput `json:"upgrades"`
-	Tip       string               `json:"tip"`
+	Corrected    string                `json:"corrected"`
+	Spans        []AnalysisSpanInput   `json:"spans"`
+	Relevance    RelevanceInput        `json:"relevance"`
+	Alternatives SpanAlternativesInput `json:"alternatives"`
+	Tip          string                `json:"tip"`
 }
 
 // CreateTurn appends one transcript line (used by the voice result
