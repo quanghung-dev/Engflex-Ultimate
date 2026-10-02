@@ -1,5 +1,4 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Flame, Timer } from "lucide-react";
 import { Fragment, type ReactNode } from "react";
 import { APP_ROUTES } from "#/app/app-route";
 import {
@@ -10,6 +9,7 @@ import {
 	resolveTarget,
 } from "#/app/breadcrumbs";
 import { LocaleSwitcher } from "#/components/layout/locale-switcher";
+import { ThemeToggle } from "#/components/ThemeToggle";
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -20,8 +20,6 @@ import {
 } from "#/components/ui/breadcrumb";
 import { Separator } from "#/components/ui/separator";
 import { SidebarTrigger } from "#/components/ui/sidebar";
-import { PROGRESS_SUMMARY } from "#/features/attempts/fixtures";
-import { m } from "#/paraglide/messages";
 
 /**
  * Breadcrumbs come from the router's own match chain: every route declares its
@@ -88,24 +86,7 @@ export function Topbar() {
 			</Breadcrumb>
 			<div className="ml-auto flex items-center gap-3">
 				<LocaleSwitcher />
-				<span className="flex items-center gap-1.5 rounded-full border bg-card px-2.5 py-1 text-xs text-muted-foreground shadow-xs">
-					<Flame className="size-[15px] text-amber-500" />
-					<span className="font-medium text-foreground">
-						{m["progress.streak"]({ count: PROGRESS_SUMMARY.streakDays })}
-					</span>
-				</span>
-				<span className="flex items-center gap-1.5 rounded-full border bg-card px-2.5 py-1 text-xs text-muted-foreground shadow-xs">
-					<Timer className="size-[15px] text-emerald-600" />
-					<span>
-						{m["progress.todayLabel"]()}{" "}
-						<strong className="font-semibold text-foreground">
-							{PROGRESS_SUMMARY.todayMinutes}
-						</strong>{" "}
-						{m["progress.todayGoal"]({
-							goal: PROGRESS_SUMMARY.dailyGoalMinutes,
-						})}
-					</span>
-				</span>
+				<ThemeToggle />
 			</div>
 		</header>
 	);

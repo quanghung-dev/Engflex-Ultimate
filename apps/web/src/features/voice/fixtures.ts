@@ -364,15 +364,16 @@ export const REVIEW_MOCK_TURNS: Turn[] = [
 		text: "I want to practice talking about my last sprint review.",
 		wasInterrupted: false,
 		feedback: {
-			annotated: "I want to practice talking about my last sprint review.",
-			marks: [{ word: "sprint", status: "accurate" }],
-			upgrades: [
-				{
-					original: "talk about",
-					replacements: ["discuss", "walk through"],
-					category: "phrasing",
+			corrected: "I want to practice talking about my last sprint review.",
+			spans: [],
+			relevance: { status: "relevant", reason: undefined },
+			alternatives: {
+				language: {
+					text: "I want to practice discussing my last sprint review.",
+					reason: "A stronger verb than “talk about”.",
 				},
-			],
+				contextual: undefined,
+			},
 			tip: "Good opener — try a stronger verb than “talk about”.",
 		},
 		createdAt: "2026-09-26T15:00:12Z",

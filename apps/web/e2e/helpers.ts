@@ -130,7 +130,7 @@ export async function dbSeedTurn(
 export async function dbSeedFeedback(
 	userId: string,
 	turnId: string,
-	payload: TurnFeedback,
+	payload: unknown,
 ): Promise<void> {
 	await db().query(
 		`INSERT INTO feedbacks (user_id, subject_type, subject_id, payload)

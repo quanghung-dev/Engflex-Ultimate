@@ -88,23 +88,78 @@
       "micEnd": "End session",
       "briefTip1": "· Speak naturally — the partner adapts to your phrasing.",
       "briefTip2": "· Analyze a turn after the session to reveal diagnostics.",
+      "guide": {
+        "eyebrow": "Before you start",
+        "title": "How voice sparring works",
+        "subtitle": "Speak freely through your scenario. Review the live transcript, fix misrecognized words, and tap any turn for annotated feedback and better phrasing.",
+        "step1": {
+          "title": "Speak naturally into your mic",
+          "body": "Use %icon% to talk. The circular visualizer follows the conversation audio in real time.",
+          "action": "Microphone",
+          "footer": "Live audio visualizer"
+        },
+        "step2": {
+          "title": "Live transcript & turn analysis",
+          "body": "Your dialogue appears in the transcript stream as you speak. Tap %icon% on any turn to see annotated delivery and phrasing upgrades.",
+          "footer": "Tap Analyze on a turn"
+        },
+        "step3": {
+          "title": "Tap pencil to clarify recognized words",
+          "body": "If a word was misheard, tap %icon% on your turn to fix it by typing or re-recording. The mic stays muted while you clarify.",
+          "footer": "Mic muted during clarification"
+        },
+        "step4": {
+          "title": "Upgrade phrasing & analyze again",
+          "body": "Each analysis suggests replacements that elevate your wording. Re-speak and run %icon% to compare.",
+          "footer": "Phrasing suggestions"
+        },
+        "dismiss": "Don't show this tip again",
+        "start": "Got it, start speaking",
+        "reopen": "Show sparring guide"
+      },
       "speakerYou": "You",
       "speakerPartner": "{name}",
       "partnerFallback": "Partner",
       "analyzing": "Analyzing…",
       "analyzeFailed": "Analysis failed. Try again.",
       "reanalyze": "Analyze again",
+      "feedback": {
+        "title": "Analyzed turn",
+        "viewAnalysis": "View analysis",
+        "utterance": "Transcribed utterance",
+        "grammarCorrection": "Grammar correction",
+        "directRepair": "Direct repair",
+        "copy": "Copy",
+        "topicCoherence": "Topic coherence",
+        "topicDefault": "Directly answers the conversation.",
+        "alternatives": "Alternative phrasings",
+        "spanIncorrect": "incorrect",
+        "spanAwkward": "awkward",
+        "relevant": "On topic",
+        "partiallyRelevant": "Partial alignment",
+        "offTopic": "Off topic",
+        "notApplicable": "Not applicable",
+        "kindLanguage": "language",
+        "kindContextual": "contextual",
+        "coachTip": "Coach tip:"
+      },
       "recovery": {
-        "title": "Did we hear you right?",
-        "subtitle": "Nothing is sent unless you press Send.",
-        "yourEdit": "Your correction",
-        "send": "Send",
+        "title": "Clarify your message",
+        "subtitle": "Type your correction directly or tap re-record to speak again.",
+        "yourEdit": "Edit recognized message",
+        "placeholder": "Type your message directly...",
+        "helper": "Feel free to edit the sentence above or clear it to start over.",
+        "send": "Send message",
         "reviewTranscript": "Review transcript",
-        "dismiss": "Dismiss",
-        "speakAgain": "Speak again",
-        "listening": "Listening — say it again…",
-        "sendIt": "Send it",
-        "heldSubtitle": "That's what we heard this time. Send it, or type what you meant."
+        "dismiss": "Dismiss clarification",
+        "cancel": "Cancel",
+        "record": "Re-record",
+        "stop": "Stop",
+        "micMuted": "Microphone muted while clarifying",
+        "recording": "Recording — say it again…",
+        "transcribing": "Hearing what you said…",
+        "recordUnsupported": "Recording is not supported in this browser.",
+        "micUnavailable": "Microphone unavailable. Type instead."
       }
     }
   }

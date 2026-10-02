@@ -1,3 +1,4 @@
+import type { Turn } from "@engflex/contracts";
 import type {
 	ConversationMessage,
 	ConversationMessagePart,
@@ -16,9 +17,18 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "#/components/ui/tooltip";
+import {
+	type AppliedCorrection,
+	applyCorrection,
+	type Group,
+} from "#/features/voice/components/transcript/apply-correction";
 import { CorrectionModal } from "#/features/voice/components/transcript/correction-modal";
+import type { AnalyzeControl } from "#/features/voice/components/transcript/turn-feedback";
 import { TurnFeedbackPanel } from "#/features/voice/components/transcript/turn-feedback";
-import { useCorrectionModal } from "#/features/voice/hooks/use-correction-modal";
+import {
+	type CorrectionWindow,
+	useCorrectionModal,
+} from "#/features/voice/hooks/use-correction-modal";
 import { useAnalyzeTurn, useConversation } from "#/features/voice/queries";
 import { cn } from "#/lib/utils";
 import { m } from "#/paraglide/messages";
@@ -56,53 +66,6 @@ export type TranscriptRow = {
 	text: string;
 	accessory?: ReactNode;
 };
-
-/** One bubble: consecutive same-role messages already collapsed together. */
-type Group = { key: string; isUser: boolean; text: string };
-
-/** One accepted correction, as the panel needs it to redraw honestly. */
-type AppliedCorrection = {
-	/** What the learner said it should say. */ text: string;
-	/** How many bubbles existed when they sent it. Anything at or past this
-	 * index arrived afterwards — the regenerated reply — and must survive. */
-	boundary: number;
-};
-
-/**
- * The corrected transcript, derived from pipecat's own message list.
- *
- * The engine owns the correction: it rewrote its context and the persisted
- * turns, and its regenerated reply overwrites the stale one at the same
- * position. Pipecat's client-side list knows none of that, so writing to it
- * would mean inventing a second history that disagrees with the server.
- * Instead the panel redraws: the reviewed turn takes the corrected text, and
- * everything that answered the old words is dropped.
- *
- * The boundary is what keeps this from eating the reply the correction asks
- * for. Without it the transform would be reapplied on every render and the
- * regenerated answer would be discarded too.
- */
-function applyCorrection(
-	groups: Group[],
-	applied: AppliedCorrection | null,
-): Group[] {
-	if (!applied) return groups;
-	let target = -1;
-	for (let i = groups.length - 1; i >= 0; i--) {
-		if (groups[i].isUser) {
-			target = i;
-			break;
-		}
-	}
-	// The learner has spoken again since correcting, so the newest turn is not
-	// the one they fixed. Their correction has been overtaken; leave it be.
-	if (target < 0 || target >= applied.boundary) return groups;
-	return [
-		...groups.slice(0, target),
-		{ ...groups[target], text: applied.text },
-		...groups.slice(applied.boundary),
-	];
-}
 
 /** Shared bubble list: the live panel and the persisted review render rows
 identically; only the accessory below a bubble differs. */
@@ -154,42 +117,11 @@ export function TranscriptRows({ rows }: { rows: TranscriptRow[] }) {
 }
 
 /**
- * The transcript: avatar + bubble rows inside a Card + ScrollArea, one of the
- * two panels in the room.
- *
- * `messages` overrides the live conversation: the dev-only preview route
- * passes fixture turns so the layout can be tweaked without a real session.
+ * Collapse live messages into bubbles exactly like the engine collector
+ * does, so group ordinal aligns with persisted positions. Pure: the
+ * container and the DEV preview share it.
  */
-export function TranscriptPanel({
-	className,
-	messages: messagesOverride,
-	conversationId,
-}: {
-	className?: string;
-	messages?: ConversationMessage[];
-	conversationId?: string;
-}) {
-	const live = usePipecatConversation();
-	const messages = messagesOverride ?? live.messages;
-	const bottomRef = useRef<HTMLDivElement>(null);
-
-	// Live persisted turns, polled while a session is running. Positions are
-	// assigned by finalize order on both sides, so group ordinal == position.
-	const persisted = useConversation(conversationId ?? "", {
-		refetchInterval: conversationId ? 2000 : undefined,
-	});
-	const analyze = useAnalyzeTurn(conversationId ?? "");
-	// The last correction the engine accepted, plus how many bubbles existed
-	// when it landed. Recorded here because the panel owns what is displayed.
-	const [applied, setApplied] = useState<AppliedCorrection | null>(null);
-	const correction = useCorrectionModal(conversationId ?? null, {
-		onCorrected: (text) =>
-			setApplied({ text, boundary: groupCountRef.current }),
-	});
-	const persistedByPosition = new Map(
-		(persisted.data?.turns ?? []).map((turn) => [turn.position, turn]),
-	);
-
+export function buildGroups(messages: ConversationMessage[]): Group[] {
 	const rows = messages
 		.map((message, index) => ({
 			message,
@@ -201,9 +133,6 @@ export function TranscriptPanel({
 				(row.message.role === "user" || row.message.role === "assistant") &&
 				row.text.length > 0,
 		);
-
-	// Collapse consecutive same-role messages exactly like the engine
-	// collector does, so group ordinal aligns with persisted positions.
 	const groups: Group[] = [];
 	let prevRole: string | null = null;
 	for (const row of rows) {
@@ -220,10 +149,50 @@ export function TranscriptPanel({
 		}
 		prevRole = row.message.role;
 	}
+	return groups;
+}
 
-	// The correction is a derivation over pipecat's own list; nothing is written
-	// back to it. See applyCorrection for why the boundary matters.
+/** Fixture bridge for the DEV preview: persisted turns as live messages. */
+export function turnsToMessages(turns: Turn[]): ConversationMessage[] {
+	return turns.map((turn) => ({
+		role: turn.role === "user" ? "user" : "assistant",
+		createdAt: turn.createdAt,
+		parts: [{ text: turn.text, final: true, createdAt: turn.createdAt }],
+	}));
+}
+
+/**
+ * The transcript view: pure rendering over already-resolved data. No pipecat
+ * provider, no network, no modal — the container injects all of that, and
+ * the DEV preview injects fixtures into the same container instead.
+ * Tweak layout here and see it in both places.
+ */
+function TranscriptPanelView({
+	className,
+	groups,
+	applied,
+	persistedTurns,
+	analyzePending,
+	analyzeFailed,
+	onAnalyze,
+	canReview,
+	onReview,
+}: {
+	className?: string;
+	groups: Group[];
+	applied: AppliedCorrection | null;
+	persistedTurns: Turn[];
+	analyzePending: boolean;
+	analyzeFailed: boolean;
+	onAnalyze: (position: number) => void;
+	canReview: boolean;
+	onReview: () => void;
+}) {
+	const bottomRef = useRef<HTMLDivElement>(null);
 	const shown = applyCorrection(groups, applied);
+	const persistedByPosition = new Map(
+		persistedTurns.map((turn) => [turn.position, turn]),
+	);
 
 	// Scroll on what is displayed, not on what pipecat holds, so dropping a
 	// stale reply does not leave the view parked past the end.
@@ -233,18 +202,6 @@ export function TranscriptPanel({
 		bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
 	}, [rowCount]);
 
-	// The boundary is captured when the learner sends, so it must read the
-	// bubbles as they were at that moment — not as they are after the
-	// correction has already been applied.
-	const groupCountRef = useRef(shown.length);
-	useEffect(() => {
-		groupCountRef.current = shown.length;
-	}, [shown.length]);
-
-	// The learner reviews their most recent turn. Nothing decides for them
-	// that a turn was misheard, so this is available whenever there is
-	// something to review; the engine resolves the target itself.
-	const canReview = Boolean(conversationId && shown.some((g) => g.isUser));
 	const lastUserIndex = (() => {
 		for (let i = shown.length - 1; i >= 0; i--) {
 			if (shown[i].isUser) return i;
@@ -253,89 +210,232 @@ export function TranscriptPanel({
 	})();
 
 	return (
+		<Card className={cn("flex h-full min-h-0 flex-col", className)}>
+			<CardHeader className="pb-0">
+				<CardTitle className="flex items-center gap-2 text-base">
+					{m["voice.room.transcriptTitle"]()}
+					<Badge variant="secondary">{shown.length}</Badge>
+				</CardTitle>
+			</CardHeader>
+			<CardContent className="min-h-0 flex-1 pb-6">
+				<ScrollArea className="h-full max-h-[55vh] min-h-0 overflow-x-clip pr-3 lg:max-h-none">
+					{shown.length === 0 ? (
+						<p className="py-8 text-center text-sm text-muted-foreground">
+							{m["voice.room.transcriptEmpty"]()}
+						</p>
+					) : (
+						<TranscriptRows
+							rows={shown.map((group, groupIndex) => {
+								// Global position: group ordinal, aligned with the
+								// persisted turns. The Analyze button appears only
+								// once the row exists server-side, so a transient
+								// mismatch can delay it but never misattach feedback.
+								const position = groupIndex + 1;
+								const persistedTurn = persistedByPosition.get(position);
+								const showAnalyze = group.isUser && persistedTurn !== undefined;
+								// Review belongs to the turn being corrected, so it
+								// sits under that bubble rather than in the header
+								// where it read as a panel-level action.
+								const showReview = canReview && groupIndex === lastUserIndex;
+								return {
+									key: group.key,
+									isUser: group.isUser,
+									text: group.text,
+									accessory:
+										showReview || showAnalyze ? (
+											<div className="flex flex-wrap items-start gap-1.5">
+												{showReview && (
+													<Tooltip>
+														<TooltipTrigger asChild>
+															<Button
+																type="button"
+																variant="outline"
+																size="icon-sm"
+																aria-label={m[
+																	"voice.room.recovery.reviewTranscript"
+																]()}
+																onClick={onReview}
+															>
+																<PencilLine />
+															</Button>
+														</TooltipTrigger>
+														<TooltipContent>
+															{m["voice.room.recovery.reviewTranscript"]()}
+														</TooltipContent>
+													</Tooltip>
+												)}
+												{showAnalyze && (
+													<TurnFeedbackPanel
+														feedback={persistedTurn.feedback ?? undefined}
+														utterance={group.text}
+														pending={analyzePending}
+														failed={analyzeFailed}
+														onAnalyze={() => onAnalyze(position)}
+													/>
+												)}
+											</div>
+										) : undefined,
+								};
+							})}
+						/>
+					)}
+					<div ref={bottomRef} />
+				</ScrollArea>
+			</CardContent>
+		</Card>
+	);
+}
+
+/**
+ * The transcript: one component for the room and the DEV preview. The room
+ * passes `conversationId` and gets the live conversation, the persisted
+ * poll, analyze, and the engine-backed correction modal. The preview passes
+ * fixtures instead — same bubbles, same buttons, same modal, zero network.
+ */
+export function TranscriptPanel({
+	className,
+	messages: messagesOverride,
+	conversationId,
+	persistedTurns: persistedTurnsOverride,
+	allowReview,
+	analyze: analyzeOverride,
+	fixtureText,
+}: {
+	className?: string;
+	messages?: ConversationMessage[];
+	conversationId?: string;
+	/** Skip the persisted poll and use these turns (preview fixtures). */
+	persistedTurns?: Turn[];
+	/** Show the edit button without a live session (preview). */
+	allowReview?: boolean;
+	/** Skip the analyze mutation and use this control (preview noop). */
+	analyze?: AnalyzeControl;
+	/**
+	 * Run the correction modal on local state seeded with this text instead
+	 * of the engine (preview). Only honored without a `conversationId`:
+	 * open seeds the field, typing edits it, record/stop flip their flags
+	 * for visual tweaking, and send runs the real applied-derivation below.
+	 */
+	fixtureText?: string;
+}) {
+	const live = usePipecatConversation();
+	const messages = messagesOverride ?? live.messages;
+
+	// Live persisted turns, polled while a session is running. Positions are
+	// assigned by finalize order on both sides, so group ordinal == position.
+	// Fixtures skip the poll entirely (no network).
+	const useFixtures = persistedTurnsOverride !== undefined;
+	const persisted = useConversation(conversationId ?? "", {
+		refetchInterval: conversationId && !useFixtures ? 2000 : undefined,
+		enabled: !useFixtures,
+	});
+	const analyzeLive = useAnalyzeTurn(conversationId ?? "");
+	const analyze: AnalyzeControl = analyzeOverride ?? {
+		pending: analyzeLive.isPending,
+		failed: analyzeLive.isError,
+		onAnalyze: (position) => analyzeLive.mutate(position),
+	};
+	// The last correction the engine accepted, plus how many bubbles existed
+	// when it landed. Recorded here because the panel owns what is displayed.
+	const [applied, setApplied] = useState<AppliedCorrection | null>(null);
+	const groups = buildGroups(messages);
+	// This closure is recreated every render, so `groups` below is the
+	// pre-send list: the tail snapshot is what the send actually saw.
+	const recordCorrection = (text: string) => {
+		let lastUser = -1;
+		for (let i = groups.length - 1; i >= 0; i--) {
+			if (groups[i].isUser) {
+				lastUser = i;
+				break;
+			}
+		}
+		setApplied({
+			text,
+			boundary: groupCountRef.current,
+			staleTail: groups
+				.slice(lastUser + 1)
+				.map((g) => ({ key: g.key, text: g.text })),
+		});
+	};
+	const liveCorrection = useCorrectionModal(conversationId ?? null, {
+		onCorrected: recordCorrection,
+	});
+	// Preview-only modal: same CorrectionModal, local state, no engine. The
+	// send path is shared — the corrected bubble and the regenerated-reply
+	// derivation render exactly as they do live.
+	const [fixtureWindow, setFixtureWindow] = useState<CorrectionWindow | null>(
+		null,
+	);
+	const useFixtureModal = fixtureText !== undefined && !conversationId;
+	const correction = useFixtureModal
+		? {
+				window: fixtureWindow,
+				open: async () => {
+					setFixtureWindow({
+						text: fixtureText,
+						recording: false,
+						uploading: false,
+						submitting: false,
+						error: null,
+					});
+				},
+				close: () => setFixtureWindow(null),
+				edit: (text: string) =>
+					setFixtureWindow((w) => (w ? { ...w, text } : w)),
+				record: () =>
+					setFixtureWindow((w) => (w ? { ...w, recording: true } : w)),
+				stop: () =>
+					setFixtureWindow((w) =>
+						w ? { ...w, recording: false, uploading: false } : w,
+					),
+				send: (text: string) => {
+					recordCorrection(text);
+					setFixtureWindow(null);
+				},
+				dismiss: () => setFixtureWindow(null),
+			}
+		: liveCorrection;
+
+	// The boundary is captured when the learner sends, so it must read the
+	// bubbles as they were at that moment — not as they are after the
+	// correction has already been applied.
+	const shownLen = applyCorrection(groups, applied).length;
+	const groupCountRef = useRef(shownLen);
+	useEffect(() => {
+		groupCountRef.current = shownLen;
+	}, [shownLen]);
+
+	// The learner reviews their most recent turn. Nothing decides for them
+	// that a turn was misheard, so this is available whenever there is
+	// something to review; the engine resolves the target itself.
+	const canReview = Boolean(
+		(conversationId || allowReview) && groups.some((g) => g.isUser),
+	);
+	const persistedTurns = persistedTurnsOverride ?? persisted.data?.turns ?? [];
+
+	return (
 		<>
 			{correction.window && (
 				<CorrectionModal
 					window={correction.window}
 					onSubmit={correction.send}
 					onEdit={correction.edit}
-					onSpeakAgain={correction.speakAgain}
+					onRecord={correction.record}
+					onStop={correction.stop}
 					onDismiss={correction.dismiss}
 				/>
 			)}
-			<Card className={cn("flex h-full min-h-0 flex-col", className)}>
-				<CardHeader className="pb-0">
-					<CardTitle className="flex items-center gap-2 text-base">
-						{m["voice.room.transcriptTitle"]()}
-						<Badge variant="secondary">{shown.length}</Badge>
-					</CardTitle>
-				</CardHeader>
-				<CardContent className="min-h-0 flex-1 pb-6">
-					<ScrollArea className="h-full max-h-[55vh] min-h-0 overflow-x-clip pr-3 lg:max-h-none">
-						{shown.length === 0 ? (
-							<p className="py-8 text-center text-sm text-muted-foreground">
-								{m["voice.room.transcriptEmpty"]()}
-							</p>
-						) : (
-							<TranscriptRows
-								rows={shown.map((group, groupIndex) => {
-									// Global position: group ordinal, aligned with the
-									// persisted turns. The Analyze button appears only
-									// once the row exists server-side, so a transient
-									// mismatch can delay it but never misattach feedback.
-									const position = groupIndex + 1;
-									const persistedTurn = persistedByPosition.get(position);
-									const showAnalyze =
-										group.isUser && persistedTurn !== undefined;
-									// Review belongs to the turn being corrected, so it
-									// sits under that bubble rather than in the header
-									// where it read as a panel-level action.
-									const showReview = canReview && groupIndex === lastUserIndex;
-									return {
-										key: group.key,
-										isUser: group.isUser,
-										text: group.text,
-										accessory:
-											showReview || showAnalyze ? (
-												<div className="flex flex-wrap items-start gap-1.5">
-													{showReview && (
-														<Tooltip>
-															<TooltipTrigger asChild>
-																<Button
-																	type="button"
-																	variant="outline"
-																	size="icon-sm"
-																	aria-label={m[
-																		"voice.room.recovery.reviewTranscript"
-																	]()}
-																	onClick={() => void correction.open()}
-																>
-																	<PencilLine />
-																</Button>
-															</TooltipTrigger>
-															<TooltipContent>
-																{m["voice.room.recovery.reviewTranscript"]()}
-															</TooltipContent>
-														</Tooltip>
-													)}
-													{showAnalyze && (
-														<TurnFeedbackPanel
-															feedback={persistedTurn.feedback ?? undefined}
-															pending={analyze.isPending}
-															failed={analyze.isError}
-															onAnalyze={() => analyze.mutate(position)}
-														/>
-													)}
-												</div>
-											) : undefined,
-									};
-								})}
-							/>
-						)}
-						<div ref={bottomRef} />
-					</ScrollArea>
-				</CardContent>
-			</Card>
+			<TranscriptPanelView
+				className={className}
+				groups={groups}
+				applied={applied}
+				persistedTurns={persistedTurns}
+				analyzePending={analyze.pending}
+				analyzeFailed={analyze.failed}
+				onAnalyze={analyze.onAnalyze}
+				canReview={canReview}
+				onReview={() => void correction.open()}
+			/>
 		</>
 	);
 }

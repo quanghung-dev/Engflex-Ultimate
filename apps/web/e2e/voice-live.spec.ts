@@ -124,12 +124,13 @@ test("live session: fake-mic turn analyzes into a diagnostics card", async ({
 	await expect(analyze).toBeVisible({ timeout: 30_000 });
 	await analyze.click();
 
-	// A real analysis pass (one LLM round trip through the engine).
-	await expect(userRow.getByText("Annotated delivery")).toBeVisible({
+	// A real analysis pass (one LLM round trip through the engine). The result
+	// opens as a dialog, so assertions below are page-scoped, not row-scoped.
+	await expect(page.getByText("Analyzed turn")).toBeVisible({
 		timeout: 90_000,
 	});
 	await expect(
-		userRow.getByRole("button", { name: "Analyze again" }),
+		page.getByRole("button", { name: "Analyze again" }),
 	).toBeVisible();
 	await expect(page.getByText("Analysis failed. Try again.")).toHaveCount(0);
 
@@ -159,6 +160,6 @@ test("live session: fake-mic turn analyzes into a diagnostics card", async ({
 		analyzed?.feedback,
 		"analyze never reached the clean turn",
 	).not.toBeNull();
-	expect(analyzed?.feedback?.annotated.length ?? 0).toBeGreaterThan(0);
+	expect(analyzed?.feedback?.corrected.length ?? 0).toBeGreaterThan(0);
 	expect(analyzed?.feedback?.tip.length ?? 0).toBeGreaterThan(0);
 });

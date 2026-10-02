@@ -88,23 +88,78 @@
       "micEnd": "Kết thúc phiên",
       "briefTip1": "· Nói tự nhiên — đối tác thích ứng với cách diễn đạt của bạn.",
       "briefTip2": "· Phân tích một lượt nói sau phiên để xem chẩn đoán.",
+      "guide": {
+        "eyebrow": "Trước khi bắt đầu",
+        "title": "Cách luyện voice sparring hoạt động",
+        "subtitle": "Cứ nói tự nhiên theo tình huống của bạn. Xem lại bản chép trực tiếp, sửa từ bị nhận dạng sai, và chạm vào bất kỳ lượt nói nào để xem phản hồi có chú thích cùng cách diễn đạt hay hơn.",
+        "step1": {
+          "title": "Nói tự nhiên vào micrô",
+          "body": "Bấm %icon% để nói. Vòng visual theo dõi âm thanh hội thoại theo thời gian thực.",
+          "action": "Micrô",
+          "footer": "Visual âm thanh trực tiếp"
+        },
+        "step2": {
+          "title": "Bản chép trực tiếp & phân tích lượt nói",
+          "body": "Lời thoại hiện trong luồng bản chép ngay khi bạn nói. Chạm %icon% ở bất kỳ lượt nào để xem diễn đạt có chú thích và gợi ý nâng cấp cách dùng từ.",
+          "footer": "Chạm Phân tích ở một lượt nói"
+        },
+        "step3": {
+          "title": "Chạm bút chì để làm rõ từ được nhận dạng",
+          "body": "Nếu có từ bị nghe nhầm, chạm %icon% ở lượt của bạn để sửa bằng cách gõ hoặc ghi âm lại. Micrô vẫn tắt tiếng trong lúc bạn làm rõ.",
+          "footer": "Micrô tắt tiếng khi làm rõ"
+        },
+        "step4": {
+          "title": "Nâng cấp diễn đạt & phân tích lại",
+          "body": "Mỗi lượt phân tích gợi ý cách thay thế giúp câu của bạn hay hơn. Nói lại rồi bấm %icon% để so sánh.",
+          "footer": "Gợi ý diễn đạt"
+        },
+        "dismiss": "Đừng hiện mẹo này nữa",
+        "start": "Rõ rồi, bắt đầu nói",
+        "reopen": "Xem hướng dẫn luyện nói"
+      },
       "speakerYou": "Bạn",
       "speakerPartner": "{name} (Đối tác)",
       "partnerFallback": "Đối tác",
       "analyzing": "Đang phân tích…",
       "analyzeFailed": "Phân tích thất bại. Hãy thử lại.",
       "reanalyze": "Phân tích lại",
+      "feedback": {
+        "title": "Lượt nói đã phân tích",
+        "viewAnalysis": "Xem phân tích",
+        "utterance": "Câu đã chép",
+        "grammarCorrection": "Sửa ngữ pháp",
+        "directRepair": "Câu sửa hoàn chỉnh",
+        "copy": "Sao chép",
+        "topicCoherence": "Mạch chủ đề",
+        "topicDefault": "Trả lời đúng vào trọng tâm hội thoại.",
+        "alternatives": "Cách diễn đạt khác",
+        "spanIncorrect": "sai ngữ pháp",
+        "spanAwkward": "diễn đạt gượng",
+        "relevant": "Đúng chủ đề",
+        "partiallyRelevant": "Lệch chủ đề một phần",
+        "offTopic": "Lạc chủ đề",
+        "notApplicable": "Không áp dụng",
+        "kindLanguage": "diễn đạt",
+        "kindContextual": "ngữ cảnh",
+        "coachTip": "Mẹo:"
+      },
       "recovery": {
-        "title": "Nghe có đúng không?",
-        "subtitle": "Chưa gửi gì cả — bạn bấm Gửi mới gửi.",
-        "yourEdit": "Lời bạn sửa",
-        "send": "Gửi",
+        "title": "Làm rõ lời bạn nói",
+        "subtitle": "Gõ trực tiếp lời cần sửa, hoặc bấm ghi âm lại để nói lại.",
+        "yourEdit": "Sửa câu đã nhận dạng",
+        "placeholder": "Gõ trực tiếp lời bạn muốn nói...",
+        "helper": "Cứ sửa câu phía trên, hoặc xóa hết để gõ lại từ đầu.",
+        "send": "Gửi lời nhắn",
         "reviewTranscript": "Xem lại lời thoại",
-        "dismiss": "Bỏ qua",
-        "speakAgain": "Nói lại",
-        "listening": "Đang nghe — nói lại đi...",
-        "sendIt": "Gửi lời này",
-        "heldSubtitle": "Đây là lời vừa nghe được. Gửi đi, hoặc gõ lại ý bạn."
+        "dismiss": "Đóng làm rõ",
+        "cancel": "Hủy",
+        "record": "Ghi âm lại",
+        "stop": "Dừng",
+        "micMuted": "Micro đang tắt tiếng trong lúc làm rõ",
+        "recording": "Đang ghi — nói lại đi...",
+        "transcribing": "Đang nghe lại lời bạn...",
+        "recordUnsupported": "Trình duyệt này không hỗ trợ ghi âm.",
+        "micUnavailable": "Không dùng được micro. Bạn gõ thay nhé."
       }
     }
   }

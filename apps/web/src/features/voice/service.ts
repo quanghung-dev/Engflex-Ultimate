@@ -6,14 +6,15 @@ import type {
 	Persona,
 	Scenario,
 	StartConversation,
+	TranscribeResult,
 	TranscriptResult,
 	TurnFeedback,
 } from "@engflex/contracts";
 import { API_ROUTES } from "#/app/api-routes";
 import { api, apiPage } from "#/lib/api";
 
-/** The four actions of the correction window, in the engine's vocabulary. */
-export type TranscriptAction = "review" | "retake" | "send" | "dismiss";
+/** The three actions of the correction modal, in the engine's vocabulary. */
+export type TranscriptAction = "review" | "send" | "dismiss";
 
 export function createConversation(
 	input: StartConversation,
@@ -56,7 +57,7 @@ export function analyzeTurn(
 }
 
 /**
- * The correction modal's one command. The engine owns the window state and
+ * The correction modal's one command. The engine owns the reviewed turn and
  * resolves which turn is corrected, so nothing here names a turn.
  */
 export function transcriptCommand(
@@ -67,6 +68,25 @@ export function transcriptCommand(
 	return api<TranscriptResult>(
 		API_ROUTES.CONVERSATIONS.TRANSCRIPT(conversationId),
 		{ method: "POST", body: JSON.stringify({ action, text: text ?? "" }) },
+		{ withCredentials: true },
+	);
+}
+
+/**
+ * A recorded re-speak for the correction modal. Multipart, so the browser
+ * sets its own boundary; the sentence comes back for the field and nothing
+ * is committed.
+ */
+export function transcribeAudio(
+	conversationId: string,
+	audio: Blob,
+	filename: string,
+): Promise<TranscribeResult> {
+	const form = new FormData();
+	form.append("audio", audio, filename);
+	return api<TranscribeResult>(
+		API_ROUTES.CONVERSATIONS.TRANSCRIBE(conversationId),
+		{ method: "POST", body: form },
 		{ withCredentials: true },
 	);
 }

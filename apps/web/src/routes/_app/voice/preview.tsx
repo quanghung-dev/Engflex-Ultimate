@@ -1,25 +1,14 @@
 import type { Turn } from "@engflex/contracts";
-import { PipecatAppBase } from "@pipecat-ai/voice-ui-kit";
+import { createFileRoute, notFound } from "@tanstack/react-router";
+import { useRef, useState } from "react";
 import { APP_ROUTES } from "#/app/app-route";
 import { breadcrumb } from "#/app/breadcrumbs";
 import { Button } from "#/components/ui/button";
 import {
-	Sheet,
-	SheetContent,
-	SheetDescription,
-	SheetHeader,
-	SheetTitle,
-	SheetTrigger,
-} from "#/components/ui/sheet";
-import { SessionModal } from "#/features/voice/components/room/session-modal";
-import { VoicePanel } from "#/features/voice/components/room/voice-panel";
-import { VoiceRoomSkeleton } from "#/features/voice/components/room/voice-room-skeleton";
-import { PersistedTranscript } from "#/features/voice/components/transcript/persisted-transcript";
+	type RoomSession,
+	VoiceRoom,
+} from "#/features/voice/components/room/voice-room";
 import { m } from "#/paraglide/messages";
-import "@pipecat-ai/voice-ui-kit/styles.scoped.css";
-import { createFileRoute, notFound } from "@tanstack/react-router";
-import { MessageSquareText } from "lucide-react";
-import { useState } from "react";
 
 export const Route = createFileRoute("/_app/voice/preview")({
 	staticData: breadcrumb([
@@ -32,13 +21,15 @@ export const Route = createFileRoute("/_app/voice/preview")({
 
 const now = new Date().toISOString();
 
-/** Fixture turns so the real panels can be tweaked without a session. */
+/** Fixture turns so the real room can be tweaked without a session. The
+analyzed learner turns cover every feedback case: incorrect + partial +
+both alternatives, awkward, off-topic, and clean. */
 const PREVIEW_TURNS: Turn[] = [
 	{
 		id: "preview-1",
 		position: 1,
 		role: "ai",
-		text: "Hi! What would you like to talk about today?",
+		text: "Hi! What did you do last weekend?",
 		wasInterrupted: false,
 		createdAt: now,
 	},
@@ -46,15 +37,44 @@ const PREVIEW_TURNS: Turn[] = [
 		id: "preview-2",
 		position: 2,
 		role: "user",
-		text: "I want to practice talking about my last sprint review.",
+		text: "I didn't went to the beach yesterday. I really like seafood.",
 		wasInterrupted: false,
+		feedback: {
+			corrected: "I didn't go to the beach yesterday. I really like seafood.",
+			spans: [
+				{
+					text: "didn't went",
+					occurrence: 1,
+					status: "incorrect",
+					correction: "didn't go",
+					reason: "Use the base form after did or didn't.",
+				},
+			],
+			relevance: {
+				status: "partially_relevant",
+				reason:
+					"The first sentence answers the question, but the second shifts to a different topic.",
+			},
+			alternatives: {
+				language: {
+					text: "I spent yesterday at the beach.",
+					reason: "More natural phrasing of the same meaning.",
+				},
+				contextual: {
+					text: "I went to the beach yesterday and had some great seafood.",
+					reason:
+						"Answers the question, fixes the grammar, and connects the detail.",
+				},
+			},
+			tip: "Use the base form of the verb after did or didn't.",
+		},
 		createdAt: now,
 	},
 	{
 		id: "preview-3",
 		position: 3,
 		role: "ai",
-		text: "Great choice. How did the review go — what went well?",
+		text: "Sounds fun. How did the trip go overall?",
 		wasInterrupted: false,
 		createdAt: now,
 	},
@@ -65,117 +85,204 @@ const PREVIEW_TURNS: Turn[] = [
 		text: "We shipped on time, but I struggled to explain the delay in the API migration.",
 		wasInterrupted: false,
 		feedback: {
-			annotated: "We shipped on time, but I struggled to explain the delay.",
-			marks: [{ word: "struggled", status: "accurate" }],
-			upgrades: [
+			corrected: "We shipped on time, but I struggled to explain the delay.",
+			spans: [
 				{
-					original: "explain the delay",
-					replacements: ["explain away the delay", "justify the delay"],
-					category: "phrasing",
+					text: "struggled to explain",
+					occurrence: 1,
+					status: "awkward",
+					correction: "had trouble explaining",
+					reason: "More natural verb choice.",
 				},
 			],
+			relevance: { status: "relevant", reason: undefined },
+			alternatives: {
+				language: {
+					text: "We shipped on time, but justifying the delay was difficult.",
+					reason: "Leads with the outcome.",
+				},
+				contextual: undefined,
+			},
 			tip: "Lead with the impact, then the cause.",
 		},
 		createdAt: now,
 	},
+	{
+		id: "preview-5",
+		position: 5,
+		role: "ai",
+		text: "Did you swim while you were there?",
+		wasInterrupted: false,
+		createdAt: now,
+	},
+	{
+		id: "preview-6",
+		position: 6,
+		role: "user",
+		text: "My favorite movie is Interstellar.",
+		wasInterrupted: false,
+		feedback: {
+			corrected: "My favorite movie is Interstellar.",
+			spans: [],
+			relevance: {
+				status: "off_topic",
+				reason: "This does not answer the question about swimming.",
+			},
+			alternatives: {
+				language: undefined,
+				contextual: {
+					text: "No, I just watched Interstellar at the hotel instead.",
+					reason: "Answers the question while keeping your idea.",
+				},
+			},
+			tip: "Answer the main question directly before adding unrelated information.",
+		},
+		createdAt: now,
+	},
+	{
+		id: "preview-7",
+		position: 7,
+		role: "ai",
+		text: "Got it. Anything else from the weekend?",
+		wasInterrupted: false,
+		createdAt: now,
+	},
+	{
+		id: "preview-8",
+		position: 8,
+		role: "user",
+		text: "I went home and rested.",
+		wasInterrupted: false,
+		feedback: {
+			corrected: "I went home and rested.",
+			spans: [],
+			relevance: { status: "relevant", reason: undefined },
+			alternatives: { language: undefined, contextual: undefined },
+			tip: "Clean and direct — keep it up.",
+		},
+		createdAt: now,
+	},
 ];
+
+const FIXTURE_CORRECTION_TEXT =
+	"We shipped on time, but I struggled to explain the delay in the API migration.";
+
+type Phase = "live" | "ended" | "loading" | "failed";
+
 /**
- * DEV-only preview of the real room panels (VoicePanel + PersistedTranscript)
- * with fixture data — no conversation, no engine. Devices initialize on
- * mount so the local mic track exists for the "mic" waveform source.
- * Throws 404 in production builds; delete before P2 if no longer needed.
+ * Preview injector: mock session state in, the SAME VoiceRoom out. No
+ * conversation, no engine, no network, no mic permission — the idle base
+ * inside VoiceRoom only provides provider context. Throws 404 in production.
  */
 function VoicePreviewPage() {
 	if (!import.meta.env.DEV) throw notFound();
 
-	return (
-		<PipecatAppBase
-			transportType="smallwebrtc"
-			initDevicesOnMount
-			noThemeProvider
-		>
-			{({ client }) => {
-				// The kit renders children without PipecatClientProvider until
-				// the client instance exists (async effect after mount), so the
-				// panels — which consume the conversation context — only mount
-				// once the provider is in place. Same guard as the real room.
-				if (!client) return <VoiceRoomSkeleton />;
-				return <PreviewPanels />;
-			}}
-		</PipecatAppBase>
-	);
+	return <PreviewRoom />;
 }
 
-type WaveformSource = "bot" | "mic";
+function PreviewRoom() {
+	const [phase, setPhase] = useState<Phase>("live");
+	const [source, setSource] = useState<"live" | "saved">("live");
+	const [connectionLost, setConnectionLost] = useState(false);
+	const [errorDetail, setErrorDetail] = useState<string | null>(null);
+	const [endPending, setEndPending] = useState(false);
+	const userDisconnecting = useRef(false);
+	const noop = () => {};
 
-function PreviewPanels() {
-	const [source, setSource] = useState<WaveformSource>("mic");
-	const [ended, setEnded] = useState(false);
+	const session: RoomSession = {
+		ready: phase !== "loading",
+		query:
+			phase === "loading" ? "pending" : phase === "failed" ? "error" : "ok",
+		ended: phase === "ended",
+		endPending,
+		connectionLost,
+		errorDetail,
+		onExit: noop,
+		onBack: noop,
+		onEnd: noop,
+		onConnectionLost: () => setConnectionLost(true),
+		onRuntimeError: (text) => setErrorDetail(text),
+		isUserDisconnectingRef: userDisconnecting,
+	};
+
 	return (
-		<div className="flex min-h-0 flex-1 flex-col gap-4 p-4">
-			<div className="flex flex-wrap items-center gap-3">
+		<div className="flex min-h-0 flex-1 flex-col gap-4">
+			<div className="flex flex-wrap items-center gap-3 px-4 pt-4">
 				<p className="text-xs text-muted-foreground">
-					DEV preview — fixture data, ending reopens on dismiss.
+					DEV preview — the same VoiceRoom on mock state. The pencil opens the
+					same correction modal on local state; Send runs the real
+					corrected-bubble derivation.
 				</p>
 				<fieldset className="flex gap-1">
-					<legend className="sr-only">Waveform source</legend>
-					{(["bot", "mic"] as const).map((option) => (
+					<legend className="sr-only">Room phase</legend>
+					{(["live", "ended", "loading", "failed"] as const).map((option) => (
 						<Button
 							key={option}
 							type="button"
-							variant={source === option ? "default" : "outline"}
+							variant={phase === option ? "default" : "outline"}
 							size="sm"
-							onClick={() => setSource(option)}
+							onClick={() => setPhase(option)}
 						>
-							{option === "bot" ? "Bot track" : "Mic track"}
+							{option}
 						</Button>
 					))}
 				</fieldset>
-			</div>
-			<div className="grid min-h-0 flex-1 items-stretch gap-4 lg:h-[calc(100dvh-5.5rem)] lg:flex-none lg:grid-cols-2">
-				<VoicePanel
-					title={m["voice.room.freeTalkTitle"]()}
-					objective={m["voice.room.freeTalkObjective"]()}
-					ending={false}
-					onEnd={() => setEnded(true)}
-					waveformSource={source}
-				/>
-				<PersistedTranscript
-					conversationId="preview"
-					turns={PREVIEW_TURNS}
-					className="hidden lg:flex"
-				/>
-			</div>
-			<div className="lg:hidden">
-				<Sheet>
-					<SheetTrigger asChild>
-						<Button type="button" variant="outline">
-							<MessageSquareText data-icon="inline-start" />
-							{m["voice.room.transcriptTitle"]()}
+				{phase === "live" && (
+					<>
+						<fieldset className="flex gap-1">
+							<legend className="sr-only">Transcript source</legend>
+							{(["live", "saved"] as const).map((option) => (
+								<Button
+									key={option}
+									type="button"
+									variant={source === option ? "default" : "outline"}
+									size="sm"
+									onClick={() => setSource(option)}
+								>
+									{option === "live" ? "Live transcript" : "Saved review"}
+								</Button>
+							))}
+						</fieldset>
+						<Button
+							type="button"
+							variant={connectionLost ? "default" : "outline"}
+							size="sm"
+							onClick={() => setConnectionLost((v) => !v)}
+						>
+							Simulate connection lost
 						</Button>
-					</SheetTrigger>
-					<SheetContent side="bottom" className="max-h-[80vh]">
-						<SheetHeader>
-							<SheetTitle>{m["voice.room.transcriptTitle"]()}</SheetTitle>
-							<SheetDescription>
-								{m["voice.room.freeTalkObjective"]()}
-							</SheetDescription>
-						</SheetHeader>
-						<div className="overflow-hidden px-4 pb-4">
-							<PersistedTranscript
-								conversationId="preview"
-								turns={PREVIEW_TURNS}
-							/>
-						</div>
-					</SheetContent>
-				</Sheet>
+						<Button
+							type="button"
+							variant={errorDetail ? "default" : "outline"}
+							size="sm"
+							onClick={() =>
+								setErrorDetail((v) =>
+									v ? null : "Preview engine error: pipeline stalled",
+								)
+							}
+						>
+							Simulate error detail
+						</Button>
+						<Button
+							type="button"
+							variant={endPending ? "default" : "outline"}
+							size="sm"
+							onClick={() => setEndPending((v) => !v)}
+						>
+							Ending spinner
+						</Button>
+					</>
+				)}
 			</div>
-			<SessionModal
-				open={ended}
-				title={m["voice.sessionEnded"]()}
-				description={m["voice.sessionEnded"]()}
-				actionLabel={m["voice.backToScenarios"]()}
-				onAction={() => setEnded(false)}
+			<VoiceRoom
+				session={session}
+				connection={{ key: "preview", connect: false }}
+				source={{
+					kind: "fixture",
+					turns: PREVIEW_TURNS,
+					correctionText: FIXTURE_CORRECTION_TEXT,
+					transcript: source,
+				}}
 			/>
 		</div>
 	);

@@ -97,20 +97,24 @@ test("analyze: engine-down error, then seeded feedback card", async ({
 	// Seed the feedback row directly: the card renders from persisted data.
 	const userId = await clerkUserId();
 	await dbSeedFeedback(userId, turnId, {
-		annotated: "I went to the office yesterday.",
-		marks: [{ word: "go", status: "error" }],
-		upgrades: [
+		corrected: "I went to the office yesterday.",
+		spans: [
 			{
-				original: "I go",
-				replacements: ["I went"],
-				category: "grammar",
+				text: "go",
+				occurrence: 1,
+				status: "incorrect",
+				correction: "went",
+				reason: "Use the past tense for yesterday.",
 			},
 		],
+		relevance: { status: "relevant", reason: null },
+		alternatives: { language: null, contextual: null },
 		tip: "Use the past tense for yesterday.",
 	});
 	await page.reload();
-	// The card renders marks/upgrades/tip (the annotated string itself is
-	// not displayed) plus the re-analyze affordance.
+	// The card renders the highlighted span, correction row, tip (the
+	// corrected string itself is shown in the repair block) plus the
+	// re-analyze affordance.
 	await expect(page.getByText("Use the past tense for yesterday.")).toBeVisible(
 		{ timeout: 20_000 },
 	);

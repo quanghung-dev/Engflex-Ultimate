@@ -6,6 +6,7 @@ import {
 	type TranscriptRow,
 	TranscriptRows,
 } from "#/features/voice/components/transcript/transcript-panel";
+import type { AnalyzeControl } from "#/features/voice/components/transcript/turn-feedback";
 import { TurnFeedbackPanel } from "#/features/voice/components/transcript/turn-feedback";
 import { REVIEW_MOCK_TURNS } from "#/features/voice/fixtures";
 import { useAnalyzeTurn, useConversation } from "#/features/voice/queries";
@@ -13,25 +14,23 @@ import { cn } from "#/lib/utils";
 import { m } from "#/paraglide/messages";
 
 /**
- * Finished-session review: the persisted transcript with per-turn Analyze.
- * TanStack hooks only — no Pipecat provider needed, so it mounts outside
- * PipecatAppBase. Optional `turns` override feeds the DEV preview fixtures.
+ * Finished-session review view: pure rendering over resolved turns. No
+ * network, no provider — the container below injects the data, whether live
+ * or fixtures. Tweak bubble/feedback layout here.
  */
-export function PersistedTranscript({
-	conversationId,
-	turns: turnsOverride,
+function PersistedTranscriptView({
+	turns,
+	analyzePending,
+	analyzeFailed,
+	onAnalyze,
 	className,
 }: {
-	conversationId: string;
-	turns?: Turn[];
+	turns: Turn[];
+	analyzePending: boolean;
+	analyzeFailed: boolean;
+	onAnalyze: (position: number) => void;
 	className?: string;
 }) {
-	const conversation = useConversation(conversationId);
-	const analyze = useAnalyzeTurn(conversationId);
-	const stored = turnsOverride ?? conversation.data?.turns ?? [];
-	// Mock review while no real turns flow end to end (e.g. empty session).
-	const turns = stored.length > 0 ? stored : REVIEW_MOCK_TURNS;
-
 	const rows: TranscriptRow[] = turns.map((turn) => ({
 		key: turn.id,
 		isUser: turn.role === "user",
@@ -40,9 +39,10 @@ export function PersistedTranscript({
 			turn.role === "user" ? (
 				<TurnFeedbackPanel
 					feedback={turn.feedback ?? undefined}
-					pending={analyze.isPending}
-					failed={analyze.isError}
-					onAnalyze={() => analyze.mutate(turn.position)}
+					utterance={turn.text}
+					pending={analyzePending}
+					failed={analyzeFailed}
+					onAnalyze={() => onAnalyze(turn.position)}
 				/>
 			) : undefined,
 	}));
@@ -67,5 +67,45 @@ export function PersistedTranscript({
 				</ScrollArea>
 			</CardContent>
 		</Card>
+	);
+}
+
+/**
+ * Finished-session review: one component for the room and the DEV preview.
+ * TanStack hooks only — no Pipecat provider needed, so it mounts outside
+ * PipecatAppBase. The room passes `conversationId`; the preview passes
+ * `turns` fixtures (fetch skipped) plus a noop analyze control.
+ */
+export function PersistedTranscript({
+	conversationId,
+	turns: turnsOverride,
+	analyze: analyzeOverride,
+	className,
+}: {
+	conversationId?: string;
+	turns?: Turn[];
+	analyze?: AnalyzeControl;
+	className?: string;
+}) {
+	const useFixtures = turnsOverride !== undefined;
+	const conversation = useConversation(conversationId ?? "", {
+		enabled: !useFixtures,
+	});
+	const analyzeLive = useAnalyzeTurn(conversationId ?? "");
+	const stored = turnsOverride ?? conversation.data?.turns ?? [];
+	// Mock review while no real turns flow end to end (e.g. empty session).
+	const turns = stored.length > 0 ? stored : REVIEW_MOCK_TURNS;
+
+	return (
+		<PersistedTranscriptView
+			turns={turns}
+			analyzePending={analyzeOverride?.pending ?? analyzeLive.isPending}
+			analyzeFailed={analyzeOverride?.failed ?? analyzeLive.isError}
+			onAnalyze={
+				analyzeOverride?.onAnalyze ??
+				((position) => analyzeLive.mutate(position))
+			}
+			className={className}
+		/>
 	);
 }

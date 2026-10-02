@@ -26,9 +26,13 @@ async function request<T>(
 	const { query, withCredentials = true } = opts;
 	const url = query ? withQuery(path, query) : path;
 	const token = withCredentials ? await authToken() : null;
+	// Multipart uploads set their own boundary: sending a JSON content type
+	// with FormData breaks the upload.
+	const isForm =
+		typeof FormData !== "undefined" && init?.body instanceof FormData;
 	const res = await fetch(`${API_URL}${url}`, {
 		headers: {
-			"Content-Type": "application/json",
+			...(isForm ? {} : { "Content-Type": "application/json" }),
 			...(token ? { Authorization: `Bearer ${token}` } : {}),
 		},
 		...init,

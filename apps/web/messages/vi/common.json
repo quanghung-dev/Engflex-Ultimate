@@ -42,6 +42,12 @@
       "sidebarDescription": "Hiển thị thanh bên trên di động.",
       "toggleSidebar": "Ẩn/hiện thanh bên"
     },
+    "theme": {
+      "label": "Giao diện",
+      "light": "Sáng",
+      "dark": "Tối",
+      "auto": "Hệ thống"
+    },
     "previousQuestion": "Câu trước",
     "previousPage": "Trang trước",
     "nextPage": "Trang sau",

@@ -42,6 +42,12 @@
       "sidebarDescription": "Displays the mobile sidebar.",
       "toggleSidebar": "Toggle Sidebar"
     },
+    "theme": {
+      "label": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "auto": "System"
+    },
     "previousQuestion": "Previous",
     "previousPage": "Previous",
     "nextPage": "Next",

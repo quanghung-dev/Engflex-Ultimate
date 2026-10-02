@@ -39,8 +39,9 @@ export const API_ROUTES = {
 		END: (id: ApiId) => `/conversations/${id}/end`,
 		ANALYZE_TURN: (id: ApiId, position: number) =>
 			`/conversations/${id}/turns/${position}/analyze`,
-		// The correction modal. One command for its four actions; Go proxies
-		// it to the live engine session, which owns the window state.
+		// The correction modal. Go proxies transcript commands and retake audio
+		// to the live engine session.
 		TRANSCRIPT: (id: ApiId) => `/conversations/${id}/transcript`,
+		TRANSCRIBE: (id: ApiId) => `/conversations/${id}/transcribe`,
 	},
 } as const;

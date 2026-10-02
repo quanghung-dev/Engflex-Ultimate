@@ -16,12 +16,12 @@ export const conversationKeys = {
 
 export function useConversation(
 	id: string,
-	opts?: { refetchInterval?: number },
+	opts?: { refetchInterval?: number; enabled?: boolean },
 ) {
 	return useQuery({
 		queryKey: conversationKeys.byId(id),
 		queryFn: () => getConversation(id),
-		enabled: id.length > 0,
+		enabled: id.length > 0 && (opts?.enabled ?? true),
 		refetchInterval: opts?.refetchInterval,
 	});
 }
