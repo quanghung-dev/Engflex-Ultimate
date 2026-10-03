@@ -2,6 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { Mic } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { APP_ROUTES } from "#/app/app-route";
 import { Button } from "#/components/ui/button";
 import { VOICE_PARTNER_SCENARIO_IDS } from "#/features/dashboard/fixtures";
 import { getScenario } from "#/features/voice/fixtures";
@@ -26,22 +27,22 @@ export function LiveVoicePartnerCard() {
 				mode: "free_talk",
 			});
 			await navigate({
-				to: "/voice/room/$conversationId",
+				to: APP_ROUTES.VOICE.ROOM,
 				params: { conversationId: conversation.id },
 			});
 		} catch {
-			toast.error(m["voice.createFailed"]());
+			toast.error(m["voice.create.failed"]());
 		}
 	}
 
 	return (
-		<div className="flex h-full flex-col gap-4 rounded-xl border bg-card p-5">
+		<div className="surface-card flex h-full flex-col gap-4 p-5">
 			<div className="flex items-start justify-between gap-3">
 				<div>
-					<h3 className="text-base font-bold tracking-tight text-foreground">
+					<h3 className="text-base font-bold text-foreground">
 						{m["dashboard.voicePartner.title"]()}
 					</h3>
-					<p className="mt-1 text-sm text-muted-foreground">
+					<p className="mt-1 text-[15px] font-medium text-muted-foreground">
 						{m["dashboard.voicePartner.description"]()}
 					</p>
 				</div>
@@ -62,7 +63,7 @@ export function LiveVoicePartnerCard() {
 				))}
 			</div>
 			<Button
-				className="mt-auto w-full"
+				className="btn btn-primary mt-auto w-full"
 				onClick={() => {
 					void startFreeTalk();
 				}}

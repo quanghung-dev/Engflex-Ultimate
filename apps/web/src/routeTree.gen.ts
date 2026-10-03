@@ -10,9 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteRouteImport } from './routes/_app/route'
-import { Route as AboutRouteImport } from './routes/about'
+import { Route as ErrorRouteImport } from './routes/error'
+import { Route as NotFoundRouteImport } from './routes/not-found'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppAboutRouteImport } from './routes/_app/about'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
 import { Route as AppLessonsIndexRouteImport } from './routes/_app/lessons/index'
@@ -29,9 +31,14 @@ const AppRouteRoute = AppRouteRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AboutRoute = AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
+const ErrorRoute = ErrorRouteImport.update({
+  id: '/error',
+  path: '/error',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotFoundRoute = NotFoundRouteImport.update({
+  id: '/not-found',
+  path: '/not-found',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -42,6 +49,11 @@ const OnboardingRoute = OnboardingRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppAboutRoute = AppAboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const SignInSplatRoute = SignInSplatRouteImport.update({
@@ -104,8 +116,10 @@ const AppLessonsLessonIdPartsPartRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
-  '/about': typeof AboutRoute
+  '/error': typeof ErrorRoute
+  '/not-found': typeof NotFoundRoute
   '/onboarding': typeof OnboardingRoute
+  '/about': typeof AppAboutRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/vocabulary/$itemId': typeof AppVocabularyItemIdRoute
@@ -119,8 +133,10 @@ export interface FileRoutesByFullPath {
   '/lessons/$lessonId/parts/$part': typeof AppLessonsLessonIdPartsPartRoute
 }
 export interface FileRoutesByTo {
-  '/about': typeof AboutRoute
+  '/error': typeof ErrorRoute
+  '/not-found': typeof NotFoundRoute
   '/onboarding': typeof OnboardingRoute
+  '/about': typeof AppAboutRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/': typeof AppIndexRoute
@@ -137,8 +153,10 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteRouteWithChildren
-  '/about': typeof AboutRoute
+  '/error': typeof ErrorRoute
+  '/not-found': typeof NotFoundRoute
   '/onboarding': typeof OnboardingRoute
+  '/_app/about': typeof AppAboutRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/_app/': typeof AppIndexRoute
@@ -156,8 +174,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/about'
+    | '/error'
+    | '/not-found'
     | '/onboarding'
+    | '/about'
     | '/sign-in/$'
     | '/sign-up/$'
     | '/vocabulary/$itemId'
@@ -171,8 +191,10 @@ export interface FileRouteTypes {
     | '/lessons/$lessonId/parts/$part'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/about'
+    | '/error'
+    | '/not-found'
     | '/onboarding'
+    | '/about'
     | '/sign-in/$'
     | '/sign-up/$'
     | '/'
@@ -188,8 +210,10 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_app'
-    | '/about'
+    | '/error'
+    | '/not-found'
     | '/onboarding'
+    | '/_app/about'
     | '/sign-in/$'
     | '/sign-up/$'
     | '/_app/'
@@ -206,7 +230,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AppRouteRoute: typeof AppRouteRouteWithChildren
-  AboutRoute: typeof AboutRoute
+  ErrorRoute: typeof ErrorRoute
+  NotFoundRoute: typeof NotFoundRoute
   OnboardingRoute: typeof OnboardingRoute
   SignInSplatRoute: typeof SignInSplatRoute
   SignUpSplatRoute: typeof SignUpSplatRoute
@@ -221,11 +246,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
+    '/error': {
+      id: '/error'
+      path: '/error'
+      fullPath: '/error'
+      preLoaderRoute: typeof ErrorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/not-found': {
+      id: '/not-found'
+      path: '/not-found'
+      fullPath: '/not-found'
+      preLoaderRoute: typeof NotFoundRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -240,6 +272,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/about': {
+      id: '/_app/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AppAboutRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/sign-in/$': {
@@ -323,6 +362,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteRouteChildren {
+  AppAboutRoute: typeof AppAboutRoute
   AppIndexRoute: typeof AppIndexRoute
   AppVocabularyItemIdRoute: typeof AppVocabularyItemIdRoute
   AppVoicePreviewRoute: typeof AppVoicePreviewRoute
@@ -336,6 +376,7 @@ interface AppRouteRouteChildren {
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
+  AppAboutRoute: AppAboutRoute,
   AppIndexRoute: AppIndexRoute,
   AppVocabularyItemIdRoute: AppVocabularyItemIdRoute,
   AppVoicePreviewRoute: AppVoicePreviewRoute,
@@ -354,7 +395,8 @@ const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   AppRouteRoute: AppRouteRouteWithChildren,
-  AboutRoute: AboutRoute,
+  ErrorRoute: ErrorRoute,
+  NotFoundRoute: NotFoundRoute,
   OnboardingRoute: OnboardingRoute,
   SignInSplatRoute: SignInSplatRoute,
   SignUpSplatRoute: SignUpSplatRoute,

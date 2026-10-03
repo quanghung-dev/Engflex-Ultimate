@@ -21,7 +21,7 @@ export function TimeCommitmentCard({
 		<div className={cn("relative", selected && "energy-card")}>
 			{recommended ? (
 				<Badge className="absolute -top-2 right-3 z-10" variant="secondary">
-					{m["onboarding.recommended"]()}
+					{m["onboarding.time.recommended"]()}
 				</Badge>
 			) : null}
 			<button
@@ -36,7 +36,7 @@ export function TimeCommitmentCard({
 				)}
 			>
 				<span className="text-lg font-extrabold tracking-tight">
-					{m["onboarding.minutesUnit"]({ count: minutes })}
+					{m["onboarding.time.minutesUnit"]({ count: minutes })}
 				</span>
 				<span className="text-xs font-semibold">{label}</span>
 				<span className="text-[11px] text-muted-foreground">{sub}</span>

@@ -1,5 +1,6 @@
 import type { VocabularyItem } from "@engflex/contracts";
 import { Link } from "@tanstack/react-router";
+import { APP_ROUTES } from "#/app/app-route";
 import { CefrBadge } from "#/components/common/cefr-badge";
 import { Button } from "#/components/ui/button";
 import { m } from "#/paraglide/messages";
@@ -39,7 +40,7 @@ export function RecentCustomWidget({
 							{item.userState?.note ?? item.definition}
 						</p>
 						<Link
-							to="/vocabulary/$itemId"
+							to={APP_ROUTES.VOCABULARY.DETAIL}
 							params={{ itemId: item.id }}
 							className="w-fit text-[11px] font-semibold text-primary"
 						>

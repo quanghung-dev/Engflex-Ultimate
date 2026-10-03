@@ -1,91 +1,134 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "lessons": {
-    "crumbPractice": "Luyện tập",
-    "crumbDetailFallback": "Chi tiết bài học",
-    "hubTitle": "Bài học điều hành",
-    "hubSubtitle": "Các tình huống công sở có cấu trúc giúp mở rộng khả năng giao tiếp điều hành.",
-    "filterSearch": "Tìm bài học",
-    "filterAllLevels": "Mọi trình độ",
-    "levelB1": "B1 • Kỹ thuật trung cấp",
-    "levelB2": "B2 • Chuyên nghiệp nâng cao",
-    "levelC1": "C1 • Làm chủ điều hành",
-    "filterAllStatuses": "Mọi trạng thái",
-    "statusInProgress": "Đang học",
-    "statusCompleted": "Đã xong",
-    "statusUnstarted": "Chưa bắt đầu",
-    "skillAll": "Tất cả",
+    "dictation": {
+      "nextSentence": "Câu tiếp theo →",
+      "context": "Bối cảnh hội thoại",
+      "speakerB": "Người nói B:",
+      "yourTranscription": "Bản chép của bạn",
+      "placeholder": "Gõ những gì bạn nghe được…",
+      "characters": "{count} ký tự",
+      "check": "Kiểm tra bản chép",
+      "sentenceCompleted": "Đã hoàn thành câu",
+      "typedLabel": "Bạn đã gõ:",
+      "referenceLabel": "Văn bản chuẩn:",
+      "remaining": "Còn {count} câu trong phiên này",
+      "hint": "Cần gợi ý? Chạm để xem vài từ đầu",
+      "coach": {
+        "title": "Mo · Huấn luyện viên nghe",
+        "body": "Chậm mà chắc. Trong các buổi họp nhanh, nguyên âm thường bị nuốt — hãy chú ý những từ nối nhỏ."
+      }
+    },
+    "reading": {
+      "previousQuestion": "Câu trước",
+      "readTime": "Đọc ~2 phút",
+      "questionOf": "Câu {number}/{total}",
+      "nextQuestion": "Câu tiếp theo"
+    },
+    "crumb": {
+      "practice": "Luyện tập",
+      "detailFallback": "Chi tiết bài học"
+    },
+    "hub": {
+      "title": "Bài học điều hành",
+      "moBody": "15 đến 25 phút luyện nói, nghe và tranh luận kỹ thuật có chủ đích mỗi ngày.",
+      "inFlight": "Đang học",
+      "overall": "Tiến độ chung của học phần",
+      "resume": "Học tiếp học phần {unit}",
+      "allTracks": "Mọi chủ đề",
+      "paced": "Nhịp đều",
+      "levelLabel": "Trình độ:",
+      "levelAll": "Mọi trình độ",
+      "levelB1": "B1",
+      "levelB2": "B2",
+      "levelC1": "C1",
+      "start": "Bắt đầu học",
+      "emptyTitle": "Không có bài học nào khớp bộ lọc",
+      "emptyBody": "Hãy thử mở rộng từ khóa tìm kiếm hoặc xóa bộ lọc trình độ và kỹ năng để xem thêm bài học."
+    },
+    "detail": {
+      "track": "Chủ đề: {track}",
+      "pace": "Nhịp độ khuyến nghị: Chậm rãi",
+      "sequential": "Theo thứ tự",
+      "coach": "Huấn luyện Mo",
+      "steady": "Tốc độ ổn định",
+      "calmTip": "Mẹo giữ bình tĩnh của Mo",
+      "calmQuote": "Hãy hít thở giữa các câu. Vội vàng không làm code deploy nhanh hơn.",
+      "startLesson": "Bắt đầu bài học (Phần {number}: {part})",
+      "saved": "Đã lưu",
+      "saveLater": "Lưu để học sau",
+      "activitiesTitle": "Hoạt động trong bài",
+      "activitiesSubtitle": "Cần hoàn thành mọi bước",
+      "outcomesTitle": "Bạn sẽ học được",
+      "partOf": "Phần {number}/{total}",
+      "backToLesson": "Quay lại bài học"
+    },
+    "status": {
+      "available": "Có thể học",
+      "locked": "Đã khóa",
+      "unlocks": "Mở sau {id}",
+      "nextUp": "Kế tiếp",
+      "recommended": "Nên học tiếp",
+      "inProgress": "Đang học",
+      "completed": "Đã xong",
+      "unstarted": "Chưa bắt đầu"
+    },
+    "card": {
+      "actionReview": "Ôn lại",
+      "actionContinue": "Học tiếp",
+      "scoreLabel": "Điểm: {pct}%",
+      "stepOf": "Bước {done} trên {total}",
+      "estDuration": "Khoảng {minutes} phút",
+      "activitiesCount": "{count} hoạt động",
+      "start": "Bắt đầu",
+      "meta": "{minutes} phút • {parts} phần",
+      "activityDuration": "{minutes} phút"
+    },
+    "unit": {
+      "lessons": "{count} bài học",
+      "label": "Học phần {n}"
+    },
+    "filter": {
+      "search": "Tìm bài học"
+    },
     "skill": {
       "reading": "Đọc",
       "dictation": "Nghe chép",
       "writing": "Viết",
       "voice": "Nói"
     },
-    "emptyTitle": "Không có bài học nào khớp bộ lọc",
-    "emptyBody": "Hãy thử mở rộng từ khóa tìm kiếm hoặc xóa bộ lọc trình độ và kỹ năng để xem thêm bài học.",
-    "levelBadge": "Trình độ {level}",
-    "estDuration": "Khoảng {minutes} phút",
-    "activitiesCount": "{count} hoạt động",
-    "completedPct": "Đã hoàn thành {pct}%",
-    "startLesson": "Bắt đầu bài học (Phần {number}: {part})",
-    "saved": "Đã lưu",
-    "saveLater": "Lưu để học sau",
-    "start": "Bắt đầu",
-    "viewLesson": "Xem bài học",
-    "cardMeta": "{minutes} phút • {parts} phần",
-    "activityTitle": "Phần {number} · {title}",
-    "activityDuration": "{minutes} phút",
-    "activitiesTitle": "Hoạt động trong bài",
-    "activitiesSubtitle": "Hoàn thành theo thứ tự để ghi nhớ tốt nhất",
-    "outcomesTitle": "Bạn sẽ học được",
-    "acousticTitle": "Mục tiêu âm thanh",
-    "acousticBody": "Tốc độ nói tự nhiên được khuyến nghị để nói trôi chảy trong cuộc họp {level}.",
-    "completionNow": "Tiến độ hiện tại",
-    "scenarioContext": "Bối cảnh tình huống",
-    "caption": "Họp standup liên nhóm & đồng bộ dự án theo quý",
-    "tipPrefix": "Mẹo: ",
-    "voiceTip": "Hãy đeo tai nghe khi luyện nói để AI nhận diện giọng nói chính xác hơn.",
     "part": {
       "reading": "Đọc hiểu",
       "dictation": "Nghe chép",
       "writing": "Viết có hướng dẫn",
       "voice": "Đối thoại tự do"
     },
-    "partCounter": "Phần {number}/{total} · {part}",
-    "partOf": "Phần {number}/{total}",
-    "backToLesson": "Quay lại bài học",
-    "stepDone": "Xong",
-    "stepActive": "Đang học",
-    "stepUpcoming": "Sắp tới",
-    "continueTo": "Sang phần {part} →",
-    "finishLesson": "Hoàn thành bài học →",
-    "passageReadTime": "Đọc ~2 phút",
-    "questionOf": "Câu {number}/{total}",
-    "nextQuestion": "Câu tiếp theo",
-    "dialogueContext": "Bối cảnh hội thoại",
-    "speakerA": "Người nói A:",
-    "speakerB": "Người nói B:",
-    "audioPlaceholder": "[Đoạn audio cần chép lại bên dưới]",
-    "yourTranscription": "Bản chép của bạn",
-    "transcriptionPlaceholder": "Gõ những gì bạn nghe được…",
-    "characters": "{count} ký tự",
-    "checkTranscription": "Kiểm tra bản chép",
-    "sentenceCompleted": "Đã hoàn thành câu",
-    "typedLabel": "Bạn đã gõ:",
-    "referenceLabel": "Văn bản chuẩn:",
-    "remaining": "Còn {count} câu trong phiên này",
-    "writingPrompt": "Đề bài viết: {title}",
-    "writingTarget": "Mục tiêu: {min}–{max} từ",
-    "writingHint": "Trong bài viết, hãy trả lời các câu hỏi gợi ý sau:",
-    "writingPlaceholder": "Viết câu trả lời của bạn…",
-    "wordsCount": "{count} / {max} từ",
-    "submitFeedback": "Gửi để nhận phản hồi",
-    "feedbackTitle": "Phản hồi ngôn ngữ tức thì",
-    "feedbackKind": {
-      "grammar": "Ngữ pháp",
-      "vocabulary": "Từ vựng",
-      "naturalness": "Tính tự nhiên"
+    "step": {
+      "done": "Xong",
+      "active": "Đang học",
+      "upcoming": "Sắp tới",
+      "continueTo": "Sang phần {part} →",
+      "finishLesson": "Hoàn thành bài học →"
     },
-    "feedbackCefr": "Đã kiểm tra {level}"
+    "writing": {
+      "prompt": "Đề bài viết: {title}",
+      "target": "Mục tiêu: {min}–{max} từ",
+      "hint": "Trong bài viết, hãy trả lời các câu hỏi gợi ý sau:",
+      "placeholder": "Viết câu trả lời của bạn…",
+      "wordsCount": "{count} / {max} từ",
+      "submit": "Gửi để nhận phản hồi",
+      "feedback": {
+        "title": "Phản hồi ngôn ngữ tức thì",
+        "kind": {
+          "grammar": "Ngữ pháp",
+          "vocabulary": "Từ vựng",
+          "naturalness": "Tính tự nhiên"
+        },
+        "cefr": "Đã kiểm tra {level}"
+      },
+      "assessment": "Đánh giá trực tiếp của Mo",
+      "assessmentBody": "Cách diễn đạt rất tốt! Nêu rõ khoảng thời gian giúp người đọc yên tâm ngay, còn việc chốt các thuật ngữ chính giúp tránh mọi hiểu lầm.",
+      "responseTitle": "Bài viết của bạn"
+    }
   }
 }

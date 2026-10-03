@@ -60,7 +60,7 @@ export function SparringGuideDialog({
 			title: m["voice.room.guide.step2.title"](),
 			body: m["voice.room.guide.step2.body"](),
 			actionIcon: Sparkles,
-			actionLabel: m["voice.room.analyze"](),
+			actionLabel: m["voice.room.transcript.analyze"](),
 			footer: m["voice.room.guide.step2.footer"](),
 		},
 		{
@@ -76,7 +76,7 @@ export function SparringGuideDialog({
 			title: m["voice.room.guide.step4.title"](),
 			body: m["voice.room.guide.step4.body"](),
 			actionIcon: Sparkles,
-			actionLabel: m["voice.room.reanalyze"](),
+			actionLabel: m["voice.room.transcript.reanalyze"](),
 			footer: m["voice.room.guide.step4.footer"](),
 		},
 	];

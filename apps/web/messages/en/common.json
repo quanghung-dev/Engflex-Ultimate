@@ -1,40 +1,36 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "common": {
-    "appName": "Engflex",
-    "cancel": "Cancel",
-    "back": "Back",
-    "continue": "Continue",
-    "finish": "Finish",
-    "nextSentence": "Next sentence →",
-    "resetFilters": "Reset filters",
-    "clear": "Clear",
-    "saveNote": "Save note",
-    "playPronunciation": "Play pronunciation",
-    "listenUS": "Listen pronunciation (US)",
-    "listenUK": "Listen (UK)",
-    "playTerm": "Play {term}",
-    "copiedClipboard": "Copied to clipboard",
-    "linkCopied": "Link copied",
-    "clipboardUnavailable": "Clipboard unavailable in this browser",
-    "customScenarioAdded": "Custom scenario added",
-    "addedToVocabulary": "Added to your vocabulary",
-    "flashcardSoon": "Flashcard drill coming soon",
-    "replayMockOnly": "Replay is mock-only for now",
-    "sessionSavedMock": "Session saved (mock)",
-    "levelFilter": "Level",
-    "statusFilter": "Status",
+    "brand": {
+      "appName": "Engflex",
+      "documentTitle": "Engflex"
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "back": "Back",
+      "continue": "Continue",
+      "finish": "Finish",
+      "resetFilters": "Reset filters",
+      "clear": "Clear",
+      "retry": "Try again",
+      "backHome": "Back to home",
+      "copy": "Copy"
+    },
     "audio": {
+      "playPronunciation": "Play pronunciation",
       "play": "Play audio",
       "pause": "Pause audio",
-      "replay": "Replay"
+      "total": "Total"
     },
-    "about": {
-      "kicker": "About",
-      "title": "A small starter with room to grow.",
-      "body": "TanStack Start gives you type-safe routing, server functions, and modern SSR defaults. Use this as a clean foundation, then layer in your own routes, styling, and add-ons."
+    "toast": {
+      "copiedClipboard": "Copied to clipboard",
+      "linkCopied": "Link copied",
+      "clipboardUnavailable": "Clipboard unavailable in this browser",
+      "scenarioAdded": "Custom scenario added",
+      "addedToVocabulary": "Added to your vocabulary",
+      "flashcardSoon": "Flashcard drill coming soon",
+      "replayMockOnly": "Replay is mock-only for now"
     },
-    "documentTitle": "Engflex",
     "a11y": {
       "more": "More",
       "close": "Close",
@@ -47,15 +43,6 @@
       "light": "Light",
       "dark": "Dark",
       "auto": "System"
-    },
-    "previousQuestion": "Previous",
-    "previousPage": "Previous",
-    "nextPage": "Next",
-    "notFoundTitle": "Page not found",
-    "notFoundBody": "This page doesn't exist or the item was removed.",
-    "errorTitle": "Something went wrong",
-    "errorBody": "An unexpected error interrupted this page. Try again or head back home.",
-    "retry": "Try again",
-    "backHome": "Back to home"
+    }
   }
 }

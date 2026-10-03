@@ -9,7 +9,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { APP_ROUTES } from "#/app/app-route";
 import { breadcrumb, lessonCrumbLabel } from "#/app/breadcrumbs";
-import { AudioPlayerBar } from "#/features/dictation/components/audio-player-bar";
+import { MoMascot } from "#/components/common/mo-mascot";
 import { DialogueContextBox } from "#/features/dictation/components/dialogue-context-box";
 import { TranscriptionInput } from "#/features/dictation/components/transcription-input";
 import { TranscriptionResultPanel } from "#/features/dictation/components/transcription-result-panel";
@@ -42,26 +42,29 @@ import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/lessons/$lessonId/parts/$part")({
 	staticData: breadcrumb([
-		{ label: () => m["nav.lessons"](), target: { to: APP_ROUTES.LESSONS } },
+		{
+			label: () => m["nav.item.lessons"](),
+			target: { to: APP_ROUTES.LESSONS.LIST },
+		},
 		{
 			label: lessonCrumbLabel,
 			target: {
-				to: APP_ROUTES.LESSON_DETAIL,
+				to: APP_ROUTES.LESSONS.DETAIL,
 				params: (params) => ({ lessonId: params.lessonId }),
 			},
 		},
-		() => m["lessons.crumbPractice"](),
+		() => m["lessons.crumb.practice"](),
 	]),
 	beforeLoad: ({ params }) => {
 		if (!getLessonById(params.lessonId)) {
-			throw redirect({ href: "/lessons" });
+			throw redirect({ href: APP_ROUTES.LESSONS.LIST });
 		}
 		if (
 			!isLessonPart(params.part) ||
 			!hasActivityForPart(params.lessonId, params.part)
 		) {
 			throw redirect({
-				to: "/lessons/$lessonId",
+				to: APP_ROUTES.LESSONS.DETAIL,
 				params: { lessonId: params.lessonId },
 			});
 		}
@@ -125,48 +128,77 @@ function WritingActivity({
 
 	const nextPart = getNextPart("writing", partCount);
 	const continueLabel = nextPart
-		? m["lessons.continueTo"]({ part: PART_META[nextPart].label() })
-		: m["lessons.finishLesson"]();
+		? m["lessons.step.continueTo"]({ part: PART_META[nextPart].label() })
+		: m["lessons.step.finishLesson"]();
 
 	function handleContinue() {
 		completePart(lessonId, activity.partNumber);
 		if (nextPart) {
 			navigate({
-				to: "/lessons/$lessonId/parts/$part",
+				to: APP_ROUTES.LESSONS.PART,
 				params: { lessonId, part: nextPart },
 			});
 		} else {
-			navigate({ to: "/lessons/$lessonId", params: { lessonId } });
+			navigate({ to: APP_ROUTES.LESSONS.DETAIL, params: { lessonId } });
 		}
 	}
 
 	return (
-		<div className="container-focus flex flex-col gap-4">
-			<WritingPromptBanner
-				partNumber={activity.partNumber}
-				partCount={partCount}
-				title={payload.title}
-				minWords={payload.minWords}
-				maxWords={payload.maxWords}
-				contextQuestions={payload.contextQuestions}
-			/>
-			<WritingEditorCard
-				value={text}
-				onChange={setText}
-				maxWords={payload.maxWords}
-				onClear={() => {
-					setText("");
-					setSubmitted(false);
-				}}
-				onSubmit={() => setSubmitted(true)}
-			/>
-			{submitted ? (
-				<WritingFeedbackCard
-					feedback={WRITING_FEEDBACK}
-					continueLabel={continueLabel}
-					onContinue={handleContinue}
+		<div className="flex w-full flex-col gap-4">
+			<div className="grid items-start gap-4 lg:grid-cols-2">
+				<WritingPromptBanner
+					partNumber={activity.partNumber}
+					partCount={partCount}
+					title={payload.title}
+					minWords={payload.minWords}
+					maxWords={payload.maxWords}
+					contextQuestions={payload.contextQuestions}
 				/>
-			) : null}
+				<div className="flex flex-col gap-4">
+					<WritingEditorCard
+						value={text}
+						onChange={setText}
+						maxWords={payload.maxWords}
+						onClear={() => {
+							setText("");
+							setSubmitted(false);
+						}}
+						onSubmit={() => setSubmitted(true)}
+					/>
+					{submitted ? (
+						<>
+							<WritingFeedbackCard
+								feedback={WRITING_FEEDBACK}
+								continueLabel={continueLabel}
+								onContinue={handleContinue}
+							/>
+							<div
+								className="flex items-center gap-3 p-4"
+								style={{
+									background: "#ffe2c5",
+									border: "2px solid var(--border)",
+									borderRadius: 24,
+									boxShadow: "0 5px 0 var(--border)",
+								}}
+							>
+								<MoMascot
+									variant="nice"
+									size={40}
+									className="hidden sm:inline-flex"
+								/>
+								<div className="min-w-0">
+									<p className="text-[11px] font-bold text-foreground">
+										{m["lessons.writing.assessment"]()}
+									</p>
+									<p className="text-[15px] font-medium text-foreground">
+										“{m["lessons.writing.assessmentBody"]()}”
+									</p>
+								</div>
+							</div>
+						</>
+					) : null}
+				</div>
+			</div>
 		</div>
 	);
 }
@@ -191,18 +223,18 @@ function VoiceActivity({
 				scenarioId,
 			});
 			await navigate({
-				to: "/voice/room/$conversationId",
+				to: APP_ROUTES.VOICE.ROOM,
 				params: { conversationId: conversation.id },
 			});
 		} catch {
-			toast.error(m["voice.createFailed"]());
+			toast.error(m["voice.create.failed"]());
 		}
 	}
 
 	if (!scenario) throw notFound();
 
 	return (
-		<div className="container-focus">
+		<div className="mx-auto w-full max-w-3xl">
 			<VoiceBriefCard
 				lessonId={lessonId}
 				scenario={scenario}
@@ -237,26 +269,28 @@ function DictationActivity({
 	const remaining = payload.sentences.length - index - 1;
 	const nextPart = getNextPart("dictation", partCount);
 	const continueLabel = nextPart
-		? m["lessons.continueTo"]({ part: PART_META[nextPart].label() })
-		: m["lessons.finishLesson"]();
+		? m["lessons.step.continueTo"]({ part: PART_META[nextPart].label() })
+		: m["lessons.step.finishLesson"]();
 
 	function handleContinue() {
 		completePart(lessonId, activity.partNumber);
 		if (nextPart) {
 			navigate({
-				to: "/lessons/$lessonId/parts/$part",
+				to: APP_ROUTES.LESSONS.PART,
 				params: { lessonId, part: nextPart },
 			});
 		} else {
-			navigate({ to: "/lessons/$lessonId", params: { lessonId } });
+			navigate({ to: APP_ROUTES.LESSONS.DETAIL, params: { lessonId } });
 		}
 	}
 
 	return (
-		<div className="container-focus flex flex-col gap-4">
-			<DialogueContextBox prompt={sentence.prompt}>
-				<AudioPlayerBar key={index} durationMs={sentence.durationMs} />
-			</DialogueContextBox>
+		<div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
+			<DialogueContextBox
+				title={activity.title}
+				prompt={sentence.prompt}
+				durationMs={sentence.durationMs}
+			/>
 			{checked ? (
 				<TranscriptionResultPanel
 					typed={typed}
@@ -280,8 +314,28 @@ function DictationActivity({
 					onChange={setTyped}
 					onClear={() => setTyped("")}
 					onCheck={() => setChecked(true)}
+					hint={`${sentence.reference.split(" ").slice(0, 3).join(" ")} …`}
 				/>
 			)}
+			<div
+				className="flex items-center gap-3 p-4"
+				style={{
+					background: "#ffe2c5",
+					border: "2px solid var(--border)",
+					borderRadius: 24,
+					boxShadow: "0 5px 0 var(--border)",
+				}}
+			>
+				<MoMascot variant="nice" size={40} className="hidden sm:inline-flex" />
+				<div className="min-w-0">
+					<p className="text-[11px] font-bold text-foreground">
+						{m["lessons.dictation.coach.title"]()}
+					</p>
+					<p className="text-[15px] font-medium text-foreground">
+						{m["lessons.dictation.coach.body"]()}
+					</p>
+				</div>
+			</div>
 		</div>
 	);
 }
@@ -310,11 +364,11 @@ function ReadingActivity({
 		const nextPart = getNextPart("reading", partCount);
 		if (nextPart) {
 			navigate({
-				to: "/lessons/$lessonId/parts/$part",
+				to: APP_ROUTES.LESSONS.PART,
 				params: { lessonId, part: nextPart },
 			});
 		} else {
-			navigate({ to: "/lessons/$lessonId", params: { lessonId } });
+			navigate({ to: APP_ROUTES.LESSONS.DETAIL, params: { lessonId } });
 		}
 	}
 

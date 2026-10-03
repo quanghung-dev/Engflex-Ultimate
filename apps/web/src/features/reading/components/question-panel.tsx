@@ -26,19 +26,20 @@ export function QuestionPanel({
 	onContinue: () => void;
 }) {
 	return (
-		<section className="flex flex-col gap-4 rounded-xl border bg-card p-5">
-			<div className="flex flex-col gap-1">
-				<span className="text-xs font-semibold text-muted-foreground">
-					{m["lessons.questionOf"]({
+		<section className="surface-card flex h-full flex-col gap-4 p-5">
+			<div className="flex flex-wrap items-center gap-2">
+				<span className="size-2 rounded-full bg-secondary" />
+				<span className="text-xs font-bold text-foreground">
+					{m["lessons.reading.questionOf"]({
 						number: questionNumber,
 						total: totalQuestions,
 					})}
 				</span>
-				<h2 className="text-base font-bold tracking-tight text-foreground">
-					{question.stem}
-				</h2>
-				<p className="text-xs text-muted-foreground">{question.instruction}</p>
+				<span className="chip bg-accent ml-auto px-2 py-0 text-[11px]">
+					{question.instruction}
+				</span>
 			</div>
+			<h2 className="text-lg font-bold text-foreground">{question.stem}</h2>
 			<RadioGroup
 				value={selectedKey ?? ""}
 				onValueChange={onSelect}
@@ -55,21 +56,24 @@ export function QuestionPanel({
 					/>
 				))}
 			</RadioGroup>
-			<div className="flex items-center justify-between gap-2 border-t pt-4">
+			<div className="mt-auto flex items-center justify-between gap-2 pt-1">
 				<Button
 					type="button"
 					variant="ghost"
+					className="btn btn-outline"
 					onClick={onPrev}
 					disabled={questionNumber === 1}
 				>
-					{m["common.previousQuestion"]()}
+					{m["lessons.reading.previousQuestion"]()}
 				</Button>
 				<Button
 					type="button"
-					variant={isLast ? "default" : "outline"}
+					className={isLast ? "btn btn-primary" : "btn btn-outline"}
 					onClick={isLast ? onContinue : onNext}
 				>
-					{isLast ? m["common.continue"]() : m["lessons.nextQuestion"]()}
+					{isLast
+						? m["common.actions.continue"]()
+						: m["lessons.reading.nextQuestion"]()}
 				</Button>
 			</div>
 		</section>

@@ -53,7 +53,7 @@ export function PersonalNoteCard({
 								setEditing(false);
 							}}
 						>
-							{m["common.cancel"]()}
+							{m["common.actions.cancel"]()}
 						</Button>
 						<Button
 							type="button"
@@ -63,7 +63,7 @@ export function PersonalNoteCard({
 								setEditing(false);
 							}}
 						>
-							{m["common.saveNote"]()}
+							{m["vocabulary.detail.saveNote"]()}
 						</Button>
 					</div>
 				</div>

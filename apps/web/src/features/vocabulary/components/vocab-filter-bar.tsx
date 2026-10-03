@@ -15,22 +15,21 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "#/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "#/components/ui/tabs";
 import { m } from "#/paraglide/messages";
 
 const SORT_MESSAGES: Record<VocabularySort, () => string> = {
-	recent: () => m["vocabulary.sort.recent"](),
-	mastery: () => m["vocabulary.sort.mastery"](),
-	alphabetical: () => m["vocabulary.sort.alphabetical"](),
-	interval: () => m["vocabulary.sort.interval"](),
+	recent: () => m["vocabulary.filter.sort.recent"](),
+	mastery: () => m["vocabulary.filter.sort.mastery"](),
+	alphabetical: () => m["vocabulary.filter.sort.alphabetical"](),
+	interval: () => m["vocabulary.filter.sort.interval"](),
 };
 
 const DOMAIN_MESSAGES: Record<VocabularyDomain, () => string> = {
-	backend_db: () => m["vocabulary.domains.backend_db"](),
-	distributed_systems: () => m["vocabulary.domains.distributed_systems"](),
-	devops_cloud: () => m["vocabulary.domains.devops_cloud"](),
-	frontend_ui: () => m["vocabulary.domains.frontend_ui"](),
-	ai_ml: () => m["vocabulary.domains.ai_ml"](),
+	backend_db: () => m["vocabulary.filter.domain.backendDb"](),
+	distributed_systems: () => m["vocabulary.filter.domain.distributedSystems"](),
+	devops_cloud: () => m["vocabulary.filter.domain.devopsCloud"](),
+	frontend_ui: () => m["vocabulary.filter.domain.frontendUi"](),
+	ai_ml: () => m["vocabulary.filter.domain.aiMl"](),
 };
 
 export interface VocabFilters {
@@ -53,20 +52,20 @@ const SOURCE_TABS: Array<{
 	value: VocabFilters["source"];
 	label: () => string;
 }> = [
-	{ value: "all", label: () => m["vocabulary.filterSource.all"]() },
-	{ value: "lesson", label: () => m["vocabulary.filterSource.lesson"]() },
+	{ value: "all", label: () => m["vocabulary.filter.source.all"]() },
+	{ value: "lesson", label: () => m["vocabulary.filter.source.lesson"]() },
 	{
 		value: "conversation",
-		label: () => m["vocabulary.filterSource.conversation"](),
+		label: () => m["vocabulary.filter.source.conversation"](),
 	},
-	{ value: "manual", label: () => m["vocabulary.filterSource.manual"]() },
+	{ value: "manual", label: () => m["vocabulary.filter.source.manual"]() },
 ];
 
 const CEFR_OPTIONS: Array<{
 	value: VocabFilters["cefr"];
 	label: string | (() => string);
 }> = [
-	{ value: "all", label: () => m["vocabulary.cefrAll"]() },
+	{ value: "all", label: () => m["vocabulary.filter.cefrAll"]() },
 	{ value: "B1", label: "B1" },
 	{ value: "B2", label: "B2" },
 	{ value: "C1", label: "C1" },
@@ -80,7 +79,7 @@ export function VocabFilterBar({
 	onChange: (next: VocabFilters) => void;
 }) {
 	return (
-		<div className="flex flex-col gap-4 rounded-xl border bg-card p-4">
+		<div className="surface-card flex flex-col gap-4 p-5">
 			<div className="grid gap-3 sm:grid-cols-[1fr_auto]">
 				<div className="relative">
 					<Search className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -89,8 +88,8 @@ export function VocabFilterBar({
 						onChange={(event) =>
 							onChange({ ...filters, search: event.target.value })
 						}
-						placeholder={m["vocabulary.filterSearch"]()}
-						className="pr-14 pl-8"
+						placeholder={m["vocabulary.filter.search"]()}
+						className="field pr-14 pl-8"
 					/>
 					<span className="absolute top-1/2 right-2.5 -translate-y-1/2">
 						<Kbd>⌘K</Kbd>
@@ -115,36 +114,37 @@ export function VocabFilterBar({
 				</Select>
 			</div>
 
-			<Tabs
-				value={filters.source}
-				onValueChange={(value) =>
-					onChange({ ...filters, source: value as VocabFilters["source"] })
-				}
-			>
-				<TabsList className="flex-wrap">
-					{SOURCE_TABS.map((tab) => (
-						<TabsTrigger key={tab.value} value={tab.value}>
-							{tab.label()}
-						</TabsTrigger>
-					))}
-				</TabsList>
-			</Tabs>
+			<div className="flex flex-wrap items-center gap-2">
+				{SOURCE_TABS.map((tab) => (
+					<button
+						key={tab.value}
+						type="button"
+						onClick={() => onChange({ ...filters, source: tab.value })}
+						className={cn(
+							"chip px-3 py-1 text-xs transition",
+							filters.source === tab.value
+								? "chip-selected"
+								: "hover:border-primary",
+						)}
+					>
+						{tab.label()}
+					</button>
+				))}
+			</div>
 
 			<div className="flex flex-wrap items-center gap-2">
 				<span className="text-[11px] font-semibold text-muted-foreground">
-					{m["vocabulary.domainLabel"]()}
+					{m["vocabulary.filter.domainLabel"]()}
 				</span>
 				<button
 					type="button"
 					onClick={() => onChange({ ...filters, domain: "all" })}
 					className={cn(
-						"rounded-full border px-2.5 py-1 text-[11px] font-medium transition",
-						filters.domain === "all"
-							? "border-primary bg-secondary text-primary"
-							: "border-border text-muted-foreground hover:border-primary/40",
+						"chip px-2.5 py-1 text-[11px] transition",
+						filters.domain === "all" ? "chip-selected" : "hover:border-primary",
 					)}
 				>
-					{m["vocabulary.domainAll"]()}
+					{m["vocabulary.filter.domainAll"]()}
 				</button>
 				{(Object.keys(DOMAIN_MESSAGES) as VocabularyDomain[]).map((domain) => (
 					<button
@@ -152,10 +152,10 @@ export function VocabFilterBar({
 						type="button"
 						onClick={() => onChange({ ...filters, domain })}
 						className={cn(
-							"rounded-full border px-2.5 py-1 text-[11px] font-medium transition",
+							"chip px-2.5 py-1 text-[11px] transition",
 							filters.domain === domain
-								? "border-primary bg-secondary text-primary"
-								: "border-border text-muted-foreground hover:border-primary/40",
+								? "chip-selected"
+								: "hover:border-primary",
 						)}
 					>
 						{DOMAIN_MESSAGES[domain]()}
@@ -165,7 +165,7 @@ export function VocabFilterBar({
 
 			<div className="flex flex-wrap items-center gap-2">
 				<span className="text-[11px] font-semibold text-muted-foreground">
-					{m["vocabulary.cefrLabel"]()}
+					{m["vocabulary.filter.cefrLabel"]()}
 				</span>
 				{CEFR_OPTIONS.map((option) => (
 					<button
@@ -173,10 +173,10 @@ export function VocabFilterBar({
 						type="button"
 						onClick={() => onChange({ ...filters, cefr: option.value })}
 						className={cn(
-							"rounded-full border px-2.5 py-1 text-[11px] font-medium transition",
+							"chip px-2.5 py-1 text-[11px] transition",
 							filters.cefr === option.value
-								? "border-primary bg-secondary text-primary"
-								: "border-border text-muted-foreground hover:border-primary/40",
+								? "chip-selected"
+								: "hover:border-primary",
 						)}
 					>
 						{typeof option.label === "function" ? option.label() : option.label}

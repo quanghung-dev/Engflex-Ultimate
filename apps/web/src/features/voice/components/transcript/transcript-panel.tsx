@@ -83,8 +83,8 @@ export function TranscriptRows({ rows }: { rows: TranscriptRow[] }) {
 					<Avatar size="sm">
 						<AvatarFallback>
 							{row.isUser
-								? m["voice.room.speakerYou"]().slice(0, 1)
-								: m["voice.room.partnerFallback"]().slice(0, 1)}
+								? m["voice.room.transcript.speaker.you"]().slice(0, 1)
+								: m["voice.room.transcript.speaker.partner"]().slice(0, 1)}
 						</AvatarFallback>
 					</Avatar>
 					<div
@@ -95,8 +95,8 @@ export function TranscriptRows({ rows }: { rows: TranscriptRow[] }) {
 					>
 						<span className="text-[11px] font-medium text-muted-foreground">
 							{row.isUser
-								? m["voice.room.speakerYou"]()
-								: m["voice.room.partnerFallback"]()}
+								? m["voice.room.transcript.speaker.you"]()
+								: m["voice.room.transcript.speaker.partner"]()}
 						</span>
 						<p
 							className={cn(
@@ -213,7 +213,7 @@ function TranscriptPanelView({
 		<Card className={cn("flex h-full min-h-0 flex-col", className)}>
 			<CardHeader className="pb-0">
 				<CardTitle className="flex items-center gap-2 text-base">
-					{m["voice.room.transcriptTitle"]()}
+					{m["voice.room.transcript.title"]()}
 					<Badge variant="secondary">{shown.length}</Badge>
 				</CardTitle>
 			</CardHeader>
@@ -221,7 +221,7 @@ function TranscriptPanelView({
 				<ScrollArea className="h-full max-h-[55vh] min-h-0 overflow-x-clip pr-3 lg:max-h-none">
 					{shown.length === 0 ? (
 						<p className="py-8 text-center text-sm text-muted-foreground">
-							{m["voice.room.transcriptEmpty"]()}
+							{m["voice.room.transcript.empty"]()}
 						</p>
 					) : (
 						<TranscriptRows

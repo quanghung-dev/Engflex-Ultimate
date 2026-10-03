@@ -1,4 +1,5 @@
 import { cn } from "cn";
+import { Check } from "lucide-react";
 import { RadioGroupItem } from "#/components/ui/radio-group";
 
 export function McqOption({
@@ -17,20 +18,34 @@ export function McqOption({
 	return (
 		<div
 			className={cn(
-				"flex items-start gap-3 rounded-lg border px-3 py-2.5 transition",
+				"flex cursor-pointer items-center gap-3 rounded-[16px] border-2 p-3 transition focus-within:border-primary",
 				selected
-					? "border-primary bg-secondary"
-					: "border-border bg-card hover:border-primary/40",
+					? "border-primary bg-accent"
+					: "border-border bg-card hover:border-primary",
 			)}
+			style={selected ? { boxShadow: "0 3px 0 var(--border)" } : undefined}
 		>
-			<RadioGroupItem id={id} value={value} className="mt-0.5" />
+			<RadioGroupItem id={id} value={value} className="sr-only" />
+			<span
+				aria-hidden="true"
+				className={cn(
+					"inline-flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-bold",
+					selected
+						? "bg-primary text-primary-foreground"
+						: "bg-muted text-muted-foreground",
+				)}
+			>
+				{label}
+			</span>
 			<label
 				htmlFor={id}
-				className="flex min-w-0 flex-1 cursor-pointer items-start gap-2 text-sm text-foreground"
+				className="min-w-0 flex-1 cursor-pointer text-[15px] font-medium text-foreground"
 			>
-				<span className="font-semibold">{label}.</span>
-				<span>{text}</span>
+				{text}
 			</label>
+			{selected ? (
+				<Check aria-hidden="true" className="size-4 shrink-0 text-primary" />
+			) : null}
 		</div>
 	);
 }

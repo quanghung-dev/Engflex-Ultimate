@@ -3,6 +3,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { APP_ROUTES } from "#/app/app-route";
 import { breadcrumb } from "#/app/breadcrumbs";
+import { MO_VARIANTS, MoMascot } from "#/components/common/mo-mascot";
 import { Button } from "#/components/ui/button";
 import {
 	type RoomSession,
@@ -12,8 +13,11 @@ import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/voice/preview")({
 	staticData: breadcrumb([
-		{ label: () => m["nav.voice"](), target: { to: APP_ROUTES.VOICE } },
-		() => m["voice.roomCrumb"](),
+		{
+			label: () => m["nav.item.voice"](),
+			target: { to: APP_ROUTES.VOICE.LIST },
+		},
+		() => m["voice.crumb.room"](),
 		() => "preview",
 	]),
 	component: VoicePreviewPage,
@@ -213,6 +217,14 @@ function PreviewRoom() {
 					same correction modal on local state; Send runs the real
 					corrected-bubble derivation.
 				</p>
+				<div className="surface-card flex flex-wrap items-end gap-4 p-4">
+					{MO_VARIANTS.map((variant) => (
+						<span key={variant} className="flex flex-col items-center gap-1">
+							<MoMascot variant={variant} size={72} />
+							<span className="chip px-2 py-0 text-[11px]">{variant}</span>
+						</span>
+					))}
+				</div>
 				<fieldset className="flex gap-1">
 					<legend className="sr-only">Room phase</legend>
 					{(["live", "ended", "loading", "failed"] as const).map((option) => (

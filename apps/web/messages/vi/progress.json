@@ -1,8 +1,6 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "progress": {
-    "streak": "Chuỗi {count} ngày",
-    "todayLabel": "Hôm nay:",
-    "todayGoal": "/ {goal} phút"
+    "streak": "Chuỗi {count} ngày"
   }
 }

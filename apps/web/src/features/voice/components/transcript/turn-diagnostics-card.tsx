@@ -1,332 +1,319 @@
-import { SubmitButton } from "#/components/common/submit-button";
-import { m } from "#/paraglide/messages";
 import type {
-  AnalysisSpan,
-  SpanStatus,
-  TurnFeedback,
+	AnalysisSpan,
+	SpanStatus,
+	TurnFeedback,
 } from "@engflex/contracts";
 import { cn } from "cn";
 import { ArrowRight, Lightbulb, RefreshCw } from "lucide-react";
+import { SubmitButton } from "#/components/common/submit-button";
+import { m } from "#/paraglide/messages";
 
 const SPAN_TONE: Record<SpanStatus, string> = {
-  incorrect: "text-ai-coral",
-  awkward: "text-warning",
+	incorrect: "text-ai-coral",
+	awkward: "text-warning",
 };
 
 /** nth (1-based) occurrence of text in utterance; null when absent. */
 function locateSpan(
-  utterance: string,
-  text: string,
-  occurrence: number,
+	utterance: string,
+	text: string,
+	occurrence: number,
 ): { start: number; end: number } | null {
-  let index = -1;
-  for (let i = 0; i < occurrence; i++) {
-    index = utterance.indexOf(text, index + 1);
-    if (index < 0) {
-      return null;
-    }
-  }
-  return { start: index, end: index + text.length };
+	let index = -1;
+	for (let i = 0; i < occurrence; i++) {
+		index = utterance.indexOf(text, index + 1);
+		if (index < 0) {
+			return null;
+		}
+	}
+	return { start: index, end: index + text.length };
 }
 
 /** Utterance rendered with every locatable span fully highlighted. */
 function HighlightedUtterance({
-  utterance,
-  spans,
+	utterance,
+	spans,
 }: {
-  utterance: string;
-  spans: AnalysisSpan[];
+	utterance: string;
+	spans: AnalysisSpan[];
 }) {
-  const located = spans
-    .map((span) => ({
-      span,
-      loc: locateSpan(utterance, span.text, span.occurrence),
-    }))
-    .filter(
-      (
-        entry,
-      ): entry is { span: AnalysisSpan; loc: { start: number; end: number } } =>
-        entry.loc !== null,
-    )
-    .sort((a, b) => a.loc.start - b.loc.start);
-  if (located.length === 0) {
-    return <>{utterance}</>;
-  }
-  const parts: React.ReactNode[] = [];
-  let cursor = 0;
-  located.forEach(({ span, loc }) => {
-    if (loc.start < cursor) {
-      return;
-    }
-    parts.push(
-      <span key={`plain-${cursor}`}>{utterance.slice(cursor, loc.start)}</span>,
-    );
-    parts.push(
-      <span
-        key={`span-${span.text}-${span.occurrence}`}
-        className={cn(
-          "inline-flex items-center py-0.5 font-medium",
-          SPAN_TONE[span.status],
-        )}
-        title={`${span.correction} — ${span.reason}`}
-      >
-        {utterance.slice(loc.start, loc.end)}
-      </span>,
-    );
-    cursor = loc.end;
-  });
-  parts.push(<span key="plain-tail">{utterance.slice(cursor)}</span>);
-  return <>{parts}</>;
+	const located = spans
+		.map((span) => ({
+			span,
+			loc: locateSpan(utterance, span.text, span.occurrence),
+		}))
+		.filter(
+			(
+				entry,
+			): entry is { span: AnalysisSpan; loc: { start: number; end: number } } =>
+				entry.loc !== null,
+		)
+		.sort((a, b) => a.loc.start - b.loc.start);
+	if (located.length === 0) {
+		return <>{utterance}</>;
+	}
+	const parts: React.ReactNode[] = [];
+	let cursor = 0;
+	located.forEach(({ span, loc }) => {
+		if (loc.start < cursor) {
+			return;
+		}
+		parts.push(
+			<span key={`plain-${cursor}`}>{utterance.slice(cursor, loc.start)}</span>,
+		);
+		parts.push(
+			<span
+				key={`span-${span.text}-${span.occurrence}`}
+				className={cn(
+					"inline-flex items-center py-0.5 font-medium",
+					SPAN_TONE[span.status],
+				)}
+				title={`${span.correction} — ${span.reason}`}
+			>
+				{utterance.slice(loc.start, loc.end)}
+			</span>,
+		);
+		cursor = loc.end;
+	});
+	parts.push(<span key="plain-tail">{utterance.slice(cursor)}</span>);
+	return <>{parts}</>;
 }
 
 /** Corrected sentence with each located fix highlighted emerald. */
 function HighlightedRepair({
-  corrected,
-  spans,
+	corrected,
+	spans,
 }: {
-  corrected: string;
-  spans: AnalysisSpan[];
+	corrected: string;
+	spans: AnalysisSpan[];
 }) {
-  const located = spans
-    .map((span) => ({
-      span,
-      loc: locateSpan(corrected, span.correction, 1),
-    }))
-    .filter(
-      (
-        entry,
-      ): entry is { span: AnalysisSpan; loc: { start: number; end: number } } =>
-        entry.loc !== null,
-    )
-    .sort((a, b) => a.loc.start - b.loc.start);
-  if (located.length === 0) {
-    return <>{corrected}</>;
-  }
-  const parts: React.ReactNode[] = [];
-  let cursor = 0;
-  located.forEach(({ loc }) => {
-    if (loc.start < cursor) {
-      return;
-    }
-    parts.push(
-      <span key={`plain-${cursor}`}>{corrected.slice(cursor, loc.start)}</span>,
-    );
-    parts.push(
-      <span key={`fix-${loc.start}`} className="font-semibold text-accuracy">
-        {corrected.slice(loc.start, loc.end)}
-      </span>,
-    );
-    cursor = loc.end;
-  });
-  parts.push(<span key="plain-tail">{corrected.slice(cursor)}</span>);
-  return <>{parts}</>;
+	const located = spans
+		.map((span) => ({
+			span,
+			loc: locateSpan(corrected, span.correction, 1),
+		}))
+		.filter(
+			(
+				entry,
+			): entry is { span: AnalysisSpan; loc: { start: number; end: number } } =>
+				entry.loc !== null,
+		)
+		.sort((a, b) => a.loc.start - b.loc.start);
+	if (located.length === 0) {
+		return <>{corrected}</>;
+	}
+	const parts: React.ReactNode[] = [];
+	let cursor = 0;
+	located.forEach(({ loc }) => {
+		if (loc.start < cursor) {
+			return;
+		}
+		parts.push(
+			<span key={`plain-${cursor}`}>{corrected.slice(cursor, loc.start)}</span>,
+		);
+		parts.push(
+			<span key={`fix-${loc.start}`} className="font-semibold text-accuracy">
+				{corrected.slice(loc.start, loc.end)}
+			</span>,
+		);
+		cursor = loc.end;
+	});
+	parts.push(<span key="plain-tail">{corrected.slice(cursor)}</span>);
+	return <>{parts}</>;
 }
 
 export function TurnDiagnosticsCard({
-  feedback,
-  utterance,
-  onReanalyze,
-  pending,
-  framed = true,
+	feedback,
+	utterance,
+	onReanalyze,
+	pending,
+	framed = true,
 }: {
-  feedback: TurnFeedback;
-  utterance: string;
-  onReanalyze: () => void;
-  pending: boolean;
-  /** Render without the outer card frame (inside a dialog, which frames). */
-  framed?: boolean;
+	feedback: TurnFeedback;
+	utterance: string;
+	onReanalyze: () => void;
+	pending: boolean;
+	/** Render without the outer card frame (inside a dialog, which frames). */
+	framed?: boolean;
 }) {
-  const relevanceLabel = {
-    relevant: m["voice.room.feedback.relevant"](),
-    partially_relevant: m["voice.room.feedback.partiallyRelevant"](),
-    off_topic: m["voice.room.feedback.offTopic"](),
-    not_applicable: m["voice.room.feedback.notApplicable"](),
-  }[feedback.relevance.status];
-  const alternatives: Array<{ text: string; reason?: string; kind: string }> =
-    [];
-  const languageAlt = feedback.alternatives.language;
-  if (languageAlt != null) {
-    alternatives.push({
-      text: languageAlt.text,
-      reason: languageAlt.reason ?? undefined,
-      kind: m["voice.room.feedback.kindLanguage"](),
-    });
-  }
-  const contextualAlt = feedback.alternatives.contextual;
-  if (contextualAlt != null) {
-    alternatives.push({
-      text: contextualAlt.text,
-      reason: contextualAlt.reason ?? undefined,
-      kind: m["voice.room.feedback.kindContextual"](),
-    });
-  }
+	const relevanceLabel = {
+		relevant: m["voice.room.feedback.topic.relevant"](),
+		partially_relevant: m["voice.room.feedback.topic.partiallyRelevant"](),
+		off_topic: m["voice.room.feedback.topic.offTopic"](),
+		not_applicable: m["voice.room.feedback.topic.notApplicable"](),
+	}[feedback.relevance.status];
+	// `SpanStatus` is exactly "incorrect" | "awkward", so this lookup is
+	// exhaustive and tsc enforces it if a third status is ever added. Built as a
+	// static object rather than an interpolated key so Paraglide's generated
+	// types can check the message ids.
+	const spanStatusLabel = {
+		incorrect: m["voice.room.feedback.span.incorrect"](),
+		awkward: m["voice.room.feedback.span.awkward"](),
+	} as const;
+	const alternatives: Array<{ text: string; reason?: string; kind: string }> =
+		[];
+	const languageAlt = feedback.alternatives.language;
+	if (languageAlt != null) {
+		alternatives.push({
+			text: languageAlt.text,
+			reason: languageAlt.reason ?? undefined,
+			kind: m["voice.room.feedback.kind.language"](),
+		});
+	}
+	const contextualAlt = feedback.alternatives.contextual;
+	if (contextualAlt != null) {
+		alternatives.push({
+			text: contextualAlt.text,
+			reason: contextualAlt.reason ?? undefined,
+			kind: m["voice.room.feedback.kind.contextual"](),
+		});
+	}
 
-  const copyCorrected = () => {
-    try {
-      void navigator.clipboard.writeText(feedback.corrected);
-    } catch {
-      // Clipboard unavailable (permissions, insecure context): the
-      // sentence stays visible for manual copy.
-    }
-  };
+	// The repair block only means something when the corrected sentence
+	// differs; on a clean turn it would echo the utterance under a title.
+	const showRepair =
+		feedback.corrected.trim().toLowerCase() !== utterance.trim().toLowerCase();
 
-  // The repair block only means something when the corrected sentence
-  // differs; on a clean turn it would echo the utterance under a title.
-  const showRepair =
-    feedback.corrected.trim().toLowerCase() !== utterance.trim().toLowerCase();
+	return (
+		<div
+			className={
+				framed
+					? "flex flex-col gap-4 rounded-xl border bg-card p-4"
+					: "flex flex-col gap-4"
+			}
+		>
+			<div className="flex items-center justify-between gap-2">
+				<div className="flex items-center gap-2">
+					<span className="h-2.5 w-2.5 rounded-full bg-primary" />
+					<span className="text-sm font-semibold text-foreground">
+						{m["voice.room.feedback.title"]()}
+					</span>
+				</div>
+				<SubmitButton
+					type="button"
+					variant="ghost"
+					size="sm"
+					pending={pending}
+					loadingLabel={m["voice.room.transcript.analyzing"]()}
+					onClick={onReanalyze}
+					className="bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary"
+				>
+					<RefreshCw data-icon="inline-start" />
+					{m["voice.room.transcript.reanalyze"]()}
+				</SubmitButton>
+			</div>
+			<div className="flex flex-col gap-0.5 rounded-xl bg-muted p-4 shadow">
+				<span className="text-xs text-primary">
+					{m["voice.room.feedback.utterance"]()}
+				</span>
+				<p className="text-base font-semibold leading-relaxed text-foreground">
+					<HighlightedUtterance utterance={utterance} spans={feedback.spans} />
+				</p>
+			</div>
 
-  return (
-    <div
-      className={
-        framed
-          ? "flex flex-col gap-4 rounded-xl border bg-card p-4"
-          : "flex flex-col gap-4"
-      }
-    >
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-primary" />
-          <span className="text-sm font-semibold text-foreground">
-            {m["voice.room.feedback.title"]()}
-          </span>
-        </div>
-        <SubmitButton
-          type="button"
-          variant="ghost"
-          size="sm"
-          pending={pending}
-          loadingLabel={m["voice.room.analyzing"]()}
-          onClick={onReanalyze}
-          className="bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary"
-        >
-          <RefreshCw data-icon="inline-start" />
-          {m["voice.room.reanalyze"]()}
-        </SubmitButton>
-      </div>
-      <div className="flex flex-col gap-0.5 rounded-xl bg-muted p-4 shadow">
-        <span className="text-xs text-primary">
-          {m["voice.room.feedback.utterance"]()}
-        </span>
-        <p className="text-base font-semibold leading-relaxed text-foreground">
-          <HighlightedUtterance utterance={utterance} spans={feedback.spans} />
-        </p>
-      </div>
+			{feedback.spans.map((span) => (
+				<div
+					key={`${span.text}-${span.occurrence}`}
+					className="flex flex-col gap-0.5 rounded-xl bg-muted p-4 shadow"
+				>
+					<div className="flex justify-between">
+						<span className="text-xs text-primary">
+							{m["voice.room.feedback.grammarCorrection"]()}
+						</span>
+						<span className="rounded-md border border-border bg-muted px-1.5 py-0.5 text-[11px]">
+							{spanStatusLabel[span.status]}
+						</span>
+					</div>
+					<div className="flex flex-wrap items-center gap-2">
+						<span className="text-sm text-ai-coral line-through opacity-85">
+							{span.text}
+						</span>
+						<ArrowRight size={16} className="text-muted-foreground" />
+						<span className="py-0.5 text-base font-semibold text-primary">
+							{span.correction}
+						</span>
+					</div>
+					<p className="text-sm">{span.reason}</p>
+				</div>
+			))}
 
-      {feedback.spans.map((span) => (
-        <div
-          key={`${span.text}-${span.occurrence}`}
-          className="flex flex-col gap-0.5 rounded-xl bg-muted p-4 shadow"
-        >
-          <div className="flex justify-between">
-            <span className="text-xs text-primary">
-              {m["voice.room.feedback.grammarCorrection"]()}
-            </span>
-            <span className="rounded-md border border-border bg-muted px-1.5 py-0.5 text-[11px]">
-              {m[
-                `voice.room.feedback.${span.status === "incorrect" ? "spanIncorrect" : "spanAwkward"}`
-              ]()}
-            </span>
-          </div >
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm text-ai-coral line-through opacity-85">
-              {span.text}
-            </span>
-            <ArrowRight size={16} className="text-muted-foreground" />
-            <span className="py-0.5 text-base font-semibold text-primary">
-              {span.correction}
-            </span>
-          </div>
-          <p className="text-sm">{span.reason}</p>
-        </div>
-      ))}
+			{showRepair ? (
+				<div className="flex flex-col gap-2 rounded-xl bg-accuracy-tint/50 p-4 shadow">
+					<div className="flex items-center justify-between">
+						<span className="text-xs font-medium text-accuracy">
+							{m["voice.room.feedback.directRepair"]()}
+						</span>
+					</div>
+					<p className="text-base font-medium leading-relaxed text-foreground">
+						<HighlightedRepair
+							corrected={feedback.corrected}
+							spans={feedback.spans}
+						/>
+					</p>
+				</div>
+			) : null}
 
-      {showRepair ? (
-        <div className="flex flex-col gap-2 rounded-xl bg-accuracy-tint/50 p-4 shadow">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-accuracy">
-              {m["voice.room.feedback.directRepair"]()}
-            </span>
-            {/*<button
-              type="button"
-              className="flex items-center gap-1 text-xs text-accuracy transition-colors hover:text-foreground"
-              onClick={copyCorrected}
-            >
-              <Copy size={14} />
-              {m["voice.room.feedback.copy"]()}
-            </button>*/}
-          </div>
-          <p className="text-base font-medium leading-relaxed text-foreground">
-            <HighlightedRepair
-              corrected={feedback.corrected}
-              spans={feedback.spans}
-            />
-          </p>
-        </div>
-      ) : null}
+			<div className="flex items-start gap-2 rounded-xl bg-muted p-4 shadow">
+				<div className="flex flex-col gap-0.5 w-full">
+					<div className="flex items-center gap-2 justify-between">
+						<span className="text-xs font-semibold text-accent-violet">
+							{m["voice.room.feedback.topic.coherence"]()}
+						</span>
+						<span className="rounded-md border border-border bg-muted px-1.5 py-0.5 text-[11px]">
+							{relevanceLabel}
+						</span>
+					</div>
+					{feedback.relevance.reason ? (
+						<p className="text-sm">{feedback.relevance.reason}</p>
+					) : feedback.relevance.status === "relevant" ? (
+						<p className="text-sm">
+							{m["voice.room.feedback.topic.default"]()}
+						</p>
+					) : null}
+				</div>
+			</div>
 
-      <div className="flex items-start gap-2 rounded-xl bg-muted p-4 shadow">
-        <div className="flex flex-col gap-0.5 w-full">
-          <div className="flex items-center gap-2 justify-between">
-            <span className="text-xs font-semibold text-accent-violet">
-              {m["voice.room.feedback.topicCoherence"]()}
-            </span>
-            <span className="rounded-md border border-border bg-muted px-1.5 py-0.5 text-[11px]">
-              {relevanceLabel}
-            </span>
-          </div>
-          {feedback.relevance.reason ? (
-            <p className="text-sm">
-              {feedback.relevance.reason}
-            </p>
-          ) : feedback.relevance.status === "relevant" ? (
-            <p className="text-sm">
-              {m["voice.room.feedback.topicDefault"]()}
-            </p>
-          ) : null}
-        </div>
-      </div>
+			{alternatives.length > 0 ? (
+				<div className="flex flex-col gap-2">
+					<div className="flex items-center justify-between">
+						<span className="text-sm font-semibold text-foreground">
+							{m["voice.room.feedback.alternatives"]()}
+						</span>
+					</div>
+					<div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+						{alternatives.map((alt) => (
+							<div
+								key={alt.kind}
+								className="flex flex-col gap-1.5 rounded-xl border bg-card p-4 shadow-sm"
+							>
+								<span className="rounded-md border border-primary bg-muted/10 px-1.5 py-0.5 text-[11px] text-primary self-start">
+									{alt.kind}
+								</span>
+								<span className="text-sm font-semibold text-foreground">
+									“{alt.text}”
+								</span>
+								{alt.reason ? (
+									<span className="text-sm text-muted-foreground">
+										{alt.reason}
+									</span>
+								) : null}
+							</div>
+						))}
+					</div>
+				</div>
+			) : null}
 
-      {alternatives.length > 0 ? (
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-foreground">
-              {m["voice.room.feedback.alternatives"]()}
-            </span>
-          </div>
-          <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-            {alternatives.map((alt) => (
-              <div
-                key={alt.kind}
-                className="flex flex-col gap-1.5 rounded-xl border bg-card p-4 shadow-sm"
-              >
-                <span className="rounded-md border border-primary bg-muted/10 px-1.5 py-0.5 text-[11px] text-primary self-start">
-                  {alt.kind}
-                </span>
-                <span className="text-sm font-semibold text-foreground">
-                  “{alt.text}”
-                </span>
-                {alt.reason ? (
-                  <span className="text-sm text-muted-foreground">
-                    {alt.reason}
-                  </span>
-                ) : null}
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : null}
-
-      <div className="flex items-center gap-2">
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-          <Lightbulb size={17} className="text-primary" />
-        </div>
-        <p className="text-sm">
-          <span className="font-semibold text-foreground">
-            {m["voice.room.feedback.coachTip"]()}{" "}
-          </span>
-          {feedback.tip}
-        </p>
-      </div>
-    </div>
-  );
+			<div className="flex items-center gap-2">
+				<div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+					<Lightbulb size={17} className="text-primary" />
+				</div>
+				<p className="text-sm">
+					<span className="font-semibold text-foreground">
+						{m["voice.room.feedback.coachTip"]()}{" "}
+					</span>
+					{feedback.tip}
+				</p>
+			</div>
+		</div>
+	);
 }

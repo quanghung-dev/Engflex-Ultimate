@@ -18,18 +18,16 @@ export function WordHeroCard({ item }: { item: VocabularyItem }) {
 			await navigator.clipboard.writeText(value);
 			toast.success(message);
 		} catch {
-			toast.error(m["common.clipboardUnavailable"]());
+			toast.error(m["common.toast.clipboardUnavailable"]());
 		}
 	}
 
 	return (
-		<div className="flex flex-col gap-4 rounded-xl border bg-card p-5">
+		<div className="surface-hero flex flex-col gap-4 p-5">
 			<div className="flex flex-wrap items-center gap-2">
-				<h1 className="text-2xl font-extrabold tracking-tight text-foreground">
-					{item.term}
-				</h1>
+				<h1 className="text-2xl font-bold text-foreground">{item.term}</h1>
 				<CefrBadge value={item.cefr} />
-				<span className="rounded-md border border-border bg-muted px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+				<span className="chip px-1.5 py-0.5 text-[11px]">
 					{item.partOfSpeech}
 				</span>
 				{state ? (
@@ -38,21 +36,25 @@ export function WordHeroCard({ item }: { item: VocabularyItem }) {
 			</div>
 
 			<div className="flex flex-wrap items-center gap-2">
-				<span className="rounded-md border border-border bg-muted px-2 py-1 font-mono text-xs text-muted-foreground">
-					{item.ipa}
-				</span>
-				<AudioButton label={m["common.listenUS"]()} />
-				<AudioButton label={m["common.listenUK"]()} />
+				<span className="chip font-mono text-xs">{item.ipa}</span>
+				<AudioButton label={m["vocabulary.card.listenUs"]()} />
+				<AudioButton label={m["vocabulary.card.listenUk"]()} />
 			</div>
 
-			<p className="text-sm text-muted-foreground">{item.definition}</p>
+			<p className="text-[15px] font-medium text-muted-foreground">
+				{item.definition}
+			</p>
 
-			<div className="flex flex-wrap items-center gap-2 border-t pt-4">
+			<div className="flex flex-wrap items-center gap-2 border-t-2 border-border pt-4">
 				<Button
 					type="button"
 					variant={mastered ? "outline" : "default"}
 					onClick={() => toggleMastered(item.id)}
-					className={cn(mastered && "text-accuracy")}
+					className={cn(
+						"btn",
+						mastered ? "btn-outline" : "btn-primary",
+						mastered && "text-accuracy",
+					)}
 				>
 					<Check data-icon="inline-start" />
 					{mastered
@@ -65,17 +67,19 @@ export function WordHeroCard({ item }: { item: VocabularyItem }) {
 					onClick={() =>
 						copy(
 							`${item.term} — ${item.definition}`,
-							m["common.copiedClipboard"](),
+							m["common.toast.copiedClipboard"](),
 						)
 					}
 				>
 					<Copy data-icon="inline-start" />
-					{m["vocabulary.card.copy"]()}
+					{m["common.actions.copy"]()}
 				</Button>
 				<Button
 					type="button"
 					variant="ghost"
-					onClick={() => copy(window.location.href, m["common.linkCopied"]())}
+					onClick={() =>
+						copy(window.location.href, m["common.toast.linkCopied"]())
+					}
 				>
 					<Share2 data-icon="inline-start" />
 					{m["vocabulary.card.share"]()}

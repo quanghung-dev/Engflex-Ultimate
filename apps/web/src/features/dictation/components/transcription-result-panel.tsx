@@ -29,18 +29,18 @@ export function TranscriptionResultPanel({
 	}
 
 	return (
-		<div className="flex flex-col gap-4 rounded-xl border bg-card p-5">
+		<div className="surface-card flex flex-col gap-4 p-5">
 			<div className="flex items-center gap-2">
 				<CircleCheck className="size-4 text-accuracy" />
 				<span className="text-sm font-bold text-foreground">
-					{m["lessons.sentenceCompleted"]()}
+					{m["lessons.dictation.sentenceCompleted"]()}
 				</span>
 			</div>
 			<div className="flex flex-col gap-1">
-				<span className="text-xs font-semibold text-muted-foreground">
-					{m["lessons.typedLabel"]()}
+				<span className="text-xs font-bold text-muted-foreground">
+					{m["lessons.dictation.typedLabel"]()}
 				</span>
-				<p className="text-sm">
+				<p className="text-[15px] font-medium">
 					{annotated.map(({ key, token }) => (
 						<span
 							key={key}
@@ -57,22 +57,35 @@ export function TranscriptionResultPanel({
 				</p>
 			</div>
 			<div className="flex flex-col gap-1">
-				<span className="text-xs font-semibold text-muted-foreground">
-					{m["lessons.referenceLabel"]()}
+				<span className="text-xs font-bold text-muted-foreground">
+					{m["lessons.dictation.referenceLabel"]()}
 				</span>
-				<p className="text-sm text-muted-foreground">“{reference}”</p>
+				<p className="text-[15px] font-medium text-muted-foreground">
+					“{reference}”
+				</p>
 			</div>
-			<div className="flex flex-wrap items-center justify-between gap-2 border-t pt-4">
-				<span className="text-xs text-muted-foreground">
-					{m["lessons.remaining"]({ count: remaining })}
+			<div className="flex flex-wrap items-center justify-between gap-2">
+				<span className="text-xs font-medium text-muted-foreground">
+					{m["lessons.dictation.remaining"]({ count: remaining })}
 				</span>
 				<div className="flex items-center gap-2">
 					{onNext ? (
-						<Button type="button" variant="outline" size="sm" onClick={onNext}>
-							{m["common.nextSentence"]()}
+						<Button
+							type="button"
+							variant="outline"
+							size="sm"
+							className="btn btn-outline"
+							onClick={onNext}
+						>
+							{m["lessons.dictation.nextSentence"]()}
 						</Button>
 					) : null}
-					<Button type="button" size="sm" onClick={onContinue}>
+					<Button
+						type="button"
+						size="sm"
+						className="btn btn-primary"
+						onClick={onContinue}
+					>
 						{continueLabel}
 					</Button>
 				</div>

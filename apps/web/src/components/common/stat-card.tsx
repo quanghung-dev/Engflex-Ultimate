@@ -61,17 +61,15 @@ export function StatCard({
 	return (
 		<div
 			className={cn(
-				"flex items-center justify-between gap-3 rounded-xl border bg-card p-4",
+				"surface-card flex items-center justify-between gap-3 p-4",
 				className,
 			)}
 		>
 			<div className="flex min-w-0 flex-col gap-1">
-				<span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+				<span className="text-[11px] font-semibold text-muted-foreground">
 					{label}
 				</span>
-				<span className="text-2xl font-extrabold tracking-tight text-foreground">
-					{value}
-				</span>
+				<span className="text-2xl font-bold text-foreground">{value}</span>
 				{footer ? (
 					<span className="text-xs text-muted-foreground">{footer}</span>
 				) : null}
@@ -81,7 +79,7 @@ export function StatCard({
 			) : Icon ? (
 				<span
 					className={cn(
-						"flex size-10 shrink-0 items-center justify-center rounded-lg",
+						"tile",
 						tone === "accuracy" && "bg-accuracy-tint text-accuracy",
 						tone === "violet" && "bg-secondary text-accent-violet",
 						tone === "primary" && "bg-secondary text-primary",

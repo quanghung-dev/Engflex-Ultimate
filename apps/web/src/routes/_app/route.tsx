@@ -1,5 +1,6 @@
 import { RedirectToSignIn, Show } from "@clerk/tanstack-react-start";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { APP_ROUTES } from "#/app/app-route";
 import { RouteErrorFallback } from "#/components/common/error-pages";
 import { AppShell } from "#/components/layout/app-shell";
 import { getAuthState } from "#/lib/auth-guard";
@@ -8,7 +9,7 @@ export const Route = createFileRoute("/_app")({
 	beforeLoad: async () => {
 		const { isAuthenticated } = await getAuthState();
 		if (!isAuthenticated) {
-			throw redirect({ href: "/sign-in" });
+			throw redirect({ href: APP_ROUTES.AUTH.SIGN_IN });
 		}
 	},
 	component: AppLayout,

@@ -1,10 +1,11 @@
-import type { VocabularyItem } from "@engflex/contracts";
 import { createFileRoute } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
-import { BookmarkCheck, CircleCheck, LibraryBig, Pencil } from "lucide-react";
+import { LibraryBig, Pencil } from "lucide-react";
 import { useState } from "react";
 import { breadcrumb } from "#/app/breadcrumbs";
-import { PageHeader } from "#/components/common/page-header";
+import { MoMascot } from "#/components/common/mo-mascot";
+import { PageLayout } from "#/components/common/page-layout";
+import { ProgressBar } from "#/components/common/progress-bar";
 import { Button } from "#/components/ui/button";
 import {
 	Empty,
@@ -13,15 +14,12 @@ import {
 	EmptyTitle,
 } from "#/components/ui/empty";
 import { AddWordDialog } from "#/features/vocabulary/components/add-word-dialog";
-import { RecallDeckWidget } from "#/features/vocabulary/components/recall-deck-widget";
-import { RecentCustomWidget } from "#/features/vocabulary/components/recent-custom-widget";
 import { VocabCard } from "#/features/vocabulary/components/vocab-card";
 import {
 	DEFAULT_VOCAB_FILTERS,
 	VocabFilterBar,
 	type VocabFilters,
 } from "#/features/vocabulary/components/vocab-filter-bar";
-import { VocabStatCard } from "#/features/vocabulary/components/vocab-stat-card";
 import { VOCABULARY_STATS } from "#/features/vocabulary/fixtures";
 import {
 	getVocabularyItems,
@@ -30,7 +28,7 @@ import {
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/vocabulary/")({
-	staticData: breadcrumb(() => m["nav.vocabulary"]()),
+	staticData: breadcrumb(() => m["nav.item.vocabulary"]()),
 	component: VocabularyPage,
 });
 
@@ -39,6 +37,9 @@ function VocabularyPage() {
 	useStore(vocabularyStore); // subscribe to mastered/note/add changes
 
 	const items = getVocabularyItems();
+	const masteryPct = Math.round(
+		(VOCABULARY_STATS.mastered / VOCABULARY_STATS.totalSaved) * 100,
+	);
 
 	const visible = items.filter((item) => {
 		if (filters.search.trim()) {
@@ -73,115 +74,128 @@ function VocabularyPage() {
 		);
 	}
 
-	const customItems = items.filter(
-		(item) => item.userState?.sourceType === "manual",
-	);
-
 	return (
-		<div className="container-content flex flex-col gap-6 py-8">
-			<PageHeader
-				title={m["vocabulary.hubTitle"]()}
-				subtitle={m["vocabulary.hubSubtitle"]()}
-			/>
-
-			<div className="flex flex-wrap items-center justify-between gap-3">
-				<div className="text-sm font-semibold text-foreground">
-					<span className="text-muted-foreground">
-						{m["vocabulary.totalSaved"]()}{" "}
+		<PageLayout
+			hero={{
+				icon: <MoMascot variant="open" size={84} />,
+				title: m["vocabulary.hub.title"](),
+				description: m["vocabulary.hub.subtitle"](),
+			}}
+		>
+			<div className="grid gap-4 md:grid-cols-3">
+				<div className="surface-card flex flex-col gap-2 p-5">
+					<span className="text-[11px] font-bold text-muted-foreground">
+						{m["vocabulary.stats.mastered"]()}
 					</span>
-					{VOCABULARY_STATS.totalSaved}
+					<span className="stat-display">{masteryPct}%</span>
+					<ProgressBar value={masteryPct} tone="accuracy" />
+					<span className="text-xs font-medium text-muted-foreground">
+						{m["vocabulary.hub.masteredOf"]({
+							done: VOCABULARY_STATS.mastered,
+							total: VOCABULARY_STATS.totalSaved,
+						})}
+					</span>
 				</div>
-				<AddWordDialog />
-			</div>
-
-			<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-				<VocabStatCard
-					label={m["vocabulary.stats.saved"]()}
-					value={VOCABULARY_STATS.totalSaved}
-					sub={m["vocabulary.stats.savedSub"]()}
-					icon={LibraryBig}
-				/>
-				<VocabStatCard
-					label={m["vocabulary.stats.mastered"]()}
-					value={VOCABULARY_STATS.mastered}
-					sub={m["vocabulary.stats.masteredSub"]({
-						pct: VOCABULARY_STATS.retentionPct,
-					})}
-					icon={CircleCheck}
-					tone="accuracy"
-					retentionPct={VOCABULARY_STATS.retentionPct}
-				/>
-				<VocabStatCard
-					label={m["vocabulary.stats.needsReview"]()}
-					value={VOCABULARY_STATS.needsReview}
-					sub={m["vocabulary.stats.needsReviewSub"]({
-						count: VOCABULARY_STATS.dueToday,
-					})}
-					icon={BookmarkCheck}
-					tone="violet"
-				/>
-				<VocabStatCard
-					label={m["vocabulary.stats.custom"]()}
-					value={VOCABULARY_STATS.customAdditions}
-					sub={m["vocabulary.stats.customSub"]()}
-					icon={Pencil}
-				/>
+				<div className="surface-card flex flex-col gap-2 p-5">
+					<span className="inline-flex items-center gap-1 text-[11px] font-bold text-muted-foreground">
+						{m["vocabulary.stats.needsReview"]()}
+						<span className="size-1.5 rounded-full bg-secondary" />
+					</span>
+					<span className="text-2xl font-bold text-foreground">
+						{VOCABULARY_STATS.dueToday}{" "}
+						<span className="text-sm font-medium text-muted-foreground">
+							{m["vocabulary.stats.needsReviewSub"]({
+								count: VOCABULARY_STATS.dueToday,
+							})}
+						</span>
+					</span>
+					<div className="mt-auto">
+						<Button
+							type="button"
+							variant="outline"
+							size="sm"
+							className="btn btn-outline"
+							onClick={() =>
+								setFilters((current) => ({ ...current, sort: "interval" }))
+							}
+						>
+							{m["vocabulary.hub.reviewNow"]()}
+						</Button>
+					</div>
+				</div>
+				<div className="surface-card flex flex-col gap-2 p-5">
+					<span className="inline-flex items-center gap-1 text-[11px] font-bold text-muted-foreground">
+						<LibraryBig className="size-3.5" />
+						{m["vocabulary.stats.custom"]()}
+					</span>
+					<span className="text-2xl font-bold text-foreground">
+						{VOCABULARY_STATS.customAdditions}
+					</span>
+					<span className="text-xs font-medium text-muted-foreground">
+						{m["vocabulary.stats.customSub"]()}
+					</span>
+					<span className="tile mt-auto bg-secondary text-secondary-foreground">
+						<Pencil className="size-5" />
+					</span>
+				</div>
 			</div>
 
 			<VocabFilterBar filters={filters} onChange={setFilters} />
 
-			<div className="grid gap-4 lg:grid-cols-12">
-				<div className="flex flex-col gap-4 lg:col-span-8">
-					{sorted.length === 0 ? (
-						<Empty className="rounded-xl border bg-card">
-							<EmptyHeader>
-								<EmptyTitle>{m["vocabulary.emptyTitle"]()}</EmptyTitle>
-							</EmptyHeader>
-							<EmptyContent>
-								<Button
-									variant="outline"
-									onClick={() => setFilters(DEFAULT_VOCAB_FILTERS)}
-								>
-									{m["common.resetFilters"]()}
-								</Button>
-							</EmptyContent>
-						</Empty>
-					) : (
-						sorted.map((item: VocabularyItem) => (
-							<VocabCard key={item.id} item={item} />
-						))
-					)}
-					<div className="flex flex-wrap items-center justify-between gap-2 border-t pt-4 text-xs text-muted-foreground">
-						<span>
-							{m["vocabulary.showing"]({
-								shown: sorted.length,
-								total: VOCABULARY_STATS.totalSaved,
-							})}
-						</span>
-						<div className="flex items-center gap-2">
-							<Button type="button" variant="outline" size="sm" disabled>
-								{m["common.previousPage"]()}
-							</Button>
-							<Button type="button" variant="outline" size="sm" disabled>
-								{m["common.nextPage"]()}
-							</Button>
-						</div>
-					</div>
+			{sorted.length === 0 ? (
+				<Empty className="surface-card items-center text-center">
+					<MoMascot variant="confused" size={72} />
+					<EmptyHeader>
+						<EmptyTitle>{m["vocabulary.hub.emptyTitle"]()}</EmptyTitle>
+					</EmptyHeader>
+					<EmptyContent>
+						<Button
+							variant="outline"
+							className="btn btn-outline"
+							onClick={() => setFilters(DEFAULT_VOCAB_FILTERS)}
+						>
+							{m["common.actions.resetFilters"]()}
+						</Button>
+					</EmptyContent>
+				</Empty>
+			) : (
+				<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+					{sorted.map((item) => (
+						<VocabCard key={item.id} item={item} />
+					))}
 				</div>
-				<div className="flex flex-col gap-4 lg:col-span-4">
-					<RecallDeckWidget
-						items={items}
-						dueToday={VOCABULARY_STATS.dueToday}
-					/>
-					<RecentCustomWidget
-						items={customItems}
-						totalCustom={VOCABULARY_STATS.customAdditions}
-						onViewAll={() =>
-							setFilters((current) => ({ ...current, source: "manual" }))
-						}
-					/>
+			)}
+
+			<p className="text-xs font-medium text-muted-foreground">
+				{m["vocabulary.hub.showing"]({
+					shown: sorted.length,
+					total: VOCABULARY_STATS.totalSaved,
+				})}
+			</p>
+
+			<section className="surface-card flex flex-col gap-4 p-5 md:flex-row md:items-center">
+				<span
+					className="inline-flex h-16 w-16 shrink-0 items-center justify-center"
+					style={{
+						background: "var(--secondary)",
+						borderRadius: 13,
+						boxShadow: "0 3px 0 rgba(0,0,0,.2)",
+					}}
+				>
+					<MoMascot variant="wave" size={52} />
+				</span>
+				<div className="min-w-0 flex-1">
+					<h2 className="text-lg font-bold text-foreground">
+						{m["vocabulary.addWord.title"]()}
+					</h2>
+					<p className="text-[15px] font-medium text-muted-foreground">
+						{m["vocabulary.addWord.description"]()}
+					</p>
 				</div>
-			</div>
-		</div>
+				<div className="[&_button]:btn [&_button]:btn-primary">
+					<AddWordDialog />
+				</div>
+			</section>
+		</PageLayout>
 	);
 }

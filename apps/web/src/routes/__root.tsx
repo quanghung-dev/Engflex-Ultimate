@@ -13,7 +13,7 @@ import { m } from "#/paraglide/messages";
 import { getLocale } from "#/paraglide/runtime";
 
 function documentTitle() {
-	return m["common.documentTitle"]();
+	return m["common.brand.documentTitle"]();
 }
 
 import ClerkProvider from "../integrations/clerk/provider";

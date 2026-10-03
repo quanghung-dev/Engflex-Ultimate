@@ -1,10 +1,16 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "dashboard": {
-    "greeting": "Xin chào",
-    "greetingName": "Xin chào, {name}",
-    "subtitle": "Kỹ năng nói",
-    "unitLabel": "Bài học đang học · Học phần 4.2",
+    "hero": {
+      "greeting": "Xin chào",
+      "greetingName": "Xin chào, {name}",
+      "subtitle": "Kỹ năng nói"
+    },
+    "activeLesson": {
+      "unitLabel": "Bài học đang học · Học phần 4.2",
+      "progress": "Đã hoàn thành {done} trên {total} bài tập",
+      "continue": "Tiếp tục luyện tập"
+    },
     "stats": {
       "fluency": "Độ trôi chảy tổng thể",
       "pronunciation": "Phát âm",
@@ -14,20 +20,9 @@
       "highFriction": "{count} điểm cần cải thiện",
       "practice": "Luyện tập"
     },
-    "sequenceTitle": "Chuỗi luyện tập hôm nay",
-    "sequenceMeta": "{count} module · Tùy chỉnh lịch học →",
-    "activeLesson": {
-      "progress": "Đã hoàn thành {done} trên {total} bài tập",
-      "continue": "Tiếp tục luyện tập"
-    },
-    "voicePartner": {
-      "title": "Đóng vai hội thoại tự nhiên",
-      "description": "Luyện hội thoại trực tiếp với nhận diện giọng nói độ trễ thấp.",
-      "selected": "Đã chọn",
-      "ready": "Sẵn sàng",
-      "start": "Bắt đầu hội thoại"
-    },
     "sequence": {
+      "title": "Chuỗi luyện tập hôm nay",
+      "meta": "{count} module · Tùy chỉnh lịch học →",
       "duration": "{count} phút",
       "state": {
         "upNext": "Tiếp theo",
@@ -61,6 +56,13 @@
           "cta": "Luyện tập"
         }
       }
+    },
+    "voicePartner": {
+      "title": "Đóng vai hội thoại tự nhiên",
+      "description": "Luyện hội thoại trực tiếp với nhận diện giọng nói độ trễ thấp.",
+      "selected": "Đã chọn",
+      "ready": "Sẵn sàng",
+      "start": "Bắt đầu hội thoại"
     }
   }
 }

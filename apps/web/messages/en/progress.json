@@ -1,8 +1,6 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "progress": {
-    "streak": "{count}-day streak",
-    "todayLabel": "Today:",
-    "todayGoal": "/ {goal} min"
+    "streak": "{count}-day streak"
   }
 }

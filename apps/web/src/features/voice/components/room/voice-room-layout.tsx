@@ -42,12 +42,12 @@ export function VoiceRoomLayout({
 					<SheetTrigger asChild>
 						<Button type="button" variant="outline">
 							<MessageSquareText data-icon="inline-start" />
-							{m["voice.room.transcriptTitle"]()}
+							{m["voice.room.transcript.title"]()}
 						</Button>
 					</SheetTrigger>
 					<SheetContent side="bottom" className="max-h-[80vh]">
 						<SheetHeader>
-							<SheetTitle>{m["voice.room.transcriptTitle"]()}</SheetTitle>
+							<SheetTitle>{m["voice.room.transcript.title"]()}</SheetTitle>
 							<SheetDescription>{objective}</SheetDescription>
 						</SheetHeader>
 						<div className="overflow-hidden px-4 pb-4">{transcript}</div>

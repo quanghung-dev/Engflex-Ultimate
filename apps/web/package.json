@@ -14,6 +14,7 @@
     "format": "biome format",
     "lint": "biome lint",
     "check": "biome check",
+    "check:conventions": "node scripts/check-conventions.mjs",
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",

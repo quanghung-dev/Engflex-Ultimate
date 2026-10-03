@@ -19,6 +19,7 @@ import {
 	Smile,
 } from "lucide-react";
 import { useState } from "react";
+import { APP_ROUTES } from "#/app/app-route";
 import { breadcrumb } from "#/app/breadcrumbs";
 import { Button } from "#/components/ui/button";
 import { FieldError } from "#/components/ui/field";
@@ -43,7 +44,7 @@ export const Route = createFileRoute("/onboarding")({
 	beforeLoad: async () => {
 		const { isAuthenticated } = await getAuthState();
 		if (!isAuthenticated) {
-			throw redirect({ href: "/sign-in" });
+			throw redirect({ href: APP_ROUTES.AUTH.SIGN_IN });
 		}
 	},
 	component: OnboardingPage,
@@ -60,81 +61,88 @@ const LEVELS: Array<{
 	{
 		value: "beginner",
 		range: "A1–A2",
-		title: () => m["onboarding.levels.beginner.title"](),
-		description: () => m["onboarding.levels.beginner.description"](),
-		hint: () => m["onboarding.levels.beginner.hint"](),
+		title: () => m["onboarding.level.option.beginner.title"](),
+		description: () => m["onboarding.level.option.beginner.description"](),
+		hint: () => m["onboarding.level.option.beginner.hint"](),
 		hintIcon: AudioWaveform,
 	},
 	{
 		value: "intermediate",
 		range: "B1–B2",
-		title: () => m["onboarding.levels.intermediate.title"](),
-		description: () => m["onboarding.levels.intermediate.description"](),
-		hint: () => m["onboarding.levels.intermediate.hint"](),
+		title: () => m["onboarding.level.option.intermediate.title"](),
+		description: () => m["onboarding.level.option.intermediate.description"](),
+		hint: () => m["onboarding.level.option.intermediate.hint"](),
 		hintIcon: BadgeCheck,
 	},
 	{
 		value: "advanced",
 		range: "C1–C2",
-		title: () => m["onboarding.levels.advanced.title"](),
-		description: () => m["onboarding.levels.advanced.description"](),
-		hint: () => m["onboarding.levels.advanced.hint"](),
+		title: () => m["onboarding.level.option.advanced.title"](),
+		description: () => m["onboarding.level.option.advanced.description"](),
+		hint: () => m["onboarding.level.option.advanced.hint"](),
 		hintIcon: Brain,
 	},
 ];
 
 const GOALS: Array<{ value: Goal; label: () => string; icon: LucideIcon }> = [
-	{ value: "travel", label: () => m["onboarding.goals.travel"](), icon: Plane },
+	{
+		value: "travel",
+		label: () => m["onboarding.goal.option.travel"](),
+		icon: Plane,
+	},
 	{
 		value: "work",
-		label: () => m["onboarding.goals.work"](),
+		label: () => m["onboarding.goal.option.work"](),
 		icon: Briefcase,
 	},
 	{
 		value: "exams",
-		label: () => m["onboarding.goals.exams"](),
+		label: () => m["onboarding.goal.option.exams"](),
 		icon: GraduationCap,
 	},
 	{
 		value: "daily",
-		label: () => m["onboarding.goals.daily"](),
+		label: () => m["onboarding.goal.option.daily"](),
 		icon: Coffee,
 	},
-	{ value: "fun", label: () => m["onboarding.goals.fun"](), icon: Smile },
+	{ value: "fun", label: () => m["onboarding.goal.option.fun"](), icon: Smile },
 ];
 
 const TOPICS: Array<{ value: InterestTopic; label: () => string }> = [
-	{ value: "travel", label: () => m["onboarding.topics.travel"]() },
-	{ value: "business", label: () => m["onboarding.topics.business"]() },
-	{ value: "movies_tv", label: () => m["onboarding.topics.movies_tv"]() },
-	{ value: "technology", label: () => m["onboarding.topics.technology"]() },
-	{ value: "food", label: () => m["onboarding.topics.food"]() },
-	{ value: "music", label: () => m["onboarding.topics.music"]() },
-	{ value: "sports", label: () => m["onboarding.topics.sports"]() },
-	{ value: "news", label: () => m["onboarding.topics.news"]() },
+	{ value: "travel", label: () => m["onboarding.topics.option.travel"]() },
+	{ value: "business", label: () => m["onboarding.topics.option.business"]() },
+	{ value: "movies_tv", label: () => m["onboarding.topics.option.moviesTv"]() },
+	{
+		value: "technology",
+		label: () => m["onboarding.topics.option.technology"](),
+	},
+	{ value: "food", label: () => m["onboarding.topics.option.food"]() },
+	{ value: "music", label: () => m["onboarding.topics.option.music"]() },
+	{ value: "sports", label: () => m["onboarding.topics.option.sports"]() },
+	{ value: "news", label: () => m["onboarding.topics.option.news"]() },
 ];
 
 const COMMITMENTS = [
 	{
 		minutes: 5,
-		label: () => m["onboarding.commitments.c5.label"](),
-		sub: () => m["onboarding.commitments.c5.sub"](),
+		label: () => m["onboarding.time.option.c5.label"](),
+		sub: () => m["onboarding.time.option.c5.sub"](),
 	},
 	{
 		minutes: 10,
-		label: () => m["onboarding.commitments.c10.label"](),
-		sub: () => m["onboarding.commitments.c10.sub"](),
+		label: () => m["onboarding.time.option.c10.label"](),
+		sub: () => m["onboarding.time.option.c10.sub"](),
 	},
 	{
 		minutes: 15,
-		label: () => m["onboarding.commitments.c15.label"](),
-		sub: () => m["onboarding.commitments.c15.sub"](),
+		label: () => m["onboarding.time.option.c15.label"](),
+		sub: () => m["onboarding.time.option.c15.sub"](),
 		recommended: true,
 	},
 	{
 		minutes: 30,
-		label: () => m["onboarding.commitments.c30.label"](),
-		sub: () => m["onboarding.commitments.c30.sub"](),
+		label: () => m["onboarding.time.option.c30.label"](),
+		sub: () => m["onboarding.time.option.c30.sub"](),
 	},
 ];
 
@@ -147,7 +155,7 @@ function OnboardingPage() {
 
 	function next() {
 		if (slide === 1 && draft.topics.length < 2) {
-			setTopicError(m["onboarding.topicsError"]());
+			setTopicError(m["onboarding.topics.error"]());
 			return;
 		}
 		setTopicError(null);
@@ -160,7 +168,7 @@ function OnboardingPage() {
 
 	function finish() {
 		setPreferences(draft);
-		navigate({ to: "/" });
+		navigate({ to: APP_ROUTES.HOME });
 	}
 
 	const slides: Slide[] = [
@@ -170,10 +178,10 @@ function OnboardingPage() {
 				<section className="flex flex-col gap-4 p-5">
 					<div>
 						<h2 className="text-lg font-extrabold tracking-tight">
-							{m["onboarding.levelTitle"]()}
+							{m["onboarding.level.title"]()}
 						</h2>
 						<p className="mt-1 text-xs text-muted-foreground">
-							{m["onboarding.levelSubtitle"]()}
+							{m["onboarding.level.subtitle"]()}
 						</p>
 					</div>
 					<RadioGroup
@@ -205,10 +213,10 @@ function OnboardingPage() {
 				<section className="flex flex-col gap-5 p-5">
 					<div>
 						<h2 className="text-lg font-extrabold tracking-tight">
-							{m["onboarding.goalTitle"]()}
+							{m["onboarding.goal.title"]()}
 						</h2>
 						<p className="mt-1 text-xs text-muted-foreground">
-							{m["onboarding.goalSubtitle"]()}
+							{m["onboarding.goal.subtitle"]()}
 						</p>
 					</div>
 					<div className="flex flex-wrap gap-2">
@@ -227,10 +235,10 @@ function OnboardingPage() {
 					</div>
 					<div className="flex flex-col gap-2">
 						<h3 className="text-sm font-semibold">
-							{m["onboarding.topicsTitle"]()}
+							{m["onboarding.topics.title"]()}
 						</h3>
 						<p className="text-xs text-muted-foreground">
-							{m["onboarding.topicsSubtitle"]()}
+							{m["onboarding.topics.subtitle"]()}
 						</p>
 						<ToggleGroup
 							type="multiple"
@@ -263,10 +271,10 @@ function OnboardingPage() {
 				<section className="flex flex-col gap-4 p-5">
 					<div>
 						<h2 className="text-lg font-extrabold tracking-tight">
-							{m["onboarding.timeTitle"]()}
+							{m["onboarding.time.title"]()}
 						</h2>
 						<p className="mt-1 text-xs text-muted-foreground">
-							{m["onboarding.timeSubtitle"]()}
+							{m["onboarding.time.subtitle"]()}
 						</p>
 					</div>
 					<div className="grid gap-3 sm:grid-cols-2">
@@ -296,8 +304,8 @@ function OnboardingPage() {
 	return (
 		<>
 			<Show when="signed-in">
-				<div className="grid-bg flex min-h-svh items-center justify-center p-4 sm:p-6">
-					<div className="container-narrow w-full rounded-2xl border bg-card shadow-sm">
+				<div className="app-canvas flex min-h-svh items-center justify-center p-4 sm:p-6">
+					<div className="surface-card w-full max-w-2xl">
 						<FlowHeader />
 						<SlideTrack index={slide} slides={slides} />
 						<div className="flex items-center justify-between border-t p-4">
@@ -307,10 +315,12 @@ function OnboardingPage() {
 								onClick={back}
 								disabled={slide === 0}
 							>
-								{m["common.back"]()}
+								{m["common.actions.back"]()}
 							</Button>
 							<Button type="button" onClick={slide === 3 ? finish : next}>
-								{slide === 3 ? m["common.finish"]() : m["common.continue"]()}
+								{slide === 3
+									? m["common.actions.finish"]()
+									: m["common.actions.continue"]()}
 							</Button>
 						</div>
 					</div>

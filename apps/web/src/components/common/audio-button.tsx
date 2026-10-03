@@ -6,7 +6,7 @@ import { m } from "#/paraglide/messages";
 
 /** Simulated playback: no audio files exist — a fixed 800ms playing state. */
 export function AudioButton({
-	label = m["common.playPronunciation"](),
+	label = m["common.audio.playPronunciation"](),
 	className,
 }: {
 	label?: string;

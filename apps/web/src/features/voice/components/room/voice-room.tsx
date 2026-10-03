@@ -89,9 +89,9 @@ export function VoiceRoom({
 			<div className="p-8" aria-hidden="true">
 				<SessionModal
 					open
-					title={m["voice.connectionFailed"]()}
-					description={m["voice.sessionEnded"]()}
-					actionLabel={m["voice.backToScenarios"]()}
+					title={m["voice.connection.failed"]()}
+					description={m["voice.room.sessionEnded"]()}
+					actionLabel={m["voice.room.backToScenarios"]()}
 					onAction={session.onExit}
 				/>
 			</div>
@@ -113,7 +113,7 @@ export function VoiceRoom({
 		);
 	}
 
-	const objective = m["voice.room.freeTalkObjective"]();
+	const objective = m["voice.room.freeTalk.objective"]();
 	const transcript =
 		source.kind === "live" ? (
 			<TranscriptPanel
@@ -164,7 +164,7 @@ export function VoiceRoom({
 									objective={objective}
 									voice={
 										<VoicePanel
-											title={m["voice.room.freeTalkTitle"]()}
+											title={m["voice.room.freeTalk.title"]()}
 											objective={objective}
 											ending={session.endPending}
 											headerAction={
@@ -189,11 +189,11 @@ export function VoiceRoom({
 						)}
 						<SessionModal
 							open={error != null || session.connectionLost}
-							title={m["voice.connectionFailed"]()}
+							title={m["voice.connection.failed"]()}
 							description={
-								error ?? session.errorDetail ?? m["voice.sessionEnded"]()
+								error ?? session.errorDetail ?? m["voice.room.sessionEnded"]()
 							}
-							actionLabel={m["voice.backToScenarios"]()}
+							actionLabel={m["voice.room.backToScenarios"]()}
 							onAction={session.onExit}
 						/>
 						<SparringGuideDialog open={guide.open} onClose={guide.close} />

@@ -1,7 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { APP_ROUTES } from "#/app/app-route";
 import { breadcrumb } from "#/app/breadcrumbs";
-import { PageHeader } from "#/components/common/page-header";
+import { MoMascot } from "#/components/common/mo-mascot";
+import { PageLayout } from "#/components/common/page-layout";
 import { AudioCalibrationBanner } from "#/features/voice/components/mode/audio-calibration-banner";
 import { ModeCard } from "#/features/voice/components/mode/mode-card";
 import { MODE_CARDS } from "#/features/voice/fixtures";
@@ -9,7 +11,7 @@ import { useCreateConversation } from "#/features/voice/queries";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/voice/")({
-	staticData: breadcrumb(() => m["nav.voice"]()),
+	staticData: breadcrumb(() => m["nav.item.voice"]()),
 	component: VoiceModesPage,
 });
 
@@ -24,21 +26,23 @@ function VoiceModesPage() {
 				mode: "free_talk",
 			});
 			await navigate({
-				to: "/voice/room/$conversationId",
+				to: APP_ROUTES.VOICE.ROOM,
 				params: { conversationId: conversation.id },
 			});
 		} catch {
-			toast.error(m["voice.createFailed"]());
+			toast.error(m["voice.create.failed"]());
 		}
 	}
 
 	return (
-		<div className="container-detail flex flex-col gap-6 py-8">
-			<PageHeader
-				title={m["voice.modesTitle"]()}
-				subtitle={m["voice.modesSubtitle"]()}
-			/>
-			<div className="grid gap-4 lg:grid-cols-2">
+		<PageLayout
+			hero={{
+				icon: <MoMascot variant="open" size={84} />,
+				title: m["voice.modes.title"](),
+				description: m["voice.modes.subtitle"](),
+			}}
+		>
+			<div className="grid items-start gap-4 lg:grid-cols-2">
 				{MODE_CARDS.map((card) => (
 					<ModeCard
 						key={card.id}
@@ -48,12 +52,31 @@ function VoiceModesPage() {
 								void startFreeTalk();
 								return;
 							}
-							navigate({ to: "/voice/scenarios" });
+							navigate({ to: APP_ROUTES.VOICE.SCENARIOS });
 						}}
 					/>
 				))}
 			</div>
+			<div
+				className="flex items-center gap-3 p-4"
+				style={{
+					background: "#ffe2c5",
+					border: "2px solid var(--border)",
+					borderRadius: 24,
+					boxShadow: "0 5px 0 var(--border)",
+				}}
+			>
+				<MoMascot variant="nice" size={40} className="hidden sm:inline-flex" />
+				<div className="min-w-0">
+					<p className="text-[11px] font-bold text-foreground">
+						{m["voice.tip.title"]()}
+					</p>
+					<p className="text-[15px] font-medium text-foreground">
+						{m["voice.tip.body"]()}
+					</p>
+				</div>
+			</div>
 			<AudioCalibrationBanner />
-		</div>
+		</PageLayout>
 	);
 }

@@ -11,15 +11,16 @@ export type CrumbLabel = string | ((params: RouteParams) => string);
 /** Section paths a crumb may link to, sourced from the central route constants. */
 export type CrumbPath =
 	| typeof APP_ROUTES.HOME
-	| typeof APP_ROUTES.LESSONS
-	| typeof APP_ROUTES.VOCABULARY
-	| typeof APP_ROUTES.VOICE;
+	| typeof APP_ROUTES.ABOUT
+	| typeof APP_ROUTES.LESSONS.LIST
+	| typeof APP_ROUTES.VOCABULARY.LIST
+	| typeof APP_ROUTES.VOICE.LIST;
 
 /** Explicit link target for a crumb that is not the current page. */
 export type CrumbTarget =
 	| { to: CrumbPath }
 	| {
-			to: typeof APP_ROUTES.LESSON_DETAIL;
+			to: typeof APP_ROUTES.LESSONS.DETAIL;
 			params: (params: RouteParams) => { lessonId: string };
 	  };
 
@@ -51,11 +52,11 @@ export function readBreadcrumb(
 
 export const lessonCrumbLabel = (params: RouteParams) =>
 	getLessonDetail(params.lessonId)?.lesson.title ??
-	m["lessons.crumbDetailFallback"]();
+	m["lessons.crumb.detailFallback"]();
 
 export const vocabularyCrumbLabel = (params: RouteParams) =>
 	getVocabularyItem(params.itemId)?.term ??
-	m["vocabulary.crumbDetailFallback"]();
+	m["vocabulary.crumb.detailFallback"]();
 
 export function crumbLabel(label: CrumbLabel, params: RouteParams): string {
 	return typeof label === "function" ? label(params) : label;
@@ -64,7 +65,7 @@ export function crumbLabel(label: CrumbLabel, params: RouteParams): string {
 /** A crumb target with its params already resolved for rendering. */
 export type ResolvedTarget =
 	| { to: CrumbPath }
-	| { to: typeof APP_ROUTES.LESSON_DETAIL; params: { lessonId: string } };
+	| { to: typeof APP_ROUTES.LESSONS.DETAIL; params: { lessonId: string } };
 
 export function resolveTarget(
 	target: CrumbTarget | undefined,

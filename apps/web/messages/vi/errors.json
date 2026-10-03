@@ -1,0 +1,13 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "errors": {
+    "notFound": {
+      "title": "Không tìm thấy trang",
+      "body": "Trang này không tồn tại hoặc mục đã bị xóa."
+    },
+    "server": {
+      "title": "Đã xảy ra lỗi",
+      "body": "Một lỗi bất ngờ đã làm gián đoạn trang này. Hãy thử lại hoặc quay về trang chủ."
+    }
+  }
+}

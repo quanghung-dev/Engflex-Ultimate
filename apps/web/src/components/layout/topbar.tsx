@@ -49,7 +49,7 @@ export function Topbar() {
 	});
 
 	return (
-		<header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-sidebar px-4 backdrop-blur-md">
+		<header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background px-4 text-foreground">
 			<SidebarTrigger className="-ml-1" />
 			<Separator
 				orientation="vertical"
@@ -60,7 +60,7 @@ export function Topbar() {
 					{crumbs.map((crumb, index) => (
 						<Fragment key={crumb.key}>
 							{index > 0 ? (
-								<BreadcrumbSeparator className="hidden md:block" />
+								<BreadcrumbSeparator className="hidden opacity-50 md:block" />
 							) : null}
 							<BreadcrumbItem
 								className={
@@ -72,12 +72,14 @@ export function Topbar() {
 								{crumb.target && index < crumbs.length - 1 ? (
 									<BreadcrumbLink
 										asChild
-										className="font-medium text-muted-foreground hover:text-foreground"
+										className="font-medium opacity-80 hover:text-foreground hover:opacity-100"
 									>
 										<CrumbLink target={crumb.target}>{crumb.text}</CrumbLink>
 									</BreadcrumbLink>
 								) : (
-									<BreadcrumbPage>{crumb.text}</BreadcrumbPage>
+									<BreadcrumbPage className="font-semibold">
+										{crumb.text}
+									</BreadcrumbPage>
 								)}
 							</BreadcrumbItem>
 						</Fragment>
@@ -99,7 +101,7 @@ function CrumbLink({
 	target: ResolvedTarget;
 	children: ReactNode;
 }) {
-	if (target.to === APP_ROUTES.LESSON_DETAIL) {
+	if (target.to === APP_ROUTES.LESSONS.DETAIL) {
 		return (
 			<Link to={target.to} params={target.params}>
 				{children}

@@ -94,19 +94,21 @@ export function TurnFeedbackPanel({
 						variant="outline"
 						size="icon-sm"
 						pending={pending}
-						aria-label={m["voice.room.analyze"]()}
+						aria-label={m["voice.room.transcript.analyze"]()}
 						onClick={onAnalyze}
 					>
 						<Sparkles />
 					</SubmitButton>
 				</TooltipTrigger>
 				<TooltipContent>
-					{pending ? m["voice.room.analyzing"]() : m["voice.room.analyze"]()}
+					{pending
+						? m["voice.room.transcript.analyzing"]()
+						: m["voice.room.transcript.analyze"]()}
 				</TooltipContent>
 			</Tooltip>
 			{failed ? (
 				<p className="text-xs text-destructive">
-					{m["voice.room.analyzeFailed"]()}
+					{m["voice.room.transcript.analyzeFailed"]()}
 				</p>
 			) : null}
 		</div>

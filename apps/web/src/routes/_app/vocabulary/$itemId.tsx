@@ -2,6 +2,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
 import { APP_ROUTES } from "#/app/app-route";
 import { breadcrumb, vocabularyCrumbLabel } from "#/app/breadcrumbs";
+import { PageLayout } from "#/components/common/page-layout";
 import { AcousticBreakdownCard } from "#/features/vocabulary/components/acoustic-breakdown-card";
 import { CollocationsGrid } from "#/features/vocabulary/components/collocations-grid";
 import { ContextsSection } from "#/features/vocabulary/components/contexts-section";
@@ -17,14 +18,14 @@ import { m } from "#/paraglide/messages";
 export const Route = createFileRoute("/_app/vocabulary/$itemId")({
 	staticData: breadcrumb([
 		{
-			label: () => m["nav.vocabulary"](),
-			target: { to: APP_ROUTES.VOCABULARY },
+			label: () => m["nav.item.vocabulary"](),
+			target: { to: APP_ROUTES.VOCABULARY.LIST },
 		},
 		vocabularyCrumbLabel,
 	]),
 	beforeLoad: ({ params }) => {
 		if (!getVocabularyItem(params.itemId)) {
-			throw redirect({ to: "/vocabulary" });
+			throw redirect({ to: APP_ROUTES.VOCABULARY.LIST });
 		}
 	},
 	component: WordDetailPage,
@@ -39,7 +40,7 @@ function WordDetailPage() {
 	const details = item.details;
 
 	return (
-		<div className="container-detail flex flex-col gap-5 py-8">
+		<PageLayout>
 			<WordHeroCard item={item} />
 
 			{details ? (
@@ -77,6 +78,6 @@ function WordDetailPage() {
 					createdAt={item.userState.createdAt}
 				/>
 			) : null}
-		</div>
+		</PageLayout>
 	);
 }

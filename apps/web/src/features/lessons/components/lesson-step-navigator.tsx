@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
 import { cn } from "cn";
 import { CircleCheck } from "lucide-react";
+import { APP_ROUTES } from "#/app/app-route";
 import { type LessonPart, PART_META } from "#/features/lessons/parts";
 import { lessonsStore } from "#/features/lessons/store";
 import { m } from "#/paraglide/messages";
@@ -22,39 +23,37 @@ export function LessonStepNavigator({
 	);
 
 	return (
-		<nav className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+		<nav className="flex flex-wrap items-center gap-2">
 			{activities.map((activity) => {
 				const part = activity.type as LessonPart;
 				const done = completed.includes(activity.partNumber);
 				const active = part === currentPart;
-				const meta = PART_META[part];
-				const Icon = meta.icon;
 				return (
 					<Link
 						key={activity.id}
-						to="/lessons/$lessonId/parts/$part"
+						to={APP_ROUTES.LESSONS.PART}
 						params={{ lessonId, part }}
+						aria-current={active ? "step" : undefined}
 						className={cn(
-							"flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition",
+							"inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1 text-xs font-bold transition",
 							active
-								? "border-primary bg-secondary text-primary"
-								: "border-border bg-card text-muted-foreground hover:border-primary/40",
+								? "border-primary bg-primary text-primary-foreground"
+								: "border-border bg-card text-muted-foreground hover:border-primary",
 						)}
+						style={active ? { boxShadow: "0 4px 0 #433095" } : undefined}
 					>
-						{done ? (
-							<CircleCheck className="size-4 shrink-0 text-accuracy" />
-						) : (
-							<Icon className="size-4 shrink-0" />
-						)}
-						<span className="truncate font-semibold">
-							{activity.partNumber}. {meta.label()}
+						{done && !active ? (
+							<CircleCheck className="size-3.5 text-accuracy" />
+						) : null}
+						<span>
+							{activity.partNumber}. {PART_META[part].label()}
 						</span>
-						<span className="ml-auto shrink-0 text-[11px]">
+						<span className="sr-only">
 							{done
-								? m["lessons.stepDone"]()
+								? m["lessons.step.done"]()
 								: active
-									? m["lessons.stepActive"]()
-									: m["lessons.stepUpcoming"]()}
+									? m["lessons.step.active"]()
+									: m["lessons.step.upcoming"]()}
 						</span>
 					</Link>
 				);

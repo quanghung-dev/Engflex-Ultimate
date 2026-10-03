@@ -1,91 +1,134 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "lessons": {
-    "crumbPractice": "Practice",
-    "crumbDetailFallback": "Lesson detail",
-    "hubTitle": "Executive lesson hub",
-    "hubSubtitle": "Structured workplace scenarios that build executive communication range.",
-    "filterSearch": "Search lessons",
-    "filterAllLevels": "All proficiency levels",
-    "levelB1": "B1 • Intermediate technical",
-    "levelB2": "B2 • Upper professional",
-    "levelC1": "C1 • Executive mastery",
-    "filterAllStatuses": "All statuses",
-    "statusInProgress": "In progress",
-    "statusCompleted": "Completed",
-    "statusUnstarted": "Not started",
-    "skillAll": "All",
+    "dictation": {
+      "nextSentence": "Next sentence →",
+      "context": "Dialogue context",
+      "speakerB": "Speaker B:",
+      "yourTranscription": "Your transcription",
+      "placeholder": "Type what you hear…",
+      "characters": "{count} characters",
+      "check": "Check transcription",
+      "sentenceCompleted": "Sentence completed",
+      "typedLabel": "What you typed:",
+      "referenceLabel": "Reference text:",
+      "remaining": "{count} sentences remaining in this session",
+      "hint": "Need a hint? Tap for first words",
+      "coach": {
+        "title": "Mo the Sloth · Listening coach",
+        "body": "Take it slow and steady. In rapid standups, vowels compress — keep your ears peeled for small glue words."
+      }
+    },
+    "reading": {
+      "previousQuestion": "Previous",
+      "readTime": "~2 min read",
+      "questionOf": "Question {number} of {total}",
+      "nextQuestion": "Next question"
+    },
+    "crumb": {
+      "practice": "Practice",
+      "detailFallback": "Lesson detail"
+    },
+    "hub": {
+      "title": "Executive lesson hub",
+      "moBody": "15 to 25 minutes of intentional speaking, listening, and technical debate every day.",
+      "inFlight": "In flight",
+      "overall": "Overall unit completion",
+      "resume": "Resume unit {unit}",
+      "allTracks": "All tracks",
+      "paced": "Paced",
+      "levelLabel": "Level:",
+      "levelAll": "All levels",
+      "levelB1": "B1",
+      "levelB2": "B2",
+      "levelC1": "C1",
+      "start": "Start lesson",
+      "emptyTitle": "No lesson matches current filters",
+      "emptyBody": "Try broadening your search term or clearing level and skill filters to view more curriculum units."
+    },
+    "detail": {
+      "track": "Track: {track}",
+      "pace": "Recommended pace: Calm",
+      "sequential": "Sequential",
+      "coach": "Coach Mo",
+      "steady": "Steady speed",
+      "calmTip": "Mo's calm tip",
+      "calmQuote": "Take a breath between sentences. Rushing doesn't make code deploy faster.",
+      "startLesson": "Start lesson (Part {number}: {part})",
+      "saved": "Saved",
+      "saveLater": "Save for later",
+      "activitiesTitle": "Lesson activities",
+      "activitiesSubtitle": "All steps required for completion",
+      "outcomesTitle": "What you will learn",
+      "partOf": "Part {number} of {total}",
+      "backToLesson": "Back to lesson"
+    },
+    "status": {
+      "available": "Available",
+      "locked": "Locked",
+      "unlocks": "Unlocks after {id}",
+      "nextUp": "Next up",
+      "recommended": "Recommended next",
+      "inProgress": "In progress",
+      "completed": "Completed",
+      "unstarted": "Not started"
+    },
+    "card": {
+      "actionReview": "Review",
+      "actionContinue": "Continue lesson",
+      "scoreLabel": "Score: {pct}%",
+      "stepOf": "Step {done} of {total}",
+      "estDuration": "Est. {minutes} mins",
+      "activitiesCount": "{count} activities",
+      "start": "Start",
+      "meta": "{minutes} min • {parts} parts",
+      "activityDuration": "{minutes} mins"
+    },
+    "unit": {
+      "lessons": "{count} lessons",
+      "label": "Unit {n}"
+    },
+    "filter": {
+      "search": "Search lessons"
+    },
     "skill": {
       "reading": "Reading",
       "dictation": "Dictation",
       "writing": "Writing",
       "voice": "Voice"
     },
-    "emptyTitle": "No lesson matches current filters",
-    "emptyBody": "Try broadening your search term or clearing level and skill filters to view more curriculum units.",
-    "levelBadge": "Level {level}",
-    "estDuration": "Est. {minutes} mins",
-    "activitiesCount": "{count} activities",
-    "completedPct": "{pct}% completed",
-    "startLesson": "Start lesson (Part {number}: {part})",
-    "saved": "Saved",
-    "saveLater": "Save for later",
-    "start": "Start",
-    "viewLesson": "View lesson",
-    "cardMeta": "{minutes} min • {parts} parts",
-    "activityTitle": "Part {number} · {title}",
-    "activityDuration": "{minutes} mins",
-    "activitiesTitle": "Lesson activities",
-    "activitiesSubtitle": "Complete in sequence for best retention",
-    "outcomesTitle": "What you will learn",
-    "acousticTitle": "Acoustic target",
-    "acousticBody": "Recommended natural pacing rate for {level} meeting fluid speech.",
-    "completionNow": "Current completion",
-    "scenarioContext": "Scenario context",
-    "caption": "Cross-functional team standup & quarterly project sync",
-    "tipPrefix": "Tip: ",
-    "voiceTip": "Wear headphones during voice practice for cleaner acoustic pitch detection.",
     "part": {
       "reading": "Reading Comprehension",
       "dictation": "Acoustic Dictation",
       "writing": "Guided Writing",
       "voice": "Free Voice Dialogue"
     },
-    "partCounter": "Part {number} of {total} · {part}",
-    "partOf": "Part {number} of {total}",
-    "backToLesson": "Back to lesson",
-    "stepDone": "Done",
-    "stepActive": "In progress",
-    "stepUpcoming": "Upcoming",
-    "continueTo": "Continue to {part} →",
-    "finishLesson": "Finish lesson →",
-    "passageReadTime": "~2 min read",
-    "questionOf": "Question {number} of {total}",
-    "nextQuestion": "Next question",
-    "dialogueContext": "Dialogue context",
-    "speakerA": "Speaker A:",
-    "speakerB": "Speaker B:",
-    "audioPlaceholder": "[Audio snippet to transcribe below]",
-    "yourTranscription": "Your transcription",
-    "transcriptionPlaceholder": "Type what you hear…",
-    "characters": "{count} characters",
-    "checkTranscription": "Check transcription",
-    "sentenceCompleted": "Sentence completed",
-    "typedLabel": "What you typed:",
-    "referenceLabel": "Reference text:",
-    "remaining": "{count} sentences remaining in this session",
-    "writingPrompt": "Writing Prompt: {title}",
-    "writingTarget": "Target: {min}–{max} words",
-    "writingHint": "In your response, try to answer the following context questions:",
-    "writingPlaceholder": "Write your response…",
-    "wordsCount": "{count} / {max} words",
-    "submitFeedback": "Submit for feedback",
-    "feedbackTitle": "Instant Linguistic Feedback",
-    "feedbackKind": {
-      "grammar": "Grammar",
-      "vocabulary": "Vocabulary",
-      "naturalness": "Naturalness"
+    "step": {
+      "done": "Done",
+      "active": "In progress",
+      "upcoming": "Upcoming",
+      "continueTo": "Continue to {part} →",
+      "finishLesson": "Finish lesson →"
     },
-    "feedbackCefr": "{level} checked"
+    "writing": {
+      "prompt": "Writing Prompt: {title}",
+      "target": "Target: {min}–{max} words",
+      "hint": "In your response, try to answer the following context questions:",
+      "placeholder": "Write your response…",
+      "wordsCount": "{count} / {max} words",
+      "submit": "Submit for feedback",
+      "feedback": {
+        "title": "Instant Linguistic Feedback",
+        "kind": {
+          "grammar": "Grammar",
+          "vocabulary": "Vocabulary",
+          "naturalness": "Naturalness"
+        },
+        "cefr": "{level} checked"
+      },
+      "assessment": "Mo’s live assessment",
+      "assessmentBody": "Excellent framing! Stating the exact recovery window gives the reader immediate confidence, while confirming the key terms eliminates any fear of misunderstanding.",
+      "responseTitle": "Your response"
+    }
   }
 }

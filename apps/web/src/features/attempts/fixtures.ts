@@ -1,4 +1,5 @@
 import type { ProgressSummary } from "@engflex/contracts";
+import { APP_ROUTES } from "#/app/app-route";
 
 /** mock-only: dashboard rollup until the attempts progress endpoint exists. */
 export const PROGRESS_SUMMARY: ProgressSummary = {
@@ -15,7 +16,10 @@ export const PROGRESS_SUMMARY: ProgressSummary = {
 /** Typed navigation target: dynamic routes carry their params. */
 export type SequenceTarget =
 	| { kind: "lesson"; lessonId: string }
-	| { kind: "route"; to: "/voice/scenarios" | "/vocabulary" };
+	| {
+			kind: "route";
+			to: typeof APP_ROUTES.VOICE.SCENARIOS | typeof APP_ROUTES.VOCABULARY.LIST;
+	  };
 
 export interface SequenceCard {
 	id: string;
@@ -45,13 +49,13 @@ export const SEQUENCE_CARDS: SequenceCard[] = [
 		id: "roleplay",
 		durationMin: 15,
 		state: "queued",
-		target: { kind: "route", to: "/voice/scenarios" },
+		target: { kind: "route", to: APP_ROUTES.VOICE.SCENARIOS },
 	},
 	{
 		id: "spaced",
 		durationMin: 5,
 		state: "due",
 		dueCount: 18,
-		target: { kind: "route", to: "/vocabulary" },
+		target: { kind: "route", to: APP_ROUTES.VOCABULARY.LIST },
 	},
 ];

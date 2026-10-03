@@ -1,7 +1,14 @@
 import { UserButton, useUser } from "@clerk/tanstack-react-start";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
-import { AudioWaveform, BookmarkCheck, BookOpen, House } from "lucide-react";
+import { cn } from "cn";
+import {
+	AudioWaveform,
+	BookmarkCheck,
+	BookOpen,
+	House,
+	Info,
+} from "lucide-react";
 import { APP_ROUTES } from "#/app/app-route";
 import { Logo } from "#/components/common/logo";
 import { Avatar } from "#/components/ui/avatar";
@@ -17,42 +24,57 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "#/components/ui/sidebar";
+import { PROGRESS_SUMMARY } from "#/features/attempts/fixtures";
 import { profileStore } from "#/features/profiles/store";
 import { m } from "#/paraglide/messages";
 
+/**
+ * Nav items render as a filled rounded tile with a knocked-out white glyph, so
+ * `tile` is a solid fill (not a text colour) and every one is dark enough for a
+ * white glyph to clear WCAG 1.4.11 non-text contrast (>=3:1):
+ * primary 5.31:1, orange 3.56:1, blue 5.17:1, emerald 3.77:1.
+ */
 const NAV_GROUPS = [
 	{
-		label: () => m["nav.groupPractice"](),
+		label: () => m["nav.group.practice"](),
 		items: [
-			{ title: () => m["nav.home"](), to: APP_ROUTES.HOME, icon: House },
 			{
-				title: () => m["nav.lessons"](),
-				to: APP_ROUTES.LESSONS,
-				icon: BookOpen,
+				title: () => m["nav.item.home"](),
+				to: APP_ROUTES.HOME,
+				icon: House,
+				tile: "bg-[#6c4df0]",
 			},
 			{
-				title: () => m["nav.voice"](),
-				to: APP_ROUTES.VOICE,
+				title: () => m["nav.item.lessons"](),
+				to: APP_ROUTES.LESSONS.LIST,
+				icon: BookOpen,
+				tile: "bg-[#ea580c]",
+			},
+			{
+				title: () => m["nav.item.voice"](),
+				to: APP_ROUTES.VOICE.LIST,
 				icon: AudioWaveform,
+				tile: "bg-[#2563eb]",
 			},
 		],
 	},
 	{
-		label: () => m["nav.groupKnowledge"](),
+		label: () => m["nav.group.knowledge"](),
 		items: [
 			{
-				title: () => m["nav.vocabulary"](),
-				to: APP_ROUTES.VOCABULARY,
+				title: () => m["nav.item.vocabulary"](),
+				to: APP_ROUTES.VOCABULARY.LIST,
 				icon: BookmarkCheck,
+				tile: "bg-[#059669]",
 			},
 		],
 	},
 ] as const;
 
 const LEVEL_LABELS = {
-	beginner: () => m["nav.level.beginner"](),
-	intermediate: () => m["nav.level.intermediate"](),
-	advanced: () => m["nav.level.advanced"](),
+	beginner: () => m["nav.user.level.beginner"](),
+	intermediate: () => m["nav.user.level.intermediate"](),
+	advanced: () => m["nav.user.level.advanced"](),
 } as const;
 
 export function AppSidebar() {
@@ -61,25 +83,34 @@ export function AppSidebar() {
 	});
 
 	return (
-		<Sidebar>
-			<SidebarHeader>
-				<SidebarMenu>
-					<SidebarMenuItem>
-						<SidebarMenuButton
-							size="lg"
-							asChild
-							className="hover:bg-transparent"
-						>
-							<Link to={APP_ROUTES.HOME}>
-								<Logo variant="full" />
-							</Link>
-						</SidebarMenuButton>
-					</SidebarMenuItem>
-				</SidebarMenu>
+		<Sidebar collapsible="icon">
+			{/* A plain Link, not a SidebarMenuButton: the primitive forces every
+			    collapsed menu button to `size-8!` (32px), which is narrower than
+			    the 36px mascot bubble, and overriding it needs an `!important`
+			    that loses the cascade to the primitive's own `size-8!`. Dropping
+			    the header's horizontal padding when collapsed gives the bubble
+			    the full rail width to sit centred in. */}
+			<SidebarHeader className="group-data-[collapsible=icon]:px-0">
+				<Link
+					to={APP_ROUTES.HOME}
+					className="flex h-12 items-center rounded-md px-2 hover:bg-transparent group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0"
+				>
+					{/* One mark, not two: `hidden` on the inner wordmark span drops
+					    just the wordmark, so the bubble keeps its 36px in both states.
+					    Toggling the Logo root itself would collide with its own
+					    `inline-flex` and let both variants render at once. */}
+					<Logo
+						variant="full"
+						className="text-sidebar-foreground group-data-[collapsible=icon]:[&>span:last-child]:hidden"
+					/>
+				</Link>
 			</SidebarHeader>
-			<SidebarContent>
+			<SidebarContent className="group-data-[collapsible=icon]:gap-1">
 				{NAV_GROUPS.map((group) => (
-					<SidebarGroup key={group.label()}>
+					<SidebarGroup
+						key={group.label()}
+						className="group-data-[collapsible=icon]:p-0"
+					>
 						<SidebarGroupLabel>{group.label()}</SidebarGroupLabel>
 						<SidebarMenu>
 							{group.items.map((item) => {
@@ -89,12 +120,25 @@ export function AppSidebar() {
 										: pathname.startsWith(item.to);
 								return (
 									<SidebarMenuItem key={item.title()}>
-										<SidebarMenuButton asChild isActive={isActive}>
+										<SidebarMenuButton
+											asChild
+											isActive={isActive}
+											tooltip={item.title()}
+										>
 											<Link to={item.to} className="font-medium">
-												<item.icon />
-												<span className="text-foreground">{item.title()}</span>
+												<span
+													className={cn(
+														"flex size-6 shrink-0 items-center justify-center rounded-[7px] text-white",
+														item.tile,
+													)}
+												>
+													<item.icon className="size-3.5" />
+												</span>
+												<span className="text-sidebar-foreground">
+													{item.title()}
+												</span>
 												{isActive ? (
-													<span className="ml-auto size-1.5 rounded-full bg-sidebar-primary" />
+													<span className="ml-auto size-1.5 rounded-full bg-sidebar-primary group-data-[collapsible=icon]:hidden" />
 												) : null}
 											</Link>
 										</SidebarMenuButton>
@@ -106,6 +150,16 @@ export function AppSidebar() {
 				))}
 			</SidebarContent>
 			<SidebarFooter>
+				<SidebarMenu>
+					<SidebarMenuItem>
+						<SidebarMenuButton asChild tooltip={m["about.crumb"]()}>
+							<Link to={APP_ROUTES.ABOUT} className="font-medium">
+								<Info data-icon="inline-start" />
+								<span>{m["about.crumb"]()}</span>
+							</Link>
+						</SidebarMenuButton>
+					</SidebarMenuItem>
+				</SidebarMenu>
 				<SidebarUserCard />
 			</SidebarFooter>
 		</Sidebar>
@@ -119,20 +173,30 @@ function SidebarUserCard() {
 		(state) => state.profile.preferences.level,
 	);
 
-	const name = user?.fullName ?? user?.firstName ?? m["nav.learner"]();
+	const name = user?.fullName ?? user?.firstName ?? m["nav.user.learner"]();
 
 	return (
-		<div className="flex items-center gap-2.5 rounded-lg border border-sidebar-border bg-card p-2">
-			<Avatar className="size-7">
+		<div className="flex items-center gap-2.5 rounded-[16px] border-2 border-sidebar-border bg-card p-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-full group-data-[collapsible=icon]:border-0 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:p-0">
+			<Avatar className="size-7 shrink-0">
 				<UserButton />
 			</Avatar>
-			<div className="flex min-w-0 flex-col leading-tight">
-				<span className="truncate text-[13px] font-semibold">{name}</span>
-				<span className="text-[11px] text-muted-foreground">
-					{m["nav.learner"]()}
+			<div className="flex min-w-0 flex-col leading-tight group-data-[collapsible=icon]:hidden">
+				<span className="truncate text-[13px] font-bold text-card-foreground">
+					{name}
+				</span>
+				<span className="truncate text-[11px] font-medium text-muted-foreground">
+					{m["progress.streak"]({ count: PROGRESS_SUMMARY.streakDays })}
 				</span>
 			</div>
-			<Badge variant="secondary" className="ml-auto">
+			<Badge
+				variant="secondary"
+				className={cn(
+					"chip chip-accent ml-auto px-2 py-0.5 text-[11px]",
+					// The wrapper centres on the avatar alone, so a `shrink-0` badge
+					// would re-introduce the off-centre gap once both are hidden.
+					"group-data-[collapsible=icon]:hidden",
+				)}
+			>
 				{LEVEL_LABELS[level]()}
 			</Badge>
 		</div>

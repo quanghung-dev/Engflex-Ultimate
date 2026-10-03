@@ -1,24 +1,35 @@
 /** Centralized app route URLs. Use these instead of hardcoding paths. */
 export const APP_ROUTES = {
 	HOME: "/",
+	ABOUT: "/about",
 	ONBOARDING: "/onboarding",
-	LESSONS: "/lessons",
-	LESSON_DETAIL: "/lessons/$lessonId",
-	LESSON_PART: "/lessons/$lessonId/parts/$part",
-	VOCABULARY: "/vocabulary",
-	VOCABULARY_ITEM: "/vocabulary/$itemId",
-	VOICE: "/voice",
-	VOICE_SCENARIOS: "/voice/scenarios",
-	VOICE_ROOM: "/voice/room/$conversationId",
+	LESSONS: {
+		LIST: "/lessons",
+		DETAIL: "/lessons/$lessonId",
+		PART: "/lessons/$lessonId/parts/$part",
+	},
+	VOCABULARY: {
+		LIST: "/vocabulary",
+		DETAIL: "/vocabulary/$itemId",
+	},
+	VOICE: {
+		LIST: "/voice",
+		SCENARIOS: "/voice/scenarios",
+		ROOM: "/voice/room/$conversationId",
+	},
+	/**
+	 * Clerk's catch-all pages. The file routes are `/sign-in/$` splats, so a
+	 * typed `to` needs the splat id — but `redirect({ href })` bypasses route
+	 * resolution entirely and must carry a plain URL, or the browser navigates
+	 * to a literal `$`. These values are therefore href-only.
+	 */
 	AUTH: {
 		SIGN_IN: "/sign-in",
 		SIGN_UP: "/sign-up",
 	},
-	/** Error pages, also used as inline fallbacks. */
+	/** Dedicated status pages, both rendered by `components/common/error-page`. */
 	ERROR: {
-		UNAUTHORIZED: "/401",
-		FORBIDDEN: "/403",
-		NOT_FOUND: "/404",
-		SERVER: "/500",
+		NOT_FOUND: "/not-found",
+		SERVER: "/error",
 	},
 } as const;

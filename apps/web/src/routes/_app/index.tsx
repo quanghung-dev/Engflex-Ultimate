@@ -3,6 +3,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Gauge } from "lucide-react";
 import { APP_ROUTES } from "#/app/app-route";
 import { breadcrumb } from "#/app/breadcrumbs";
+import { MoMascot } from "#/components/common/mo-mascot";
+import { PageLayout } from "#/components/common/page-layout";
 import { StatCard } from "#/components/common/stat-card";
 import { PROGRESS_SUMMARY, SEQUENCE_CARDS } from "#/features/attempts/fixtures";
 import { ActiveLessonCard } from "#/features/dashboard/components/active-lesson-card";
@@ -13,8 +15,8 @@ import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/")({
 	staticData: breadcrumb([
-		{ label: () => m["nav.home"](), target: { to: APP_ROUTES.HOME } },
-		() => m["nav.groupPractice"](),
+		{ label: () => m["nav.item.home"](), target: { to: APP_ROUTES.HOME } },
+		() => m["nav.group.practice"](),
 	]),
 	component: DashboardPage,
 });
@@ -24,18 +26,15 @@ function DashboardPage() {
 	const firstName = user?.firstName;
 
 	return (
-		<div className="container-dashboard flex flex-col gap-7 py-8">
-			<div className="flex flex-col gap-1">
-				<h1 className="text-[28px] leading-tight font-extrabold tracking-tight text-foreground md:text-[32px]">
-					{firstName
-						? m["dashboard.greetingName"]({ name: firstName })
-						: m["dashboard.greeting"]()}
-				</h1>
-				<p className="text-sm text-muted-foreground">
-					{m["dashboard.subtitle"]()}
-				</p>
-			</div>
-
+		<PageLayout
+			hero={{
+				icon: <MoMascot variant="wave" size={84} />,
+				title: firstName
+					? m["dashboard.hero.greetingName"]({ name: firstName })
+					: m["dashboard.hero.greeting"](),
+				description: m["dashboard.hero.subtitle"](),
+			}}
+		>
 			<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 				<StatCard
 					label={m["dashboard.stats.fluency"]()}
@@ -73,7 +72,7 @@ function DashboardPage() {
 								})}
 							</span>
 							<span aria-hidden="true">·</span>
-							<Link to="/vocabulary" className="font-medium">
+							<Link to={APP_ROUTES.VOCABULARY.LIST} className="font-medium">
 								{m["dashboard.stats.practice"]()}
 							</Link>
 						</span>
@@ -93,10 +92,10 @@ function DashboardPage() {
 			<section className="flex flex-col gap-3">
 				<div className="flex flex-wrap items-center justify-between gap-2">
 					<h2 className="text-lg font-bold tracking-tight text-foreground">
-						{m["dashboard.sequenceTitle"]()}
+						{m["dashboard.sequence.title"]()}
 					</h2>
 					<span className="text-xs text-muted-foreground">
-						{m["dashboard.sequenceMeta"]({ count: SEQUENCE_CARDS.length })}
+						{m["dashboard.sequence.meta"]({ count: SEQUENCE_CARDS.length })}
 					</span>
 				</div>
 				<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -105,6 +104,6 @@ function DashboardPage() {
 					))}
 				</div>
 			</section>
-		</div>
+		</PageLayout>
 	);
 }

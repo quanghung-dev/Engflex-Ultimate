@@ -74,7 +74,7 @@ function VoicePanelView({
 					</div>
 				</div>
 				{/*<p className="text-xs text-muted-foreground">
-					{m["voice.room.spaceHint"]()}
+					{m["voice.room.controls.spaceHint"]()}
 				</p>*/}
 				<div className="flex flex-wrap items-center justify-center gap-3">
 					{micSlot}
@@ -86,12 +86,12 @@ function VoicePanelView({
 								size="icon-lg"
 								pending={ending}
 								onClick={onEnd}
-								aria-label={m["voice.room.micEnd"]()}
+								aria-label={m["voice.room.controls.micEnd"]()}
 							>
 								<PhoneOff />
 							</SubmitButton>
 						</TooltipTrigger>
-						<TooltipContent>{m["voice.room.micEnd"]()}</TooltipContent>
+						<TooltipContent>{m["voice.room.controls.micEnd"]()}</TooltipContent>
 					</Tooltip>
 				</div>
 			</CardContent>
@@ -137,8 +137,8 @@ export function VoicePanel({
 				<PipecatClientMicToggle>
 					{({ disabled, isMicEnabled, onClick }) => {
 						const label = isMicEnabled
-							? m["voice.room.micMuteMic"]()
-							: m["voice.room.micUnmuteMic"]();
+							? m["voice.room.controls.micMute"]()
+							: m["voice.room.controls.micUnmute"]();
 						return (
 							<Tooltip>
 								<TooltipTrigger asChild>

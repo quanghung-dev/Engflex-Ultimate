@@ -391,6 +391,101 @@ export const LESSON_DETAILS: Record<string, LessonDetailFixture> =
 		]),
 	);
 
+/** Hub grouping (mock-only): Stitch organises lessons into units + tracks. */
+export const UNITS = [
+	{
+		n: 4,
+		title: "Architecture & incident defense",
+		description:
+			"Handling synchronous technical debates and post-outage inquiries",
+	},
+	{
+		n: 5,
+		title: "Team communication & conflict",
+		description:
+			"Diplomatic pushback, setting boundaries, and leading cross-functional consensus",
+	},
+	{
+		n: 6,
+		title: "Executive fluency & presence",
+		description:
+			"Role clarity, crisp escalation, and commitments engineering can keep",
+	},
+] as const;
+
+export const TRACKS = [
+	"System architecture",
+	"Incident post-mortems",
+	"Leadership & behavioral",
+	"Negotiation",
+] as const;
+
+export type LessonTrack = (typeof TRACKS)[number];
+
+interface LessonMeta {
+	unit: number;
+	slot: string;
+	track: LessonTrack;
+	scorePct: number;
+}
+
+export const LESSON_META: Record<string, LessonMeta> = {
+	"leading-sprint-reviews": {
+		unit: 4,
+		slot: "4.1",
+		track: "System architecture",
+		scorePct: 94,
+	},
+	"navigating-fast-paced-dialogues": {
+		unit: 4,
+		slot: "4.2",
+		track: "Incident post-mortems",
+		scorePct: 88,
+	},
+	"analyzing-earnings-reports": {
+		unit: 4,
+		slot: "4.3",
+		track: "Incident post-mortems",
+		scorePct: 91,
+	},
+	"disagreeing-politely-in-meetings": {
+		unit: 5,
+		slot: "5.1",
+		track: "Negotiation",
+		scorePct: 96,
+	},
+	"de-escalating-team-tensions": {
+		unit: 5,
+		slot: "5.2",
+		track: "Leadership & behavioral",
+		scorePct: 89,
+	},
+	"negotiating-project-timelines": {
+		unit: 5,
+		slot: "5.3",
+		track: "Negotiation",
+		scorePct: 92,
+	},
+	"describing-your-job": {
+		unit: 6,
+		slot: "6.1",
+		track: "Leadership & behavioral",
+		scorePct: 93,
+	},
+	"writing-blocker-memos": {
+		unit: 6,
+		slot: "6.2",
+		track: "System architecture",
+		scorePct: 95,
+	},
+	"defining-acceptance-criteria": {
+		unit: 6,
+		slot: "6.3",
+		track: "System architecture",
+		scorePct: 90,
+	},
+};
+
 export function getLessonById(id: string): Lesson | undefined {
 	return LESSONS.find((lesson) => lesson.id === id);
 }

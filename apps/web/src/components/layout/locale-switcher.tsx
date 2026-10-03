@@ -18,9 +18,9 @@ export function LocaleSwitcher() {
 					aria-pressed={locale === current}
 					onClick={() => setLocale(locale)}
 					className={cn(
-						"h-6 rounded-full px-2 text-[11px] font-semibold",
+						"h-6 rounded-full px-2 text-[11px] font-bold",
 						locale === current
-							? "bg-secondary text-primary"
+							? "bg-secondary text-secondary-foreground"
 							: "text-muted-foreground hover:text-foreground",
 					)}
 				>

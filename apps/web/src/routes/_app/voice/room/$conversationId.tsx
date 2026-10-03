@@ -11,8 +11,11 @@ import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/voice/room/$conversationId")({
 	staticData: breadcrumb([
-		{ label: () => m["nav.voice"](), target: { to: APP_ROUTES.VOICE } },
-		() => m["voice.roomCrumb"](),
+		{
+			label: () => m["nav.item.voice"](),
+			target: { to: APP_ROUTES.VOICE.LIST },
+		},
+		() => m["voice.crumb.room"](),
 	]),
 	component: VoiceRoomPage,
 });
@@ -21,7 +24,7 @@ export const Route = createFileRoute("/_app/voice/room/$conversationId")({
 function VoiceRoomPage() {
 	const { conversationId } = Route.useParams();
 	const navigate = useNavigate();
-	const exit = () => navigate({ to: APP_ROUTES.VOICE });
+	const exit = () => navigate({ to: APP_ROUTES.VOICE.LIST });
 	const session = useVoiceSession(conversationId, exit);
 	const status = session.conversation.data?.status;
 

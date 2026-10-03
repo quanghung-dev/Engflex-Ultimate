@@ -5,6 +5,7 @@ import type {
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { MoMascot } from "#/components/common/mo-mascot";
 import { Button } from "#/components/ui/button";
 import {
 	Dialog,
@@ -51,7 +52,7 @@ export function CustomScenarioBanner({
 
 	async function submit() {
 		if (!form.title.trim() || !form.objective.trim()) {
-			setError(m["voice.custom.required"]());
+			setError(m["voice.custom.dialog.required"]());
 			return;
 		}
 		if (
@@ -59,7 +60,7 @@ export function CustomScenarioBanner({
 			form.durationMax > 60 ||
 			form.durationMin > form.durationMax
 		) {
-			setError(m["voice.custom.durationError"]());
+			setError(m["voice.custom.dialog.durationError"]());
 			return;
 		}
 		try {
@@ -72,47 +73,47 @@ export function CustomScenarioBanner({
 			});
 		} catch {
 			// Server rejected the scenario: stay open so nothing is lost.
-			setError(m["voice.createFailed"]());
+			setError(m["voice.create.failed"]());
 			return;
 		}
 		setOpen(false);
 		setForm(EMPTY_FORM);
 		setError(null);
-		toast.success(m["common.customScenarioAdded"]());
+		toast.success(m["common.toast.scenarioAdded"]());
 	}
 
 	return (
-		<div className="flex flex-wrap items-center gap-4 rounded-xl border border-dashed bg-card p-4">
-			<div className="flex min-w-0 flex-col gap-0.5">
-				<span className="text-sm font-semibold text-foreground">
-					{m["voice.custom.title"]()}
+		<div className="surface-card flex flex-col gap-4 p-5 md:flex-row md:items-center">
+			<MoMascot variant="wave" size={52} className="hidden sm:inline-flex" />
+			<div className="flex min-w-0 flex-1 flex-col gap-0.5">
+				<span className="text-base font-bold text-foreground">
+					{m["voice.custom.prompt.title"]()}
 				</span>
-				<span className="text-xs text-muted-foreground">
-					{m["voice.custom.body"]()}
+				<span className="text-[15px] font-medium text-muted-foreground">
+					{m["voice.custom.prompt.body"]()}
 				</span>
 			</div>
 			<Button
 				type="button"
-				variant="outline"
-				className="ml-auto"
+				className="btn btn-primary shrink-0"
 				onClick={() => setOpen(true)}
 			>
 				<Plus data-icon="inline-start" />
-				{m["voice.custom.cta"]()}
+				{m["voice.custom.prompt.cta"]()}
 			</Button>
 
 			<Dialog open={open} onOpenChange={setOpen}>
 				<DialogContent>
 					<DialogHeader>
-						<DialogTitle>{m["voice.custom.dialogTitle"]()}</DialogTitle>
+						<DialogTitle>{m["voice.custom.dialog.title"]()}</DialogTitle>
 						<DialogDescription>
-							{m["voice.custom.dialogBody"]()}
+							{m["voice.custom.dialog.body"]()}
 						</DialogDescription>
 					</DialogHeader>
 					<FieldGroup>
 						<Field data-invalid={Boolean(error)}>
 							<FieldLabel htmlFor="scenario-title">
-								{m["voice.custom.titleLabel"]()}
+								{m["voice.custom.dialog.titleLabel"]()}
 							</FieldLabel>
 							<Input
 								id="scenario-title"
@@ -127,7 +128,7 @@ export function CustomScenarioBanner({
 						</Field>
 						<Field data-invalid={Boolean(error)}>
 							<FieldLabel htmlFor="scenario-objective">
-								{m["voice.custom.objectiveLabel"]()}
+								{m["voice.custom.dialog.objectiveLabel"]()}
 							</FieldLabel>
 							<Input
 								id="scenario-objective"
@@ -141,7 +142,9 @@ export function CustomScenarioBanner({
 							/>
 						</Field>
 						<Field>
-							<FieldLabel>{m["voice.custom.difficultyLabel"]()}</FieldLabel>
+							<FieldLabel>
+								{m["voice.custom.dialog.difficultyLabel"]()}
+							</FieldLabel>
 							<Select
 								value={form.difficulty}
 								onValueChange={(value) =>
@@ -166,7 +169,7 @@ export function CustomScenarioBanner({
 						<div className="grid gap-3 sm:grid-cols-2">
 							<Field>
 								<FieldLabel htmlFor="scenario-min">
-									{m["voice.custom.minLabel"]()}
+									{m["voice.custom.dialog.minLabel"]()}
 								</FieldLabel>
 								<Input
 									id="scenario-min"
@@ -182,7 +185,7 @@ export function CustomScenarioBanner({
 							</Field>
 							<Field>
 								<FieldLabel htmlFor="scenario-max">
-									{m["voice.custom.maxLabel"]()}
+									{m["voice.custom.dialog.maxLabel"]()}
 								</FieldLabel>
 								<Input
 									id="scenario-max"
@@ -205,10 +208,10 @@ export function CustomScenarioBanner({
 							variant="ghost"
 							onClick={() => setOpen(false)}
 						>
-							{m["common.cancel"]()}
+							{m["common.actions.cancel"]()}
 						</Button>
 						<Button type="button" onClick={() => void submit()}>
-							{m["voice.custom.add"]()}
+							{m["voice.custom.dialog.add"]()}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

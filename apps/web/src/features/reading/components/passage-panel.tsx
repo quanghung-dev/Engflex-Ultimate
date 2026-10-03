@@ -15,19 +15,17 @@ export function PassagePanel({
 		.filter(Boolean);
 
 	return (
-		<article className="flex flex-col gap-3 rounded-xl border bg-card p-5">
+		<article className="surface-card flex h-full flex-col gap-3 p-5">
 			<div className="flex flex-wrap items-center justify-between gap-2">
-				<span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+				<span className="chip bg-accent px-2 py-0.5 text-[11px] font-bold">
 					{kicker}
 				</span>
-				<span className="text-[11px] text-muted-foreground">
-					{m["lessons.passageReadTime"]()}
+				<span className="text-[11px] font-medium text-muted-foreground">
+					{m["lessons.reading.readTime"]()}
 				</span>
 			</div>
-			<h2 className="text-lg font-extrabold tracking-tight text-foreground">
-				{title}
-			</h2>
-			<div className="flex flex-col gap-3 text-sm leading-relaxed text-muted-foreground">
+			<h2 className="text-xl font-bold text-foreground">{title}</h2>
+			<div className="flex flex-col gap-3 text-[15px] leading-[24px] font-medium text-foreground">
 				{paragraphs.map((paragraph) => (
 					<p key={paragraph.slice(0, 40)}>{paragraph}</p>
 				))}

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "errors": {
+    "notFound": {
+      "title": "Page not found",
+      "body": "This page doesn't exist or the item was removed."
+    },
+    "server": {
+      "title": "Something went wrong",
+      "body": "An unexpected error interrupted this page. Try again or head back home."
+    }
+  }
+}

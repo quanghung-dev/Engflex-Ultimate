@@ -54,7 +54,10 @@ export function RecallDeckWidget({
 					</li>
 				))}
 			</ol>
-			<Button type="button" onClick={() => toast(m["common.flashcardSoon"]())}>
+			<Button
+				type="button"
+				onClick={() => toast(m["common.toast.flashcardSoon"]())}
+			>
 				<Play data-icon="inline-start" />
 				{m["vocabulary.recall.start"]({ count: dueToday })}
 			</Button>

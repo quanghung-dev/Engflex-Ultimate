@@ -1,10 +1,16 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "dashboard": {
-    "greeting": "Good morning",
-    "greetingName": "Good morning, {name}",
-    "subtitle": "Speech performance",
-    "unitLabel": "Active lesson · Unit 4.2",
+    "hero": {
+      "greeting": "Good morning",
+      "greetingName": "Good morning, {name}",
+      "subtitle": "Speech performance"
+    },
+    "activeLesson": {
+      "unitLabel": "Active lesson · Unit 4.2",
+      "progress": "{done} of {total} exercises completed",
+      "continue": "Continue practice"
+    },
     "stats": {
       "fluency": "Overall fluency",
       "pronunciation": "Pronunciation",
@@ -14,20 +20,9 @@
       "highFriction": "{count} high friction",
       "practice": "Practice"
     },
-    "sequenceTitle": "Today's practice sequence",
-    "sequenceMeta": "{count} modules · Customize schedule →",
-    "activeLesson": {
-      "progress": "{done} of {total} exercises completed",
-      "continue": "Continue practice"
-    },
-    "voicePartner": {
-      "title": "Spontaneous speaking roleplay",
-      "description": "Real-time conversational sparring with low latency speech recognition.",
-      "selected": "Selected",
-      "ready": "Ready",
-      "start": "Start conversation"
-    },
     "sequence": {
+      "title": "Today's practice sequence",
+      "meta": "{count} modules · Customize schedule →",
       "duration": "{count} min",
       "state": {
         "upNext": "Up next",
@@ -61,6 +56,13 @@
           "cta": "Practice"
         }
       }
+    },
+    "voicePartner": {
+      "title": "Spontaneous speaking roleplay",
+      "description": "Real-time conversational sparring with low latency speech recognition.",
+      "selected": "Selected",
+      "ready": "Ready",
+      "start": "Start conversation"
     }
   }
 }

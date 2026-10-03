@@ -1,14 +1,18 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
+import { ArrowLeft, Gauge } from "lucide-react";
 import { APP_ROUTES } from "#/app/app-route";
 import { breadcrumb, lessonCrumbLabel } from "#/app/breadcrumbs";
-import { AcousticTargetCard } from "#/features/lessons/components/acoustic-target-card";
+import { PageLayout } from "#/components/common/page-layout";
+import { Button } from "#/components/ui/button";
 import { ActivityRow } from "#/features/lessons/components/activity-row";
 import { LessonHeader } from "#/features/lessons/components/lesson-header";
-import { OutcomesCard } from "#/features/lessons/components/outcomes-card";
 import { TipBar } from "#/features/lessons/components/tip-bar";
-import { VisualAnchor } from "#/features/lessons/components/visual-anchor";
-import { getLessonById, getLessonDetail } from "#/features/lessons/fixtures";
+import {
+	getLessonById,
+	getLessonDetail,
+	LESSON_META,
+} from "#/features/lessons/fixtures";
 import { LESSON_PART_TYPES } from "#/features/lessons/parts";
 import {
 	getFirstIncompletePart,
@@ -20,20 +24,19 @@ import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/lessons/$lessonId/")({
 	staticData: breadcrumb([
-		{ label: () => m["nav.lessons"](), target: { to: APP_ROUTES.LESSONS } },
+		{
+			label: () => m["nav.item.lessons"](),
+			target: { to: APP_ROUTES.LESSONS.LIST },
+		},
 		lessonCrumbLabel,
 	]),
 	beforeLoad: ({ params }) => {
 		if (!getLessonById(params.lessonId)) {
-			throw redirect({ to: "/lessons" });
+			throw redirect({ to: APP_ROUTES.LESSONS.LIST });
 		}
 	},
 	component: LessonDetailPage,
 });
-
-const SCENARIO_CONTEXT_CAPTION = () => m["lessons.caption"]();
-
-const VOICE_TIP = () => m["lessons.voiceTip"]();
 
 function LessonDetailPage() {
 	const { lessonId } = Route.useParams();
@@ -46,41 +49,51 @@ function LessonDetailPage() {
 
 	const startPart = getFirstIncompletePart(lessonId);
 	const startPartNumber = LESSON_PART_TYPES.indexOf(startPart) + 1;
+	const meta = LESSON_META[lessonId];
 
 	return (
-		<div className="container-detail flex flex-col gap-6 py-8">
+		<PageLayout>
+			<div className="flex flex-wrap items-center gap-2">
+				<Button asChild variant="outline" size="sm" className="btn btn-outline">
+					<Link to={APP_ROUTES.LESSONS.LIST}>
+						<ArrowLeft data-icon="inline-start" />
+						{m["lessons.detail.backToLesson"]()}
+					</Link>
+				</Button>
+				{meta ? (
+					<span className="chip px-2 py-0.5 text-xs">
+						{m["lessons.detail.track"]({
+							track: meta.track,
+						})}{" "}
+						· Unit {meta.slot}
+					</span>
+				) : null}
+				<span className="chip ml-auto px-2 py-0.5 text-xs">
+					<Gauge className="size-3.5" />
+					{m["lessons.detail.pace"]()}
+				</span>
+			</div>
+
 			<LessonHeader
 				lesson={detail.lesson}
 				progress={progress}
 				startPart={startPart}
 				startPartNumber={startPartNumber}
+				outcomes={detail.outcomes}
 				onToggleBookmark={() => toggleBookmark(lessonId)}
 			/>
 
-			<div className="grid gap-4 lg:grid-cols-3">
-				<div className="lg:col-span-2">
-					<VisualAnchor
-						coverImageUrl={detail.lesson.details.coverImageUrl}
-						caption={SCENARIO_CONTEXT_CAPTION()}
-					/>
-				</div>
-				<AcousticTargetCard
-					targetPct={detail.lesson.details.acousticTargetPct ?? 85}
-					completionPct={progress.percent}
-					cefrLevel={detail.lesson.cefrLevel}
-				/>
-			</div>
-
-			<OutcomesCard outcomes={detail.outcomes} />
-
 			<section className="flex flex-col gap-3">
-				<div className="flex flex-col gap-1">
-					<h2 className="text-lg font-bold tracking-tight text-foreground">
-						{m["lessons.activitiesTitle"]()}
+				<div className="flex flex-wrap items-center gap-2">
+					<h2 className="text-lg font-bold text-foreground">
+						{m["lessons.detail.activitiesTitle"]()}
 					</h2>
-					<p className="text-xs text-muted-foreground">
-						{m["lessons.activitiesSubtitle"]()}
-					</p>
+					<span className="chip bg-accent px-2 py-0 text-[11px]">
+						{m["lessons.detail.sequential"]()}
+					</span>
+					<span className="ml-auto text-xs font-medium text-muted-foreground">
+						{m["lessons.detail.activitiesSubtitle"]()}
+					</span>
 				</div>
 				<div className="flex flex-col gap-3">
 					{detail.activities.map((activity) => (
@@ -93,7 +106,7 @@ function LessonDetailPage() {
 				</div>
 			</section>
 
-			<TipBar tip={VOICE_TIP()} />
-		</div>
+			<TipBar tip={m["lessons.detail.calmQuote"]()} />
+		</PageLayout>
 	);
 }

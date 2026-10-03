@@ -51,7 +51,7 @@ function PersistedTranscriptView({
 		<Card className={cn("flex h-full min-h-0 flex-col", className)}>
 			<CardHeader className="pb-0">
 				<CardTitle className="flex items-center gap-2 text-base">
-					{m["voice.room.transcriptTitle"]()}
+					{m["voice.room.transcript.title"]()}
 					<Badge variant="secondary">{rows.length}</Badge>
 				</CardTitle>
 			</CardHeader>
@@ -59,7 +59,7 @@ function PersistedTranscriptView({
 				<ScrollArea className="h-full max-h-[55vh] min-h-0 overflow-x-clip pr-3 lg:max-h-none">
 					{rows.length === 0 ? (
 						<p className="py-8 text-center text-sm text-muted-foreground">
-							{m["voice.room.transcriptEmpty"]()}
+							{m["voice.room.transcript.empty"]()}
 						</p>
 					) : (
 						<TranscriptRows rows={rows} />

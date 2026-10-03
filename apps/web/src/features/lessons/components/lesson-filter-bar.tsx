@@ -1,59 +1,30 @@
-import type { ActivityType, CEFR, LessonStatus } from "@engflex/contracts";
+import type { CEFR } from "@engflex/contracts";
+import { cn } from "cn";
 import { Search } from "lucide-react";
 import { Input } from "#/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "#/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "#/components/ui/tabs";
+import { type LessonTrack, TRACKS } from "#/features/lessons/fixtures";
 import { m } from "#/paraglide/messages";
 
 export interface LessonFilters {
 	search: string;
 	level: "all" | CEFR;
-	status: "all" | LessonStatus;
-	skill: "all" | ActivityType;
+	track: "all" | LessonTrack;
 }
 
 export const DEFAULT_LESSON_FILTERS: LessonFilters = {
 	search: "",
 	level: "all",
-	status: "all",
-	skill: "all",
+	track: "all",
 };
 
-const LEVEL_OPTIONS: Array<{
+const LEVEL_PILLS: Array<{
 	value: LessonFilters["level"];
 	label: () => string;
 }> = [
-	{ value: "all", label: () => m["lessons.filterAllLevels"]() },
-	{ value: "B1", label: () => m["lessons.levelB1"]() },
-	{ value: "B2", label: () => m["lessons.levelB2"]() },
-	{ value: "C1", label: () => m["lessons.levelC1"]() },
-];
-
-const STATUS_OPTIONS: Array<{
-	value: LessonFilters["status"];
-	label: () => string;
-}> = [
-	{ value: "all", label: () => m["lessons.filterAllStatuses"]() },
-	{ value: "in_progress", label: () => m["lessons.statusInProgress"]() },
-	{ value: "completed", label: () => m["lessons.statusCompleted"]() },
-	{ value: "unstarted", label: () => m["lessons.statusUnstarted"]() },
-];
-
-const SKILL_TABS: Array<{
-	value: LessonFilters["skill"];
-	label: () => string;
-}> = [
-	{ value: "all", label: () => m["lessons.skillAll"]() },
-	{ value: "reading", label: () => m["lessons.skill.reading"]() },
-	{ value: "dictation", label: () => m["lessons.skill.dictation"]() },
-	{ value: "writing", label: () => m["lessons.skill.writing"]() },
-	{ value: "voice", label: () => m["lessons.skill.voice"]() },
+	{ value: "all", label: () => m["lessons.hub.levelAll"]() },
+	{ value: "B1", label: () => m["lessons.hub.levelB1"]() },
+	{ value: "B2", label: () => m["lessons.hub.levelB2"]() },
+	{ value: "C1", label: () => m["lessons.hub.levelC1"]() },
 ];
 
 export function LessonFilterBar({
@@ -64,68 +35,65 @@ export function LessonFilterBar({
 	onChange: (next: LessonFilters) => void;
 }) {
 	return (
-		<div className="flex flex-col gap-4 rounded-xl border bg-card p-4">
-			<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-				<div className="relative">
-					<Search className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
-					<Input
-						value={filters.search}
-						onChange={(event) =>
-							onChange({ ...filters, search: event.target.value })
-						}
-						placeholder={m["lessons.filterSearch"]()}
-						className="pl-8"
-					/>
-				</div>
-				<Select
-					value={filters.level}
-					onValueChange={(value) =>
-						onChange({ ...filters, level: value as LessonFilters["level"] })
+		<div className="flex flex-col gap-3">
+			<div className="relative">
+				<Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+				<Input
+					value={filters.search}
+					onChange={(event) =>
+						onChange({ ...filters, search: event.target.value })
 					}
-				>
-					<SelectTrigger className="w-full">
-						<SelectValue placeholder={m["common.levelFilter"]()} />
-					</SelectTrigger>
-					<SelectContent>
-						{LEVEL_OPTIONS.map((option) => (
-							<SelectItem key={option.value} value={option.value}>
-								{option.label()}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-				<Select
-					value={filters.status}
-					onValueChange={(value) =>
-						onChange({ ...filters, status: value as LessonFilters["status"] })
-					}
-				>
-					<SelectTrigger className="w-full">
-						<SelectValue placeholder={m["common.statusFilter"]()} />
-					</SelectTrigger>
-					<SelectContent>
-						{STATUS_OPTIONS.map((option) => (
-							<SelectItem key={option.value} value={option.value}>
-								{option.label()}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
+					placeholder={m["lessons.filter.search"]()}
+					className="field pl-9"
+				/>
 			</div>
-			<Tabs
-				value={filters.skill}
-				onValueChange={(value) =>
-					onChange({ ...filters, skill: value as LessonFilters["skill"] })
-				}
-			>
-				<TabsList className="flex-wrap">
-					{SKILL_TABS.map((tab) => (
-						<TabsTrigger key={tab.value} value={tab.value}>
-							{tab.label()}
-						</TabsTrigger>
-					))}
-				</TabsList>
-			</Tabs>
+			<div className="flex flex-wrap items-center gap-2">
+				<span className="text-[11px] font-bold text-muted-foreground">
+					{m["lessons.hub.levelLabel"]()}
+				</span>
+				{LEVEL_PILLS.map((pill) => (
+					<button
+						key={pill.value}
+						type="button"
+						onClick={() => onChange({ ...filters, level: pill.value })}
+						className={cn(
+							"chip px-3 py-1 text-xs transition",
+							filters.level === pill.value
+								? "chip-selected"
+								: "hover:border-primary",
+						)}
+					>
+						{pill.label()}
+					</button>
+				))}
+			</div>
+			<div className="flex flex-wrap items-center gap-2">
+				<button
+					type="button"
+					onClick={() => onChange({ ...filters, track: "all" })}
+					className={cn(
+						"chip px-3 py-1 text-xs transition",
+						filters.track === "all" ? "chip-selected" : "hover:border-primary",
+					)}
+				>
+					{m["lessons.hub.allTracks"]()}
+				</button>
+				{TRACKS.map((track) => (
+					<button
+						key={track}
+						type="button"
+						onClick={() => onChange({ ...filters, track })}
+						className={cn(
+							"chip px-3 py-1 text-xs transition",
+							filters.track === track
+								? "chip-selected"
+								: "hover:border-primary",
+						)}
+					>
+						{track}
+					</button>
+				))}
+			</div>
 		</div>
 	);
 }

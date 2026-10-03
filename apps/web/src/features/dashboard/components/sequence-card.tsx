@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { cn } from "cn";
 import { CircleCheck, Clock3 } from "lucide-react";
 import { toast } from "sonner";
+import { APP_ROUTES } from "#/app/app-route";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import type { SequenceCard as SequenceCardFixture } from "#/features/attempts/fixtures";
@@ -54,10 +55,10 @@ export function SequenceCard({ card }: { card: SequenceCardFixture }) {
 	const isAccent = card.state === "up-next";
 	const copy = CARD_COPY[card.id];
 	const body = (
-		<div className="flex h-full flex-col gap-3 p-4">
+		<div className="flex h-full flex-col gap-3 p-5">
 			<div className="flex items-center gap-2">
 				<span className={cn("size-1.5 rounded-full", DOT_TONE[card.state])} />
-				<span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+				<span className="text-[11px] font-semibold text-muted-foreground">
 					{copy?.kicker()}
 				</span>
 				<span className="ml-auto text-[11px] text-muted-foreground">
@@ -65,10 +66,8 @@ export function SequenceCard({ card }: { card: SequenceCardFixture }) {
 				</span>
 			</div>
 			<div>
-				<h3 className="text-sm font-bold tracking-tight text-foreground">
-					{copy?.title()}
-				</h3>
-				<p className="mt-1 text-xs text-muted-foreground">
+				<h3 className="text-sm font-bold text-foreground">{copy?.title()}</h3>
+				<p className="mt-1 text-[15px] font-medium text-muted-foreground">
 					{copy?.description()}
 				</p>
 			</div>
@@ -98,7 +97,7 @@ export function SequenceCard({ card }: { card: SequenceCardFixture }) {
 						</>
 					) : null}
 					{card.state === "due" ? (
-						<Badge variant="secondary" className="text-ai-coral">
+						<Badge variant="secondary" className="chip chip-accent">
 							{m["dashboard.sequence.dueCount"]({
 								count: card.dueCount ?? 0,
 							})}
@@ -109,7 +108,7 @@ export function SequenceCard({ card }: { card: SequenceCardFixture }) {
 					card.target.kind === "lesson" ? (
 						<Button asChild variant="ghost" size="sm">
 							<Link
-								to="/lessons/$lessonId"
+								to={APP_ROUTES.LESSONS.DETAIL}
 								params={{ lessonId: card.target.lessonId }}
 							>
 								{copy?.cta()}
@@ -124,7 +123,7 @@ export function SequenceCard({ card }: { card: SequenceCardFixture }) {
 					<Button
 						variant="ghost"
 						size="sm"
-						onClick={() => toast(m["common.replayMockOnly"]())}
+						onClick={() => toast(m["common.toast.replayMockOnly"]())}
 					>
 						{copy?.cta()}
 					</Button>
@@ -135,14 +134,14 @@ export function SequenceCard({ card }: { card: SequenceCardFixture }) {
 
 	if (isAccent) {
 		return (
-			<div className="energy-card h-full">
-				<div className="energy-card-inner h-full">{body}</div>
+			<div className="surface-hero h-full">
+				<div className="h-full">{body}</div>
 			</div>
 		);
 	}
 
 	return (
-		<div className="h-full rounded-xl border bg-card transition hover:border-primary/40">
+		<div className="surface-card h-full transition hover:border-primary">
 			{body}
 		</div>
 	);

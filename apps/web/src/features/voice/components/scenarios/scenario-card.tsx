@@ -1,8 +1,23 @@
 import type { Scenario } from "@engflex/contracts";
-import { ArrowRight, Clock3 } from "lucide-react";
+import { cn } from "cn";
+import { Clock3 } from "lucide-react";
 import { CefrBadge } from "#/components/common/cefr-badge";
 import { Button } from "#/components/ui/button";
 import { m } from "#/paraglide/messages";
+
+const TILE_TONES = [
+	"bg-primary text-primary-foreground",
+	"bg-secondary text-secondary-foreground",
+	"bg-accent-violet text-white",
+] as const;
+
+function personaInitials(roleTitle: string): string {
+	const words = roleTitle.split(/\s+/).filter(Boolean);
+	const letters = words.map((word) =>
+		word.replace(/^[^A-Za-z]*/, "").charAt(0),
+	);
+	return (letters.slice(0, 2).join("") || "?").toUpperCase();
+}
 
 export function ScenarioCard({
 	scenario,
@@ -11,35 +26,54 @@ export function ScenarioCard({
 	scenario: Scenario;
 	onStart: () => void;
 }) {
+	const tone =
+		TILE_TONES[(scenario.persona?.name.length ?? 1) % TILE_TONES.length];
+
 	return (
-		<div className="flex h-full flex-col gap-3 rounded-xl border bg-card p-4">
-			<div className="flex flex-wrap items-center gap-2">
+		<div className="surface-card flex h-full flex-col gap-3 p-5">
+			<div className="flex items-center gap-2">
 				{scenario.persona ? (
-					<span className="rounded-md border border-border bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-						{m["voice.card.partner"]({ role: scenario.persona.roleTitle })}
-					</span>
+					<>
+						<span className={cn("tile text-xs font-bold", tone)}>
+							{personaInitials(scenario.persona.roleTitle)}
+						</span>
+						<span className="min-w-0">
+							<span className="block truncate text-xs font-bold text-foreground">
+								{scenario.persona.name} · {scenario.persona.roleTitle}
+							</span>
+							<span className="block text-[11px] font-medium text-muted-foreground">
+								{scenario.persona.personality}
+							</span>
+						</span>
+					</>
 				) : (
-					<span className="rounded-md border border-border bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+					<span className="chip px-2 py-0.5 text-[11px]">
 						{m["voice.card.customTag"]()}
 					</span>
 				)}
-				<CefrBadge value={scenario.cefrLevel} />
+				<span className="ml-auto shrink-0">
+					<CefrBadge value={scenario.cefrLevel} />
+				</span>
 			</div>
-			<h3 className="text-sm font-bold tracking-tight text-foreground">
-				{scenario.title}
-			</h3>
-			<p className="text-xs text-muted-foreground">{scenario.objective}</p>
-			<div className="mt-auto flex items-center justify-between gap-2">
-				<span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-					<Clock3 className="size-3" />
+			<h3 className="text-base font-bold text-foreground">{scenario.title}</h3>
+			<p className="text-[15px] font-medium text-muted-foreground">
+				{scenario.objective}
+			</p>
+			<div className="mt-auto flex items-center justify-between gap-2 pt-1">
+				<span className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
+					<Clock3 className="size-3.5" />
 					{m["voice.card.sessionRange"]({
 						min: scenario.durationMin,
 						max: scenario.durationMax,
 					})}
 				</span>
-				<Button type="button" variant="ghost" size="sm" onClick={onStart}>
+				<Button
+					type="button"
+					size="sm"
+					className="btn btn-primary"
+					onClick={onStart}
+				>
 					{m["voice.card.start"]()}
-					<ArrowRight data-icon="inline-end" />
 				</Button>
 			</div>
 		</div>

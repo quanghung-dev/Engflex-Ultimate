@@ -7,7 +7,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 	return (
 		<SidebarProvider style={{ "--sidebar-width": "15rem" } as CSSProperties}>
 			<AppSidebar />
-			<SidebarInset className="grid-bg">
+			<SidebarInset className="app-canvas">
 				<Topbar />
 				<div className="flex flex-1 flex-col">{children}</div>
 			</SidebarInset>

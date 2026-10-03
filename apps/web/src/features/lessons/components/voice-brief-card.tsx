@@ -1,6 +1,7 @@
 import type { Scenario } from "@engflex/contracts";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Play } from "lucide-react";
+import { APP_ROUTES } from "#/app/app-route";
 import { CefrBadge } from "#/components/common/cefr-badge";
 import { Button } from "#/components/ui/button";
 import { m } from "#/paraglide/messages";
@@ -36,8 +37,8 @@ export function VoiceBriefCard({
 			</h2>
 			<p className="text-sm text-muted-foreground">{scenario.objective}</p>
 			<ul className="flex flex-col gap-1 text-xs text-muted-foreground">
-				<li>{m["voice.room.briefTip1"]()}</li>
-				<li>{m["voice.room.briefTip2"]()}</li>
+				<li>{m["voice.room.brief.tip1"]()}</li>
+				<li>{m["voice.room.brief.tip2"]()}</li>
 			</ul>
 			<div className="flex flex-wrap gap-3">
 				<Button type="button" onClick={onStart}>
@@ -45,9 +46,9 @@ export function VoiceBriefCard({
 					{m["voice.card.start"]()}
 				</Button>
 				<Button asChild variant="outline">
-					<Link to="/lessons/$lessonId" params={{ lessonId }}>
+					<Link to={APP_ROUTES.LESSONS.DETAIL} params={{ lessonId }}>
 						<ArrowLeft data-icon="inline-start" />
-						{m["lessons.backToLesson"]()}
+						{m["lessons.detail.backToLesson"]()}
 					</Link>
 				</Button>
 			</div>

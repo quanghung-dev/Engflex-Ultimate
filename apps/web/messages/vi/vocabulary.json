@@ -1,71 +1,8 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "vocabulary": {
-    "crumbDetailFallback": "Chi tiết từ",
-    "hubTitle": "Thư viện từ vựng",
-    "hubSubtitle": "Ôn thuật ngữ kỹ thuật, quản lý cụm từ bạn tự thêm và theo dõi mức độ ghi nhớ.",
-    "totalSaved": "Tổng đã lưu",
-    "stats": {
-      "saved": "Tổng đã lưu",
-      "savedSub": "+14 trong tuần này",
-      "mastered": "Từ đã thuộc",
-      "masteredSub": "Tỉ lệ ghi nhớ {pct}%",
-      "needsReview": "Cần ôn",
-      "needsReviewSub": "{count} từ đến hạn hôm nay",
-      "custom": "Từ tự thêm",
-      "customSub": "Ghi chú của bạn"
-    },
-    "filterSearch": "Tìm thuật ngữ",
-    "filterSource": {
-      "all": "Tất cả từ vựng",
-      "lesson": "Từ bài học",
-      "conversation": "Từ hội thoại AI",
-      "manual": "Tùy chỉnh"
-    },
-    "domainLabel": "Lĩnh vực:",
-    "domainAll": "Mọi lĩnh vực",
-    "domains": {
-      "backend_db": "Backend & CSDL",
-      "distributed_systems": "Hệ phân tán",
-      "devops_cloud": "DevOps & Cloud",
-      "frontend_ui": "Frontend & UI",
-      "ai_ml": "AI & Học máy"
-    },
-    "cefrLabel": "CEFR:",
-    "cefrAll": "Tất cả",
-    "sort": {
-      "recent": "Gần đây",
-      "mastery": "Mức độ thuộc",
-      "alphabetical": "Theo bảng chữ cái",
-      "interval": "Ưu tiên ôn tập"
-    },
-    "source": {
-      "lesson": "Từ bài học",
-      "conversation": "Từ hội thoại AI",
-      "manual": "Tùy chỉnh"
-    },
-    "sourceLineLesson": "Từ bài học: {id}",
-    "sourceLineNote": "Ghi chú: {id}",
-    "emptyTitle": "Không có thuật ngữ nào khớp bộ lọc",
-    "showing": "Hiển thị {shown}/{total} thẻ thuật ngữ",
-    "card": {
-      "contextTitle": "Bối cảnh kỹ thuật",
-      "markMastered": "Đánh dấu đã thuộc",
-      "fullyRetained": "Đã thuộc hoàn toàn",
-      "retained": "Đã thuộc",
-      "dueToday": "Đến hạn hôm nay",
-      "needsReview": "Cần ôn",
-      "bookmark": "Đánh dấu",
-      "moreActions": "Tùy chọn khác",
-      "review": "Ôn tập",
-      "editNote": "Sửa ghi chú",
-      "mastered": "Đã thuộc",
-      "markAsMastered": "Đánh dấu đã thuộc",
-      "copy": "Sao chép",
-      "share": "Chia sẻ",
-      "fullDefinition": "Định nghĩa đầy đủ"
-    },
     "detail": {
+      "saveNote": "Lưu ghi chú",
       "contextsTitle": "Bối cảnh kỹ thuật thực tế",
       "collocationsTitle": "Các cụm từ kỹ thuật thiết yếu",
       "morphologyTitle": "Cấu tạo & nguồn gốc từ",
@@ -80,6 +17,72 @@
       "editNote": "Sửa ghi chú",
       "deleteNote": "Xóa ghi chú"
     },
+    "card": {
+      "listenUs": "Nghe phát âm (Mỹ)",
+      "listenUk": "Nghe (Anh)",
+      "playTerm": "Nghe {term}",
+      "markMastered": "Đánh dấu đã thuộc",
+      "retained": "Đã thuộc",
+      "dueToday": "Đến hạn hôm nay",
+      "review": "Ôn tập",
+      "mastered": "Đã thuộc",
+      "markAsMastered": "Đánh dấu đã thuộc",
+      "share": "Chia sẻ",
+      "fullDefinition": "Định nghĩa đầy đủ"
+    },
+    "crumb": {
+      "detailFallback": "Chi tiết từ"
+    },
+    "hub": {
+      "title": "Thư viện từ vựng",
+      "subtitle": "Ôn thuật ngữ kỹ thuật, quản lý cụm từ bạn tự thêm và theo dõi mức độ ghi nhớ.",
+      "emptyTitle": "Không có thuật ngữ nào khớp bộ lọc",
+      "showing": "Hiển thị {shown}/{total} thẻ thuật ngữ",
+      "reviewNow": "Ôn ngay",
+      "masteredOf": "{done} trên {total} đã thuộc"
+    },
+    "stats": {
+      "mastered": "Từ đã thuộc",
+      "needsReview": "Cần ôn",
+      "needsReviewSub": "{count} từ đến hạn hôm nay",
+      "custom": "Từ tự thêm",
+      "customSub": "Ghi chú của bạn"
+    },
+    "filter": {
+      "search": "Tìm thuật ngữ",
+      "source": {
+        "all": "Tất cả từ vựng",
+        "lesson": "Từ bài học",
+        "conversation": "Từ hội thoại AI",
+        "manual": "Tùy chỉnh"
+      },
+      "domainLabel": "Lĩnh vực:",
+      "domainAll": "Mọi lĩnh vực",
+      "domain": {
+        "backendDb": "Backend & CSDL",
+        "distributedSystems": "Hệ phân tán",
+        "devopsCloud": "DevOps & Cloud",
+        "frontendUi": "Frontend & UI",
+        "aiMl": "AI & Học máy"
+      },
+      "cefrLabel": "CEFR:",
+      "cefrAll": "Tất cả",
+      "sort": {
+        "recent": "Gần đây",
+        "mastery": "Mức độ thuộc",
+        "alphabetical": "Theo bảng chữ cái",
+        "interval": "Ưu tiên ôn tập"
+      }
+    },
+    "source": {
+      "lesson": "Từ bài học",
+      "conversation": "Từ hội thoại AI",
+      "manual": "Tùy chỉnh"
+    },
+    "sourceLine": {
+      "lesson": "Từ bài học: {id}",
+      "note": "Ghi chú: {id}"
+    },
     "addWord": {
       "button": "Thêm từ tùy chỉnh",
       "title": "Thêm cụm từ kỹ thuật tùy chỉnh",
@@ -87,9 +90,9 @@
       "termLabel": "Từ hoặc cụm từ",
       "cefrLabel": "Cấp độ CEFR",
       "cefrOptions": {
-        "B1": "B1 (Giao tiếp)",
-        "B2": "B2 (Kỹ thuật)",
-        "C1": "C1 (Kiến trúc)"
+        "b1": "B1 (Giao tiếp)",
+        "b2": "B2 (Kỹ thuật)",
+        "c1": "C1 (Kiến trúc)"
       },
       "posLabel": "Từ loại",
       "definitionLabel": "Định nghĩa",

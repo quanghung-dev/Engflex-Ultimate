@@ -7,7 +7,7 @@ export function FlowHeader() {
 			<Logo variant="mark" />
 			<div className="flex flex-col leading-tight">
 				<span className="text-sm font-bold tracking-tight">
-					{m["common.appName"]()}
+					{m["common.brand.appName"]()}
 				</span>
 				<span className="text-[11px] text-muted-foreground">
 					{m["onboarding.tagline"]()}

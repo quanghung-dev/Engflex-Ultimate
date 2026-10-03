@@ -1,17 +1,23 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "nav": {
-    "groupPractice": "Daily practice",
-    "groupKnowledge": "Knowledge & review",
-    "home": "Home",
-    "lessons": "Lessons",
-    "voice": "Voice",
-    "vocabulary": "Vocabulary",
-    "learner": "Learner",
-    "level": {
-      "beginner": "Beginner",
-      "intermediate": "Intermediate",
-      "advanced": "Advanced"
+    "group": {
+      "practice": "Daily practice",
+      "knowledge": "Knowledge & review"
+    },
+    "item": {
+      "home": "Home",
+      "lessons": "Lessons",
+      "voice": "Voice",
+      "vocabulary": "Vocabulary"
+    },
+    "user": {
+      "learner": "Learner",
+      "level": {
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced"
+      }
     }
   }
 }

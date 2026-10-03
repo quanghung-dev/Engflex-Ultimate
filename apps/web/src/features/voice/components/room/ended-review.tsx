@@ -29,7 +29,7 @@ export function EndedReview({
 				analyze={analyze}
 			/>
 			<Button type="button" variant="outline" onClick={onBack}>
-				{m["voice.backToScenarios"]()}
+				{m["voice.room.backToScenarios"]()}
 			</Button>
 		</div>
 	);

@@ -30,9 +30,9 @@ import { addCustomWord } from "#/features/vocabulary/store";
 import { m } from "#/paraglide/messages";
 
 const CEFR_OPTIONS: Array<{ value: CEFR; label: () => string }> = [
-	{ value: "B1", label: () => m["vocabulary.addWord.cefrOptions.B1"]() },
-	{ value: "B2", label: () => m["vocabulary.addWord.cefrOptions.B2"]() },
-	{ value: "C1", label: () => m["vocabulary.addWord.cefrOptions.C1"]() },
+	{ value: "B1", label: () => m["vocabulary.addWord.cefrOptions.b1"]() },
+	{ value: "B2", label: () => m["vocabulary.addWord.cefrOptions.b2"]() },
+	{ value: "C1", label: () => m["vocabulary.addWord.cefrOptions.c1"]() },
 ];
 
 const POS_OPTIONS = ["noun", "verb", "adj", "idiom / phrase"];
@@ -62,7 +62,7 @@ export function AddWordDialog() {
 			definition: form.definition.trim(),
 			example: form.example.trim(),
 		});
-		toast.success(m["common.addedToVocabulary"]());
+		toast.success(m["common.toast.addedToVocabulary"]());
 		setOpen(false);
 		setForm(EMPTY_FORM);
 		setError(null);
@@ -183,7 +183,7 @@ export function AddWordDialog() {
 							variant="ghost"
 							onClick={() => setOpen(false)}
 						>
-							{m["common.cancel"]()}
+							{m["common.actions.cancel"]()}
 						</Button>
 						<Button type="button" onClick={submit}>
 							{m["vocabulary.addWord.save"]()}

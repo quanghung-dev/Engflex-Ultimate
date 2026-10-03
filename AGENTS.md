@@ -24,6 +24,18 @@ Pipecat, uv-managed, independent).
   - `messages/{locale}/<domain>.json`, each file nested under its domain key
     (the plugin merges all files into one flat id namespace — unprefixed
     duplicates silently override each other).
+  - Ids nest **by page or part**, with no depth limit: `lessons.hub.title`,
+    `lessons.dictation.placeholder`, `voice.room.feedback.span.incorrect`. One
+    file per domain, but never one flat namespace inside it — every screen's keys
+    share a prefix. A file whose level-2 keys are all leaves is a smell.
+  - `common.*` is reserved for copy consumed by shared components
+    (`components/common`, `components/ui`, `components/layout`) and
+    cross-cutting chrome, itself grouped by concern (`brand`, `actions`, `audio`,
+    `a11y`, `theme`, `toast`). Copy used by exactly one page or feature moves to
+    that feature's domain.
+  - Read copy only as `m["<static string literal>"]()`. Never build the key with
+    a template literal — Paraglide's generated types are what catch a rename, and
+    an interpolated key bypasses them.
   - Strategy `["cookie", "baseLocale"]` — never `url` (path prefixes 404 in
     TanStack Router and are client-only, causing SSR mismatch). SSR locale via
     the official `paraglideMiddleware` in `src/start.ts` `requestMiddleware`;
@@ -37,9 +49,20 @@ Pipecat, uv-managed, independent).
     labels and `PART_META` labels are thunks; fixture-held chrome keyed by item id.
 - **Web routes:** directory convention (`_app/route.tsx`,
   `_app/lessons/index.tsx`), not dotted flat names.
+- **Web URL maps nest by resource, never flat.** `APP_ROUTES` and `API_ROUTES`
+  mirror each other by design: `APP_ROUTES.LESSONS.{LIST,DETAIL,PART}`,
+  `API_ROUTES.CONVERSATIONS.{LIST,BY_ID,START}`. Leaf keys are `LIST` for the
+  index route, `DETAIL` for the parametrised one, then named actions. The two
+  differ deliberately: `APP_ROUTES` keeps `$param` templates as **strings**
+  (TanStack infers the `params` object from the literal, so a function would
+  destroy that checking), `API_ROUTES` uses `(id) => …` functions. Zero URL
+  literals outside those two files — including `href`, and including absolute
+  URLs.
 - **Web gates (no test framework):** `pnpm check`, `pnpm exec tsc --noEmit`,
-  `pnpm build`, plus HTTP/SSR probes. Changes to `src/start.ts` /
-  `vite.config.ts` require a dev-server restart (HMR cannot apply them).
+  `pnpm check:conventions`, `pnpm build`, plus HTTP/SSR probes. Changes to
+  `src/start.ts` / `vite.config.ts` require a dev-server restart (HMR cannot
+  apply them). `pnpm check:conventions` is the only gate that catches an
+  orphaned message id, an en/vi key-set divergence, or a hardcoded URL — run it.
 
 ## Folder structure (`<api-dir>`)
 
@@ -226,13 +249,14 @@ Assert with `require.ErrorAs(err, &appErr)` + check `.Status`.
 
 ```text
 <web-dir>/
-  messages/{en,vi}/<domain>.json  # inlang source (common, nav, onboarding, dashboard, lessons, vocabulary, voice, progress)
+  messages/{en,vi}/<domain>.json  # inlang source (common, nav, onboarding, dashboard, lessons, vocabulary, voice, progress, errors, about)
   project.inlang/settings.json    # baseLocale vi, locales [en,vi], pathPattern array
+  scripts/check-conventions.mjs   # pnpm check:conventions — message ids, dynamic keys, hardcoded URLs
   vite.config.ts                  # paraglideVitePlugin strategy ["cookie","baseLocale"]
   src/
     app/
-      app-route.ts                # APP_ROUTES (frontend URLs — use instead of hardcoding paths)
-      api-routes.ts               # backend paths only (/attempts, /contents/:id...), no hardcoded URLs elsewhere
+      app-route.ts                # APP_ROUTES, nested by resource — the only frontend URLs allowed
+      api-routes.ts               # API_ROUTES, nested by resource, (id) => … leaves — backend paths only
       breadcrumbs.ts              # breadcrumb protocol: staticData specs, targets from APP_ROUTES (labels are thunks)
     assets/topics/*.png
     components/
@@ -256,7 +280,9 @@ Assert with `require.ErrorAs(err, &appErr)` + check `.Status`.
       utils.ts
     paraglide/                    # generated-only (messages/runtime/server), never hand-edit
     routes/                       # directory convention; thin shells composing features + layout
-      __root.tsx, _app/route.tsx (Clerk guard) + _app/<domain>/..., onboarding.tsx, about.tsx, sign-in/out
+      __root.tsx, _app/route.tsx (Clerk guard) + _app/<domain>/..., _app/about.tsx
+      not-found.tsx, error.tsx    # status pages at root, OUTSIDE _app — must render signed-out
+      onboarding.tsx, sign-in/out
     router.tsx, start.ts (requestMiddleware), styles.css, routeTree.gen.ts, env.ts
 ```
 
@@ -270,6 +296,15 @@ Assert with `require.ErrorAs(err, &appErr)` + check `.Status`.
 - Breadcrumbs come from the router's match chain: each route declares
   `staticData: breadcrumb(...)`, `Topbar` renders links from declared targets.
   Neither route ids nor paths are hardcoded outside `APP_ROUTES`.
+- Errors: one `ErrorPage({ title, body, action? })` in `components/common/`, with
+  `not-found.tsx` / `error.tsx` at route root passing their own copy from
+  `errors.*`. It renders bare (no `AppShell`, no Clerk) precisely because it must
+  work signed-out; `error-pages.tsx` keeps `RouteNotFound` /
+  `RouteErrorFallback` as thin adapters for `__root.tsx` and `_app/route.tsx`.
+- `scripts/check-conventions.mjs` is the web app's only real test harness, so use
+  it as one: run it before a change to watch it fail, then after. It derives the
+  watched URL segments from `app-route.ts` and the message accessor from each
+  file's import — if you extend either, extend the guard rather than hand-listing.
 - Fixed stack: Vite + TS + TanStack Start/Router, TanStack Store/Query, Clerk,
   shadcn/ui + Tailwind, Paraglide (cookie strategy, vi default).
 - Voice screens talk WebRTC directly to `<voice-dir>`; Go is never in the audio path.

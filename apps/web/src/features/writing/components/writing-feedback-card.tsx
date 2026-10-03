@@ -1,7 +1,6 @@
 import { cn } from "cn";
 import type { LucideIcon } from "lucide-react";
 import { CircleCheck, Lightbulb, TriangleAlert } from "lucide-react";
-import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import type { WritingFeedback } from "#/features/writing/types";
 import { m } from "#/paraglide/messages";
@@ -10,9 +9,9 @@ const KIND_MESSAGES: Record<
 	WritingFeedback["rows"][number]["kind"],
 	() => string
 > = {
-	Grammar: () => m["lessons.feedbackKind.grammar"](),
-	Vocabulary: () => m["lessons.feedbackKind.vocabulary"](),
-	Naturalness: () => m["lessons.feedbackKind.naturalness"](),
+	Grammar: () => m["lessons.writing.feedback.kind.grammar"](),
+	Vocabulary: () => m["lessons.writing.feedback.kind.vocabulary"](),
+	Naturalness: () => m["lessons.writing.feedback.kind.naturalness"](),
 };
 
 const TONE: Record<
@@ -34,14 +33,14 @@ export function WritingFeedbackCard({
 	onContinue: () => void;
 }) {
 	return (
-		<div className="flex flex-col gap-4 rounded-xl border bg-card p-5">
-			<div className="flex items-center gap-2">
-				<span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
-					{m["lessons.feedbackTitle"]()}
+		<div className="surface-card flex flex-col gap-4 p-5">
+			<div className="flex flex-wrap items-center gap-2">
+				<span className="text-[11px] font-bold text-muted-foreground">
+					{m["lessons.writing.feedback.title"]()}
 				</span>
-				<Badge className="bg-accuracy-tint text-accuracy" variant="secondary">
-					{m["lessons.feedbackCefr"]({ level: feedback.cefrLevel })}
-				</Badge>
+				<span className="chip border-accuracy bg-accuracy-tint px-2 py-0 text-[11px] text-accuracy">
+					{m["lessons.writing.feedback.cefr"]({ level: feedback.cefrLevel })}
+				</span>
 			</div>
 			<ul className="flex flex-col gap-3">
 				{feedback.rows.map((row) => {
@@ -49,19 +48,14 @@ export function WritingFeedbackCard({
 					const Icon = tone.icon;
 					return (
 						<li key={row.kind} className="flex items-start gap-3">
-							<span
-								className={cn(
-									"flex size-8 shrink-0 items-center justify-center rounded-full",
-									tone.circle,
-								)}
-							>
+							<span className={cn("tile", tone.circle)}>
 								<Icon className="size-4" />
 							</span>
 							<div className="flex flex-col gap-0.5">
-								<span className="text-sm font-semibold text-foreground">
+								<span className="text-sm font-bold text-foreground">
 									{KIND_MESSAGES[row.kind]()}
 								</span>
-								<span className="text-xs text-muted-foreground">
+								<span className="text-[15px] font-medium text-muted-foreground">
 									{row.body}
 								</span>
 							</div>
@@ -69,8 +63,8 @@ export function WritingFeedbackCard({
 					);
 				})}
 			</ul>
-			<div className="flex justify-end border-t pt-4">
-				<Button type="button" onClick={onContinue}>
+			<div className="flex justify-end">
+				<Button type="button" className="btn btn-primary" onClick={onContinue}>
 					{continueLabel}
 				</Button>
 			</div>
