@@ -14,6 +14,8 @@ import (
 	_ "engflex-api/docs"
 	"engflex-api/internal/database/repositories"
 	"engflex-api/internal/modules/categories"
+	"engflex-api/internal/modules/lessons"
+	"engflex-api/internal/modules/transcripts"
 	"engflex-api/internal/server/middleware"
 )
 
@@ -37,6 +39,7 @@ func NewRouter(db *gorm.DB, corsCfg config.CorsConfig) *gin.Engine {
 	_ = corsCfg
 
 	categories.RegisterRoutes(v1, repositories.NewCategoryRepository(db))
-
+	lessons.RegisterRoutes(v1, repositories.NewLessonRepository(db))
+	transcripts.RegisterRoutes(v1, repositories.NewTranscriptRepository(db))
 	return r
 }
