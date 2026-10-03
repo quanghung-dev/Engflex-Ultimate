@@ -60,6 +60,8 @@ func main() {
 
 	router := server.NewRouter(db, cfg.Cors)
 
+	slog.Info("swagger docs available", "url", "http://localhost:"+cfg.Server.Port+"/swagger/index.html")
+
 	if err := router.Run(cfg.Server.Addr()); err != nil {
 		slog.Error("server exited unexpectedly", "error", err)
 		os.Exit(1)

@@ -68,7 +68,7 @@ func (s *lessonService) Create(ctx context.Context, req requests.CreateLesson) (
 	err := s.repo.Create(ctx, lesson)
 	if err != nil {
 		appErr := common.FromDBError(err, "lesson")
-		logger.Report(ctx, "failed to create lesson", appErr, "title", req.Title)
+		logger.Report(ctx, "failed to create lesson", appErr)
 		return nil, appErr
 	}
 	slog.InfoContext(ctx, "lesson created", "lesson_id", lesson.ID)
