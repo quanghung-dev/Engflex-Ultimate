@@ -62,3 +62,6 @@ Thumbs.db
 *.log
 tmp/
 temp/
+
+# --- Design handoff bundles (Stitch exports; large, binary, not source) ---
+*.zip
