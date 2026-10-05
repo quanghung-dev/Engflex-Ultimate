@@ -18,5 +18,8 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 
 	g := rg.Group("/scenarios")
 	g.GET("", middleware.RequireAuth(), ctl.List)
-	g.POST("", middleware.RequireAuth(), ctl.Create)
+	g.GET("/:id", middleware.RequireAuth(), ctl.GetByID)
+
+	t := rg.Group("/scenario-topics")
+	t.GET("", middleware.RequireAuth(), ctl.TopicsWithPreview)
 }

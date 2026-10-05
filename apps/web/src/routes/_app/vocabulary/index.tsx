@@ -3,16 +3,11 @@ import { useStore } from "@tanstack/react-store";
 import { LibraryBig, Pencil } from "lucide-react";
 import { useState } from "react";
 import { breadcrumb } from "#/app/breadcrumbs";
+import { EmptyList } from "#/components/common/empty-list";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
 import { ProgressBar } from "#/components/common/progress-bar";
 import { Button } from "#/components/ui/button";
-import {
-	Empty,
-	EmptyContent,
-	EmptyHeader,
-	EmptyTitle,
-} from "#/components/ui/empty";
 import { AddWordDialog } from "#/features/vocabulary/components/add-word-dialog";
 import { VocabCard } from "#/features/vocabulary/components/vocab-card";
 import {
@@ -143,21 +138,10 @@ function VocabularyPage() {
 			<VocabFilterBar filters={filters} onChange={setFilters} />
 
 			{sorted.length === 0 ? (
-				<Empty className="surface-card items-center text-center">
-					<MoMascot variant="confused" size={72} />
-					<EmptyHeader>
-						<EmptyTitle>{m["vocabulary.hub.emptyTitle"]()}</EmptyTitle>
-					</EmptyHeader>
-					<EmptyContent>
-						<Button
-							variant="outline"
-							className="btn btn-outline"
-							onClick={() => setFilters(DEFAULT_VOCAB_FILTERS)}
-						>
-							{m["common.actions.resetFilters"]()}
-						</Button>
-					</EmptyContent>
-				</Empty>
+				<EmptyList
+					title={m["vocabulary.hub.emptyTitle"]()}
+					onReset={() => setFilters(DEFAULT_VOCAB_FILTERS)}
+				/>
 			) : (
 				<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 					{sorted.map((item) => (

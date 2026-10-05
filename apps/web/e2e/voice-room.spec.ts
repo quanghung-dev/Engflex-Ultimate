@@ -122,3 +122,24 @@ test("analyze: engine-down error, then seeded feedback card", async ({
 		page.getByRole("button", { name: "Analyze again" }),
 	).toBeVisible();
 });
+
+test("roleplay start: seeded scenario creates a conversation and the room loads", async ({
+	page,
+}) => {
+	await page.goto("/voice");
+	const conv = await apiCreateConversation({
+		mode: "roleplay",
+		scenarioId: "01b9a032-e2cf-5bb0-8df5-7bf49704bee8",
+	});
+	const id = await tracked(conv.id);
+
+	// Same dead-engine shape as the free-talk test above: startBot fails,
+	// the kit surfaces it, and the exit path returns to the voice hub.
+	await page.goto(`/voice/room/${id}`);
+	const dialog = page.getByRole("alertdialog");
+	await expect(dialog).toBeVisible({ timeout: 30_000 });
+	await expect(dialog).toContainText("Connection failed. Please try again.");
+
+	await dialog.getByRole("button", { name: "Back to scenarios" }).click();
+	await expect(page).toHaveURL(/\/voice\/?$/);
+});

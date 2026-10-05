@@ -40,6 +40,8 @@ export type RoomSession = {
 	endPending: boolean;
 	connectionLost: boolean;
 	errorDetail: string | null;
+	/** Countdown text ("09:59 left"); null when uncapped (free talk) or unknown. */
+	timeLeft?: string | null;
 	/** End server-side, then leave. */
 	onExit: () => void;
 	/** Leave without ending (already ended). */
@@ -167,6 +169,7 @@ export function VoiceRoom({
 											title={m["voice.room.freeTalk.title"]()}
 											objective={objective}
 											ending={session.endPending}
+											timeLeft={session.timeLeft}
 											headerAction={
 												<SparringGuideButton
 													onClick={() => guide.setOpen(true)}

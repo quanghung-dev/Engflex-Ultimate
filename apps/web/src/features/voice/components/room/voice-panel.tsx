@@ -40,6 +40,7 @@ function VoicePanelView({
 	audioTrack,
 	micSlot,
 	headerAction,
+	timeLeft,
 }: {
 	title: string;
 	objective: string;
@@ -48,6 +49,7 @@ function VoicePanelView({
 	audioTrack?: MediaStreamTrack | null;
 	micSlot: ReactNode;
 	headerAction?: ReactNode;
+	timeLeft?: string | null;
 }) {
 	return (
 		<Card className="h-full">
@@ -57,7 +59,14 @@ function VoicePanelView({
 						<CardTitle>{title}</CardTitle>
 						<CardDescription>{objective}</CardDescription>
 					</div>
-					{headerAction}
+					<div className="flex items-center gap-3">
+						{timeLeft ? (
+							<span className="text-xs font-medium text-muted-foreground">
+								{timeLeft}
+							</span>
+						) : null}
+						{headerAction}
+					</div>
 				</div>
 			</CardHeader>
 			<CardContent className="flex flex-1 flex-col items-center gap-6 pb-6">
@@ -114,6 +123,7 @@ export function VoicePanel({
 	ending,
 	waveformSource = "bot",
 	headerAction,
+	timeLeft,
 }: {
 	title: string;
 	objective: string;
@@ -121,6 +131,7 @@ export function VoicePanel({
 	ending: boolean;
 	waveformSource?: "bot" | "mic";
 	headerAction?: ReactNode;
+	timeLeft?: string | null;
 }) {
 	const botTrack = usePipecatClientMediaTrack("audio", "bot");
 	const micTrack = usePipecatClientMediaTrack("audio", "local");
@@ -133,6 +144,7 @@ export function VoicePanel({
 			ending={ending}
 			audioTrack={audioTrack}
 			headerAction={headerAction}
+			timeLeft={timeLeft}
 			micSlot={
 				<PipecatClientMicToggle>
 					{({ disabled, isMicEnabled, onClick }) => {

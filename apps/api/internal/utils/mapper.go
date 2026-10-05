@@ -5,7 +5,8 @@ import (
 )
 
 // Map copies src into dst (must be a pointer). Fields are matched by name,
-// e.g. gorm model -> response DTO:
+// e.g. gorm model -> response DTO. Nested structs are copied recursively
+// (DeepCopy), so a DTO mirroring the model shape needs no manual lines:
 //
 //	var dto responses.Content
 //	if err := utils.Map(&dto, model); err != nil { ... }
@@ -24,7 +25,7 @@ func MapSlice[D any, S any](dst *[]D, src []S, opts ...copier.Option) error {
 
 func copyInto(dst, src any, opts []copier.Option) error {
 	if len(opts) == 0 {
-		return copier.Copy(dst, src)
+		return copier.CopyWithOption(dst, src, copier.Option{DeepCopy: true})
 	}
 	return copier.CopyWithOption(dst, src, opts[0])
 }

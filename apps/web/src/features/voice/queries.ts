@@ -3,11 +3,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	analyzeTurn,
 	createConversation,
-	createScenario,
 	endConversation,
 	getConversation,
+	getScenarioById,
 	listPersonas,
 	listScenarios,
+	listTopicsWithPreview,
 } from "#/features/voice/service";
 
 export const conversationKeys = {
@@ -80,12 +81,23 @@ export function useScenarios(params?: {
 	});
 }
 
-export function useCreateScenario() {
-	const queryClient = useQueryClient();
-	return useMutation({
-		mutationFn: createScenario,
-		onSuccess: () =>
-			queryClient.invalidateQueries({ queryKey: scenarioKeys.all }),
+export function useTopicsWithPreview(params?: {
+	difficulty?: string;
+	search?: string;
+}) {
+	const difficulty = params?.difficulty;
+	const search = params?.search;
+	return useQuery({
+		queryKey: ["scenario-topics", difficulty ?? "all", search ?? ""],
+		queryFn: () => listTopicsWithPreview({ previewK: 3, difficulty, search }),
+	});
+}
+
+export function useScenario(id: string | undefined) {
+	return useQuery({
+		queryKey: ["scenario", id ?? "none"],
+		queryFn: () => getScenarioById(id as string),
+		enabled: !!id,
 	});
 }
 

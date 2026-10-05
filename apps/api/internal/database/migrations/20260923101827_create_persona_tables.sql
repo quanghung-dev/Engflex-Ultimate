@@ -16,6 +16,7 @@ CREATE TABLE scenario_topics (
     id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     slug       text NOT NULL UNIQUE,
     name       text NOT NULL,
+    short_name text NOT NULL DEFAULT '',
     position   int NOT NULL,
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz NOT NULL DEFAULT now()
@@ -29,6 +30,7 @@ CREATE TABLE scenarios (
     objective  text NOT NULL DEFAULT '',
     cefr_level text NOT NULL CONSTRAINT chk_scenarios_cefr_level
         CHECK (cefr_level IN ('B1+', 'B2', 'C1')),
+    max_duration int NOT NULL,
     details    jsonb NOT NULL DEFAULT '{}',
     user_id    text,
     created_at timestamptz NOT NULL DEFAULT now(),
@@ -37,8 +39,8 @@ CREATE TABLE scenarios (
 -- The bucket custom scenarios file under. Seeded (not inserted by any
 -- API) so POST /scenarios can satisfy the NOT NULL topic FK without
 -- inventing a topic per user.
-INSERT INTO scenario_topics (slug, name, position)
-VALUES ('custom', 'Custom', 999)
+INSERT INTO scenario_topics (slug, name, short_name, position)
+VALUES ('custom', 'Custom', 'Custom', 999)
 ON CONFLICT (slug) DO NOTHING;
 
 CREATE INDEX idx_scenarios_topic_id ON scenarios (topic_id);

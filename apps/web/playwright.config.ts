@@ -61,7 +61,7 @@ export default defineConfig({
 		{ name: "global setup", testMatch: /global\.setup\.ts/ },
 		{
 			name: "voice",
-			testMatch: /voice-room\.spec\.ts/,
+			testMatch: /voice-(room|detail)\.spec\.ts/,
 			dependencies: ["global setup"],
 			use: {
 				...devices["Desktop Chrome"],

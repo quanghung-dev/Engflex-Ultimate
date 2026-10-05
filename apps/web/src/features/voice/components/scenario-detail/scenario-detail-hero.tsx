@@ -1,0 +1,81 @@
+import type { Scenario } from "@engflex/contracts";
+import { ArrowRight, Clock3 } from "lucide-react";
+import { CefrBadge } from "#/components/common/cefr-badge";
+import { Button } from "#/components/ui/button";
+import { m } from "#/paraglide/messages";
+
+function personaInitials(roleTitle: string): string {
+	const words = roleTitle.split(/\s+/).filter(Boolean);
+	const letters = words.map((word) =>
+		word.replace(/^[^A-Za-z]*/, "").charAt(0),
+	);
+	return (letters.slice(0, 2).join("") || "?").toUpperCase();
+}
+
+/** Hero card: badges, title, objective, partner tile, start CTA. */
+export function ScenarioDetailHero({
+	scenario,
+	onStart,
+}: {
+	scenario: Scenario;
+	onStart: () => void;
+}) {
+	const persona = scenario.persona;
+	return (
+		<section className="surface-card flex flex-col gap-5 p-5 md:p-6">
+			<div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+				<div className="min-w-0 flex-1">
+					<div className="flex flex-wrap items-center gap-2">
+						{scenario.topic?.shortName ? (
+							<span className="chip px-2.5 py-1 text-[11px] font-bold">
+								{scenario.topic.shortName}
+							</span>
+						) : null}
+						<span className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
+							<Clock3 className="size-3.5" />
+							{m["voice.detail.upTo"]({ max: scenario.maxDuration })}
+						</span>
+						<span className="ml-auto shrink-0">
+							<CefrBadge value={scenario.cefrLevel} />
+						</span>
+					</div>
+					<h1 className="mt-3 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+						{scenario.title}
+					</h1>
+					<p className="mt-2 text-[15px] font-medium text-muted-foreground">
+						{scenario.objective}
+					</p>
+					{persona ? (
+						<div className="mt-4 inline-flex items-center gap-3">
+							<span className="tile bg-secondary text-xs font-bold text-secondary-foreground">
+								{personaInitials(persona.roleTitle)}
+							</span>
+							<span className="min-w-0">
+								<span className="block truncate text-sm font-bold text-foreground">
+									{persona.name} · {persona.roleTitle}
+								</span>
+								{persona.personality ? (
+									<span className="block text-[11px] font-medium text-muted-foreground">
+										{persona.personality}
+									</span>
+								) : null}
+							</span>
+						</div>
+					) : (
+						<span className="chip mt-4 px-2 py-0.5 text-[11px]">
+							{m["voice.card.customTag"]()}
+						</span>
+					)}
+				</div>
+				<Button
+					type="button"
+					className="btn btn-primary shrink-0"
+					onClick={onStart}
+				>
+					{m["voice.detail.start"]()}
+					<ArrowRight data-icon="inline-end" />
+				</Button>
+			</div>
+		</section>
+	);
+}

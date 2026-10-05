@@ -28,7 +28,8 @@ export const API_ROUTES = {
 	},
 	SCENARIOS: {
 		LIST: "/scenarios",
-		CREATE: "/scenarios",
+		BY_ID: (id: ApiId) => `/scenarios/${id}`,
+		TOPICS: "/scenario-topics",
 	},
 	CONVERSATIONS: {
 		LIST: "/conversations",

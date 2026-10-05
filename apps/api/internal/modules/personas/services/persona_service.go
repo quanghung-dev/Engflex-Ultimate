@@ -46,3 +46,13 @@ func (s *PersonaService) List(ctx context.Context, req requests.ListPersonas) ([
 	}
 	return items, total, nil
 }
+
+func (s *PersonaService) GetByID(ctx context.Context, id string) (*models.Persona, error) {
+	m, err := s.personas.GetByID(ctx, id)
+	if err != nil {
+		appErr := common.FromDBError(err, "persona")
+		logger.Report(ctx, "get persona failed", appErr, "personaID", id)
+		return nil, appErr
+	}
+	return m, nil
+}

@@ -1,25 +1,16 @@
-import type {
-	CreateCustomScenario,
-	Scenario,
-	ScenarioDifficulty,
-} from "@engflex/contracts";
+import type { Scenario, ScenarioDifficulty } from "@engflex/contracts";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
 import { cn } from "cn";
 import { Search } from "lucide-react";
-import { useState } from "react";
+import { useDeferredValue, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { APP_ROUTES } from "#/app/app-route";
 import { breadcrumb } from "#/app/breadcrumbs";
+import { EmptyList } from "#/components/common/empty-list";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
 import { Button } from "#/components/ui/button";
-import {
-	Empty,
-	EmptyContent,
-	EmptyHeader,
-	EmptyTitle,
-} from "#/components/ui/empty";
 import { Input } from "#/components/ui/input";
 import {
 	LESSON_META,
@@ -27,17 +18,11 @@ import {
 	VOICE_SCENARIO_BY_LESSON,
 } from "#/features/lessons/fixtures";
 import { lessonsStore } from "#/features/lessons/store";
-import { CustomScenarioBanner } from "#/features/voice/components/scenarios/custom-scenario-banner";
 import { ScenarioCard } from "#/features/voice/components/scenarios/scenario-card";
-import { getScenario, SCENARIO_TOPICS } from "#/features/voice/fixtures";
-import {
-	useCreateConversation,
-	useCreateScenario,
-	useScenarios,
-} from "#/features/voice/queries";
+import { useScenarios, useTopicsWithPreview } from "#/features/voice/queries";
 import { m } from "#/paraglide/messages";
 
-export const Route = createFileRoute("/_app/voice/scenarios")({
+export const Route = createFileRoute("/_app/voice/scenarios/")({
 	staticData: breadcrumb([
 		{
 			label: () => m["nav.item.voice"](),
@@ -62,9 +47,24 @@ function ScenariosPage() {
 	);
 	const [topic, setTopic] = useState<string>("all");
 	const [search, setSearch] = useState("");
-	// Custom scenarios come from the API (real UUIDs); built-in sections stay
-	// on fixtures until seed data exists — the database ships empty and the
-	// API exposes no topic names to group a server-driven browser by.
+	// Server filters difficulty/search inside the single join; the deferred
+	// value keeps per-keystroke queries out of the cache key.
+	const deferredSearch = useDeferredValue(search.trim());
+	const topicsQuery = useTopicsWithPreview({
+		difficulty: difficulty === "all" ? undefined : difficulty,
+		search: deferredSearch || undefined,
+	});
+	const topics = topicsQuery.data ?? [];
+	// Catalog failure is terminal (no retry by query design): say so once
+	// and leave the filters usable instead of spinning.
+	const topicsFailed = topicsQuery.isError;
+	useEffect(() => {
+		if (topicsFailed) {
+			toast.error(m["voice.scenarios.topicsFailed"]());
+		}
+	}, [topicsFailed]);
+	// Existing custom rows (if any) come from the API; the grouped endpoint
+	// excludes the custom bucket, so this second query stays.
 	const customQuery = useScenarios({ scope: "custom" });
 	const customScenarios = customQuery.data?.items ?? [];
 
@@ -83,53 +83,33 @@ function ScenariosPage() {
 		}
 		return null;
 	})();
-	const suggested: Scenario | undefined =
-		(activeSlot?.scenarioId ? getScenario(activeSlot.scenarioId) : undefined) ??
-		getScenario("scenario-05");
+	// Server data only: fixture ids are not UUIDs and cannot start a
+	// session, so there is no fixture fallback. The hero hides while the
+	// catalog loads.
+	const suggested: Scenario | undefined = topics[0]?.scenarios[0];
 
-	const matches = (scenario: Scenario) => {
+	const visibleTopics = topics.filter(
+		(topicEntry) => topic === "all" || topicEntry.id === topic,
+	);
+
+	const visibleCustom = customScenarios.filter((scenario: Scenario) => {
 		if (difficulty !== "all" && scenario.cefrLevel !== difficulty) return false;
-		if (topic !== "all" && scenario.topicId !== topic) return false;
-		if (search.trim()) {
+		if (deferredSearch) {
 			const haystack = `${scenario.title} ${scenario.objective}`.toLowerCase();
-			if (!haystack.includes(search.trim().toLowerCase())) return false;
+			if (!haystack.includes(deferredSearch.toLowerCase())) return false;
 		}
 		return true;
-	};
-
-	const visibleTopics = SCENARIO_TOPICS.map((topicEntry) => ({
-		topic: topicEntry,
-		scenarios: topicEntry.scenarios.filter(matches),
-	})).filter((entry) => entry.scenarios.length > 0);
-
-	const visibleCustom = customScenarios.filter(matches);
+	});
 
 	const totalVisible =
 		visibleTopics.reduce((sum, entry) => sum + entry.scenarios.length, 0) +
 		visibleCustom.length;
 
-	const createConversation = useCreateConversation();
-	const createScenario = useCreateScenario();
-
-	async function createAndStart(input: CreateCustomScenario) {
-		const scenario = await createScenario.mutateAsync(input);
-		await startRoleplay(scenario.id);
-	}
-
-	async function startRoleplay(scenarioId: string) {
-		if (createConversation.isPending) return;
-		try {
-			const conversation = await createConversation.mutateAsync({
-				mode: "roleplay",
-				scenarioId,
-			});
-			await navigate({
-				to: APP_ROUTES.VOICE.ROOM,
-				params: { conversationId: conversation.id },
-			});
-		} catch {
-			toast.error(m["voice.create.failed"]());
-		}
+	function openDetail(scenarioId: string) {
+		void navigate({
+			to: APP_ROUTES.VOICE.SCENARIO,
+			params: { scenarioId },
+		});
 	}
 
 	return (
@@ -159,7 +139,7 @@ function ScenariosPage() {
 								type="button"
 								className="btn btn-primary"
 								onClick={() => {
-									void startRoleplay(suggested.id);
+									void openDetail(suggested.id);
 								}}
 							>
 								{m["voice.scenarios.startOne"]()}
@@ -194,7 +174,7 @@ function ScenariosPage() {
 					>
 						{m["voice.scenarios.topic.all"]()}
 					</button>
-					{SCENARIO_TOPICS.map((topicEntry) => (
+					{topics.map((topicEntry) => (
 						<button
 							key={topicEntry.id}
 							type="button"
@@ -230,29 +210,18 @@ function ScenariosPage() {
 				</div>
 			</div>
 
-			{totalVisible === 0 ? (
-				<Empty className="surface-card items-center text-center">
-					<MoMascot variant="confused" size={72} />
-					<EmptyHeader>
-						<EmptyTitle>{m["voice.scenarios.emptyTitle"]()}</EmptyTitle>
-					</EmptyHeader>
-					<EmptyContent>
-						<Button
-							variant="outline"
-							className="btn btn-outline"
-							onClick={() => {
-								setDifficulty("all");
-								setTopic("all");
-								setSearch("");
-							}}
-						>
-							{m["common.actions.resetFilters"]()}
-						</Button>
-					</EmptyContent>
-				</Empty>
+			{!topicsQuery.isPending && totalVisible === 0 ? (
+				<EmptyList
+					title={m["voice.scenarios.emptyTitle"]()}
+					onReset={() => {
+						setDifficulty("all");
+						setTopic("all");
+						setSearch("");
+					}}
+				/>
 			) : null}
 
-			{visibleTopics.map(({ topic: topicEntry, scenarios }) => (
+			{visibleTopics.map((topicEntry) => (
 				<section key={topicEntry.id} className="flex flex-col gap-4">
 					<div className="flex items-center justify-between gap-3">
 						<div className="flex min-w-0 items-center gap-3">
@@ -260,23 +229,25 @@ function ScenariosPage() {
 								className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[12px] bg-primary text-sm font-bold text-primary-foreground"
 								style={{ boxShadow: "0 2px 0 #433095" }}
 							>
-								{topicEntry.position}
+								{topics.findIndex((t) => t.id === topicEntry.id) + 1}
 							</span>
 							<h2 className="truncate text-lg font-bold text-foreground">
 								{topicEntry.name}
 							</h2>
 						</div>
 						<span className="shrink-0 text-xs font-bold text-muted-foreground">
-							{m["voice.scenarios.count"]({ count: scenarios.length })}
+							{m["voice.scenarios.count"]({
+								count: topicEntry.scenarios.length,
+							})}
 						</span>
 					</div>
 					<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-						{scenarios.map((scenario) => (
+						{topicEntry.scenarios.map((scenario) => (
 							<ScenarioCard
 								key={scenario.id}
 								scenario={scenario}
 								onStart={() => {
-									void startRoleplay(scenario.id);
+									void openDetail(scenario.id);
 								}}
 							/>
 						))}
@@ -295,15 +266,13 @@ function ScenariosPage() {
 								key={scenario.id}
 								scenario={scenario}
 								onStart={() => {
-									void startRoleplay(scenario.id);
+									void openDetail(scenario.id);
 								}}
 							/>
 						))}
 					</div>
 				</section>
 			) : null}
-
-			<CustomScenarioBanner onCreate={(input) => createAndStart(input)} />
 		</PageLayout>
 	);
 }

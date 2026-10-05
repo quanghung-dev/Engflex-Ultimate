@@ -29,8 +29,7 @@ import {
 import { completePart } from "#/features/lessons/store";
 import { PassagePanel } from "#/features/reading/components/passage-panel";
 import { QuestionPanel } from "#/features/reading/components/question-panel";
-import { getScenario } from "#/features/voice/fixtures";
-import { useCreateConversation } from "#/features/voice/queries";
+import { useCreateConversation, useScenario } from "#/features/voice/queries";
 import { WritingEditorCard } from "#/features/writing/components/writing-editor-card";
 import { WritingFeedbackCard } from "#/features/writing/components/writing-feedback-card";
 import { WritingPromptBanner } from "#/features/writing/components/writing-prompt-banner";
@@ -213,7 +212,8 @@ function VoiceActivity({
 	const navigate = useNavigate();
 	const createConversation = useCreateConversation();
 	const scenarioId = activity.voice?.scenarioId;
-	const scenario = scenarioId ? getScenario(scenarioId) : undefined;
+	const scenarioQuery = useScenario(scenarioId);
+	const scenario = scenarioQuery.data;
 
 	async function startRoleplay(scenarioId: string) {
 		if (createConversation.isPending) return;
@@ -231,6 +231,7 @@ function VoiceActivity({
 		}
 	}
 
+	if (scenarioQuery.isPending) return null;
 	if (!scenario) throw notFound();
 
 	return (

@@ -1,10 +1,10 @@
 import type {
 	Conversation,
 	ConversationSession,
-	CreateCustomScenario,
 	Pagination,
 	Persona,
 	Scenario,
+	TopicWithPreviews,
 	StartConversation,
 	TranscribeResult,
 	TranscriptResult,
@@ -105,12 +105,26 @@ export function listScenarios(params?: {
 	);
 }
 
-export function createScenario(input: CreateCustomScenario): Promise<Scenario> {
-	return api<Scenario>(
-		API_ROUTES.SCENARIOS.CREATE,
-		{ method: "POST", body: JSON.stringify(input) },
-		{ withCredentials: true },
+export function listTopicsWithPreview(params?: {
+	previewK?: number;
+	difficulty?: string;
+	search?: string;
+}): Promise<TopicWithPreviews[]> {
+	const query: Record<string, string> = {};
+	query.previewK = String(params?.previewK ?? 3);
+	if (params?.difficulty) query.difficulty = params.difficulty;
+	if (params?.search?.trim()) query.search = params.search.trim();
+	return api<TopicWithPreviews[]>(
+		API_ROUTES.SCENARIOS.TOPICS,
+		{ method: "GET" },
+		{ withCredentials: true, query },
 	);
+}
+
+export function getScenarioById(id: string): Promise<Scenario> {
+	return api<Scenario>(API_ROUTES.SCENARIOS.BY_ID(id), undefined, {
+		withCredentials: true,
+	});
 }
 
 export function listPersonas(): Promise<{

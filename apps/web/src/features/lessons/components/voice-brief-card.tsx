@@ -26,10 +26,7 @@ export function VoiceBriefCard({
 					</span>
 				) : null}
 				<span className="text-[11px] text-muted-foreground">
-					{m["voice.card.sessionRange"]({
-						min: scenario.durationMin,
-						max: scenario.durationMax,
-					})}
+					{m["voice.card.maxSession"]({ max: scenario.maxDuration })}
 				</span>
 			</div>
 			<h2 className="text-lg font-extrabold tracking-tight text-foreground">

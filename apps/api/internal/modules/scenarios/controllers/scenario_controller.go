@@ -1,13 +1,12 @@
 package controllers
 
 import (
-	"encoding/json"
+	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/datatypes"
 
 	"engflex-api/internal/common"
-	prequests "engflex-api/internal/modules/personas/dtos/requests"
 	"engflex-api/internal/modules/personas/dtos/responses"
 	"engflex-api/internal/modules/scenarios/dtos/requests"
 	"engflex-api/internal/modules/scenarios/services"
@@ -15,7 +14,7 @@ import (
 	"engflex-api/internal/utils"
 )
 
-// ScenarioController exposes scenario browsing and custom creation.
+// ScenarioController exposes scenario browsing.
 type ScenarioController struct {
 	service *services.ScenarioService
 }
@@ -50,54 +49,71 @@ func (h *ScenarioController) List(c *gin.Context) {
 		return
 	}
 	dtos := make([]responses.Scenario, 0, len(items))
-	for _, m := range items {
-		var dto responses.Scenario
-		_ = utils.Map(&dto, m)
-		dto.Persona = nil // list view carries no persona join; the room resolves it
-		dto.DurationMin, dto.DurationMax = scenarioDurations(m.Details)
-		dto.IsCustom = m.UserID != nil
-		dtos = append(dtos, dto)
-	}
+	_ = utils.MapSlice(&dtos, items)
 	common.Paginated(c, "scenarios", dtos, page, pageSize, total)
 }
 
-// scenarioDurations reads durations out of the details jsonb. A missing or
-// malformed details object yields zeros rather than failing the list.
-func scenarioDurations(raw datatypes.JSON) (int, int) {
-	var details struct {
-		DurationMin int `json:"duration_min"`
-		DurationMax int `json:"duration_max"`
-	}
-	if err := json.Unmarshal(raw, &details); err != nil {
-		return 0, 0
-	}
-	return details.DurationMin, details.DurationMax
-}
-
-// Create godoc
-// @Summary      Create a custom scenario
-// @Tags         scenarios
+// TopicsWithPreview godoc
+// @Summary      List scenario topics with top-k previews
+// @Tags         scenario-topics
 // @Security     BearerAuth
-// @Accept       json
 // @Produce      json
-// @Param        body body requests.CreateCustomScenario true "custom scenario"
-// @Success      201 {object} common.ApiResponse{data=responses.Scenario}
-// @Failure      400 {object} common.ApiResponse
-// @Router       /scenarios [post]
-func (h *ScenarioController) Create(c *gin.Context) {
-	var req prequests.CreateCustomScenario
-	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+// @Param        previewK query int false "preview cards per topic (default 3, max 6)"
+// @Param        difficulty query string false "B1+, B2 or C1 filter"
+// @Param        search query string false "title/objective substring"
+// @Success      200 {object} common.ApiResponse{data=[]responses.TopicWithPreviews}
+// @Router       /scenario-topics [get]
+func (h *ScenarioController) TopicsWithPreview(c *gin.Context) {
+	previewK := 3
+	if raw := c.Query("previewK"); raw != "" {
+		if n, err := strconv.Atoi(raw); err == nil {
+			previewK = n
+		}
+	}
+	var difficulty *string
+	if d := c.Query("difficulty"); d != "" {
+		switch d {
+		case "B1+", "B2", "C1":
+			difficulty = &d
+		default:
+			common.Fail(c, common.BadRequest("difficulty must be one of B1+, B2, C1"))
+			return
+		}
+	}
+	search := strings.TrimSpace(c.Query("search"))
+	topics, err := h.service.ListTopicsWithPreview(c.Request.Context(), previewK, difficulty, search)
+	if err != nil {
+		common.Fail(c, err)
 		return
 	}
-	m, err := h.service.Create(c.Request.Context(), middleware.UserID(c), req)
+	dtos := make([]responses.TopicWithPreviews, 0, len(topics))
+	for _, tp := range topics {
+		scens := make([]responses.Scenario, 0, len(tp.Scenarios))
+		_ = utils.MapSlice(&scens, tp.Scenarios)
+		dtos = append(dtos, responses.TopicWithPreviews{
+			ID: tp.Topic.ID, Slug: tp.Topic.Slug, Name: tp.Topic.Name,
+			Position: tp.Topic.Position, Scenarios: scens,
+		})
+	}
+	// Plain array, NOT Paginated: the web reads it with api<T>.
+	common.OK(c, "scenario topics", dtos)
+}
+
+// GetByID godoc
+// @Summary      Get one scenario with detail content
+// @Tags         scenarios
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id path string true "scenario id"
+// @Success      200 {object} common.ApiResponse{data=responses.Scenario}
+// @Router       /scenarios/{id} [get]
+func (h *ScenarioController) GetByID(c *gin.Context) {
+	m, err := h.service.GetDetail(c.Request.Context(), c.Param("id"))
 	if err != nil {
 		common.Fail(c, err)
 		return
 	}
 	var dto responses.Scenario
 	_ = utils.Map(&dto, m)
-	dto.DurationMin, dto.DurationMax = req.DurationMin, req.DurationMax
-	dto.IsCustom = true
-	common.Created(c, "scenario created", dto)
+	common.OK(c, "scenario", dto)
 }

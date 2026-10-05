@@ -106,3 +106,33 @@ def test_fatal_error_ends_session():
     assert len(worker.queued) == 2
     assert isinstance(worker.queued[0], ErrorFrame)
     assert isinstance(worker.queued[1], EndWorkerFrame)
+
+
+def test_permanent_auth_error_ends_session():
+    worker = _registered_worker()
+    asyncio.run(
+        worker.handlers["on_pipeline_error"](
+            worker,
+            ErrorFrame(
+                error="Error during completion: Error code: 403 - {'error': {'message': 'An active subscription is required'}}"
+            ),
+        )
+    )
+    assert len(worker.queued) == 2
+    assert isinstance(worker.queued[0], ErrorFrame)
+    # The client sees only the generic line; the classified detail
+    # ("authentication failed") stays in the server logs.
+    from events import USER_FACING_ERROR
+
+    assert str(worker.queued[0].error) == USER_FACING_ERROR
+    assert isinstance(worker.queued[1], EndWorkerFrame)
+
+
+def test_rate_limit_stays_non_fatal():
+    worker = _registered_worker()
+    asyncio.run(
+        worker.handlers["on_pipeline_error"](
+            worker, ErrorFrame(error="Error code: 429 - rate limit exceeded")
+        )
+    )
+    assert worker.queued == []

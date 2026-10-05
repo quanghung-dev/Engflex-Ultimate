@@ -332,17 +332,19 @@ export const WRITING_PAYLOAD: WritingPayload = {
 	],
 };
 
-export const VOICE_PAYLOAD: VoicePayload = { scenarioId: "scenario-01" };
-
-/** Which roleplay scenario each voice part starts with. */
-export const VOICE_SCENARIO_BY_LESSON: Record<string, string> = {
-	"describing-your-job": "scenario-01",
-	"leading-sprint-reviews": "scenario-05",
-	"de-escalating-team-tensions": "scenario-07",
-	"negotiating-project-timelines": "scenario-04",
+export const VOICE_PAYLOAD: VoicePayload = {
+	scenarioId: "01b9a032-e2cf-5bb0-8df5-7bf49704bee8",
 };
 
-const DEFAULT_VOICE_SCENARIO_ID = "scenario-04";
+/** Which roleplay scenario each voice part starts with (seeded UUIDs). */
+export const VOICE_SCENARIO_BY_LESSON: Record<string, string> = {
+	"describing-your-job": "01b9a032-e2cf-5bb0-8df5-7bf49704bee8",
+	"leading-sprint-reviews": "3a8b3191-c8a3-5855-8e05-0a268cedac3e",
+	"de-escalating-team-tensions": "dca3ffa8-7f11-5846-a2f5-abc717e5240f",
+	"negotiating-project-timelines": "9f23a64d-793f-5810-8f61-a1b4100ef19b",
+};
+
+const DEFAULT_VOICE_SCENARIO_ID = "9f23a64d-793f-5810-8f61-a1b4100ef19b";
 
 function payloadFor(type: ActivityType, lessonId: string): Partial<Activity> {
 	switch (type) {

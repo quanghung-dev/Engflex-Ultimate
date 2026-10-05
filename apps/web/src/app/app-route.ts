@@ -15,6 +15,7 @@ export const APP_ROUTES = {
 	VOICE: {
 		LIST: "/voice",
 		SCENARIOS: "/voice/scenarios",
+		SCENARIO: "/voice/scenarios/$scenarioId",
 		ROOM: "/voice/room/$conversationId",
 	},
 	/**

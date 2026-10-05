@@ -20,25 +20,56 @@ export interface Persona {
 // source: scenario.go
 
 /**
- * Scenario is one roleplay practice card. Durations come from
- * scenarios.details (jsonb); a non-null Persona marks curated scenarios
- * (custom ones show only the "Partner" label).
+ * Scenario is one roleplay practice card. Field names mirror the model so
+ * utils.Map copies everything automatically — including the nested Details
+ * blob, whose struct shape matches models.ScenarioDetail field for field.
+ * A non-null Persona marks curated scenarios.
  */
 export interface Scenario {
   id: string;
-  topicId: string;
+  topic?: ScenarioTopic;
   persona?: Persona;
   title: string;
   objective: string;
   cefrLevel: ScenarioDifficulty;
-  durationMin: number /* int */;
-  durationMax: number /* int */;
-  isCustom: boolean;
+  maxDuration: number /* int */;
+  details: ScenarioDetail;
 }
 /**
- * ScenarioTopic is one persona-picker banner with its scenarios.
+ * ScenarioDetail mirrors models.ScenarioDetail field for field so copier
+ * maps the blob without manual lines. Pure scenario substance (context,
+ * opening line, terms); nothing coach-generic lives here.
+ */
+export interface ScenarioDetail {
+  role?: string;
+  interlocutorRole?: string;
+  goalFormat?: string;
+  context?: string[];
+  opening?: DetailOpening;
+  vocab?: string[];
+}
+/**
+ * DetailOpening is the partner's first line on the detail page.
+ */
+export interface DetailOpening {
+  label: string;
+  text: string;
+}
+/**
+ * ScenarioTopic mirrors models.ScenarioTopic field for field.
  */
 export interface ScenarioTopic {
+  id: string;
+  slug: string;
+  name: string;
+  shortName: string;
+  position: number /* int */;
+}
+/**
+ * TopicWithPreviews is one browser banner: a topic with its top-k
+ * scenario previews.
+ */
+export interface TopicWithPreviews {
   id: string;
   slug: string;
   name: string;

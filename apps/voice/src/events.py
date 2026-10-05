@@ -10,6 +10,7 @@ connect, session timer, fatal error surface, finalize callback on finish.
 """
 
 import asyncio
+import re
 import time
 
 from loguru import logger
@@ -35,6 +36,29 @@ def get_custom_error_message(error: str, service_name: str = "Service") -> str:
     if "timeout" in text.lower() or "408" in text:
         return f"{service_name} timed out. Please try again."
     return f"{service_name} unavailable: an unexpected error occurred."
+
+
+# The only string ever surfaced to the client. Provider codes, key states
+# and timeouts are operator detail — they stay in the logs via
+# get_custom_error_message. Learners get one neutral line regardless of
+# cause, so no backend internals leak into the room modal.
+USER_FACING_ERROR = "The voice service is temporarily unavailable. Please try again."
+
+
+# Permanent failures never recover on their own: bad/expired keys (401),
+# missing entitlements (403), unpaid bills (402), unknown models. Everything
+# else (429 rate limits, timeouts, 5xx, transport blips) may clear, so it
+# stays non-fatal and the session survives. Word boundaries keep codes like
+# 1403 from matching.
+_PERMANENT_ERROR = re.compile(
+    r"\b40[01234]\b|invalid_api_key|model_not_found|permission_denied|permission denied|subscription",
+    re.IGNORECASE,
+)
+
+
+def is_permanent_error(error: str) -> bool:
+    """True when the session can never succeed without human action."""
+    return _PERMANENT_ERROR.search(str(error)) is not None
 
 
 def register_event_handlers(
@@ -85,6 +109,18 @@ def register_event_handlers(
         # client, including these non-fatal ones — the frontend's error
         # listener ignores fatal:false and only modals on fatal/unknown.
         if isinstance(frame, ErrorFrame) and not frame.fatal:
+            # Permanent failures (auth, payment, unknown model) would leave
+            # the session mute until the duration timer fires, so escalate
+            # those through the fatal path below — sona-voice style, but
+            # selective: blanket escalation killed recovered sessions (see
+            # tests/test_pipeline_errors.py).
+            if is_permanent_error(error_text):
+                message = get_custom_error_message(error_text)
+                logger.error(
+                    "permanent pipeline error; ending session", error=error_text, message=message
+                )
+                await worker.queue_frames([ErrorFrame(USER_FACING_ERROR), EndWorkerFrame()])
+                return
             logger.warning("transient pipeline error; session continues", error=error_text)
             return
         message = get_custom_error_message(error_text)
@@ -92,7 +128,7 @@ def register_event_handlers(
         # No `fatal=True` (deprecated since 1.8.0): the RTVI processor forwards
         # every ErrorFrame to the client, and EndWorkerFrame ends the pipeline
         # so on_pipeline_finished still finalizes the session.
-        await worker.queue_frames([ErrorFrame(message), EndWorkerFrame()])
+        await worker.queue_frames([ErrorFrame(USER_FACING_ERROR), EndWorkerFrame()])
 
     @user_aggregator.event_handler("on_user_turn_message_added")
     async def on_user_turn(_aggregator, message) -> None:

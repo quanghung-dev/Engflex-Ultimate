@@ -3,6 +3,7 @@
   "voice": {
     "crumb": {
       "scenarios": "Scenarios",
+      "detail": "Scenario detail",
       "room": "Live session"
     },
     "room": {
@@ -12,7 +13,8 @@
         "spaceHint": "Press Space to toggle the microphone",
         "micMute": "Mute microphone",
         "micUnmute": "Unmute microphone",
-        "micEnd": "End session"
+        "micEnd": "End session",
+        "timeLeft": "{left} left"
       },
       "freeTalk": {
         "title": "Free talk warm-up",
@@ -162,32 +164,40 @@
         "label": "Level",
         "any": "Any"
       },
-      "count": "{count} scenarios"
+      "count": "{count} scenarios",
+      "topicsFailed": "Could not load scenarios. Please try again later."
     },
     "custom": {
-      "section": "Custom",
-      "prompt": {
-        "title": "Need a custom scenario?",
-        "body": "Create a personalized prompt based on your upcoming job interview, sprint kickoff, or pitch deck.",
-        "cta": "Build custom scenario"
+      "section": "Custom"
+    },
+    "detail": {
+      "back": "Back to scenarios",
+      "loading": "Loading scenario…",
+      "upTo": "Up to {max} min",
+      "start": "Start sparring with Mo",
+      "context": {
+        "title": "The situation & context",
+        "role": "Your role",
+        "interlocutor": "Interlocutor",
+        "goal": "Goal format"
       },
-      "dialog": {
-        "title": "Build custom scenario",
-        "body": "Describe the situation; the partner persona is optional.",
-        "titleLabel": "Title",
-        "objectiveLabel": "Objective",
-        "difficultyLabel": "Difficulty",
-        "minLabel": "Min duration (min)",
-        "maxLabel": "Max duration (min)",
-        "add": "Add scenario",
-        "required": "Title and objective are required.",
-        "durationError": "Durations must satisfy 1 ≤ min ≤ max ≤ 60."
+      "opening": {
+        "title": "Opening scenario prompt"
+      },
+      "vocab": {
+        "title": "Target vocabulary",
+        "count": "{count} recommended"
+      },
+      "runs": {
+        "title": "Previous sparring runs",
+        "emptyTitle": "No runs yet",
+        "emptyBody": "Your completed sessions on this scenario will appear here."
       }
     },
     "card": {
       "customTag": "Custom scenario",
       "partner": "Partner: {role}",
-      "sessionRange": "{min}–{max} min session",
+      "maxSession": "Max {max} min session",
       "start": "Start practice"
     },
     "tip": {

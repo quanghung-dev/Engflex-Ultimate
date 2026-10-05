@@ -2,16 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
 import { useMemo, useState } from "react";
 import { breadcrumb } from "#/app/breadcrumbs";
+import { EmptyList } from "#/components/common/empty-list";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
-import { Button } from "#/components/ui/button";
-import {
-	Empty,
-	EmptyContent,
-	EmptyDescription,
-	EmptyHeader,
-	EmptyTitle,
-} from "#/components/ui/empty";
 import { HubHeroCard } from "#/features/lessons/components/hub-hero-card";
 import {
 	DEFAULT_LESSON_FILTERS,
@@ -131,22 +124,11 @@ function LessonsPage() {
 				/>
 			) : null}
 			{sections.length === 0 ? (
-				<Empty className="surface-card items-center text-center">
-					<MoMascot variant="confused" size={72} />
-					<EmptyHeader>
-						<EmptyTitle>{m["lessons.hub.emptyTitle"]()}</EmptyTitle>
-						<EmptyDescription>{m["lessons.hub.emptyBody"]()}</EmptyDescription>
-					</EmptyHeader>
-					<EmptyContent>
-						<Button
-							variant="outline"
-							className="btn btn-outline"
-							onClick={() => setFilters(DEFAULT_LESSON_FILTERS)}
-						>
-							{m["common.actions.resetFilters"]()}
-						</Button>
-					</EmptyContent>
-				</Empty>
+				<EmptyList
+					title={m["lessons.hub.emptyTitle"]()}
+					description={m["lessons.hub.emptyBody"]()}
+					onReset={() => setFilters(DEFAULT_LESSON_FILTERS)}
+				/>
 			) : (
 				sections.map((section) => (
 					<UnitSection

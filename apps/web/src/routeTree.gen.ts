@@ -22,9 +22,10 @@ import { Route as AppVocabularyIndexRouteImport } from './routes/_app/vocabulary
 import { Route as AppVocabularyItemIdRouteImport } from './routes/_app/vocabulary/$itemId'
 import { Route as AppVoiceIndexRouteImport } from './routes/_app/voice/index'
 import { Route as AppVoicePreviewRouteImport } from './routes/_app/voice/preview'
-import { Route as AppVoiceScenariosRouteImport } from './routes/_app/voice/scenarios'
 import { Route as AppLessonsLessonIdIndexRouteImport } from './routes/_app/lessons/$lessonId/index'
 import { Route as AppVoiceRoomConversationIdRouteImport } from './routes/_app/voice/room/$conversationId'
+import { Route as AppVoiceScenariosIndexRouteImport } from './routes/_app/voice/scenarios/index'
+import { Route as AppVoiceScenariosScenarioIdRouteImport } from './routes/_app/voice/scenarios/$scenarioId'
 import { Route as AppLessonsLessonIdPartsPartRouteImport } from './routes/_app/lessons/$lessonId/parts/$part'
 
 const AppRouteRoute = AppRouteRouteImport.update({
@@ -91,11 +92,6 @@ const AppVoicePreviewRoute = AppVoicePreviewRouteImport.update({
   path: '/voice/preview',
   getParentRoute: () => AppRouteRoute,
 } as any)
-const AppVoiceScenariosRoute = AppVoiceScenariosRouteImport.update({
-  id: '/voice/scenarios',
-  path: '/voice/scenarios',
-  getParentRoute: () => AppRouteRoute,
-} as any)
 const AppLessonsLessonIdIndexRoute = AppLessonsLessonIdIndexRouteImport.update({
   id: '/lessons/$lessonId/',
   path: '/lessons/$lessonId/',
@@ -105,6 +101,17 @@ const AppVoiceRoomConversationIdRoute =
   AppVoiceRoomConversationIdRouteImport.update({
     id: '/voice/room/$conversationId',
     path: '/voice/room/$conversationId',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
+const AppVoiceScenariosIndexRoute = AppVoiceScenariosIndexRouteImport.update({
+  id: '/voice/scenarios/',
+  path: '/voice/scenarios/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppVoiceScenariosScenarioIdRoute =
+  AppVoiceScenariosScenarioIdRouteImport.update({
+    id: '/voice/scenarios/$scenarioId',
+    path: '/voice/scenarios/$scenarioId',
     getParentRoute: () => AppRouteRoute,
   } as any)
 const AppLessonsLessonIdPartsPartRoute =
@@ -124,12 +131,13 @@ export interface FileRoutesByFullPath {
   '/sign-up/$': typeof SignUpSplatRoute
   '/vocabulary/$itemId': typeof AppVocabularyItemIdRoute
   '/voice/preview': typeof AppVoicePreviewRoute
-  '/voice/scenarios': typeof AppVoiceScenariosRoute
   '/lessons/': typeof AppLessonsIndexRoute
   '/vocabulary/': typeof AppVocabularyIndexRoute
   '/voice/': typeof AppVoiceIndexRoute
   '/voice/room/$conversationId': typeof AppVoiceRoomConversationIdRoute
+  '/voice/scenarios/$scenarioId': typeof AppVoiceScenariosScenarioIdRoute
   '/lessons/$lessonId/': typeof AppLessonsLessonIdIndexRoute
+  '/voice/scenarios/': typeof AppVoiceScenariosIndexRoute
   '/lessons/$lessonId/parts/$part': typeof AppLessonsLessonIdPartsPartRoute
 }
 export interface FileRoutesByTo {
@@ -142,12 +150,13 @@ export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/vocabulary/$itemId': typeof AppVocabularyItemIdRoute
   '/voice/preview': typeof AppVoicePreviewRoute
-  '/voice/scenarios': typeof AppVoiceScenariosRoute
   '/lessons': typeof AppLessonsIndexRoute
   '/vocabulary': typeof AppVocabularyIndexRoute
   '/voice': typeof AppVoiceIndexRoute
   '/voice/room/$conversationId': typeof AppVoiceRoomConversationIdRoute
+  '/voice/scenarios/$scenarioId': typeof AppVoiceScenariosScenarioIdRoute
   '/lessons/$lessonId': typeof AppLessonsLessonIdIndexRoute
+  '/voice/scenarios': typeof AppVoiceScenariosIndexRoute
   '/lessons/$lessonId/parts/$part': typeof AppLessonsLessonIdPartsPartRoute
 }
 export interface FileRoutesById {
@@ -162,12 +171,13 @@ export interface FileRoutesById {
   '/_app/': typeof AppIndexRoute
   '/_app/vocabulary/$itemId': typeof AppVocabularyItemIdRoute
   '/_app/voice/preview': typeof AppVoicePreviewRoute
-  '/_app/voice/scenarios': typeof AppVoiceScenariosRoute
   '/_app/lessons/': typeof AppLessonsIndexRoute
   '/_app/vocabulary/': typeof AppVocabularyIndexRoute
   '/_app/voice/': typeof AppVoiceIndexRoute
   '/_app/voice/room/$conversationId': typeof AppVoiceRoomConversationIdRoute
+  '/_app/voice/scenarios/$scenarioId': typeof AppVoiceScenariosScenarioIdRoute
   '/_app/lessons/$lessonId/': typeof AppLessonsLessonIdIndexRoute
+  '/_app/voice/scenarios/': typeof AppVoiceScenariosIndexRoute
   '/_app/lessons/$lessonId/parts/$part': typeof AppLessonsLessonIdPartsPartRoute
 }
 export interface FileRouteTypes {
@@ -182,12 +192,13 @@ export interface FileRouteTypes {
     | '/sign-up/$'
     | '/vocabulary/$itemId'
     | '/voice/preview'
-    | '/voice/scenarios'
     | '/lessons/'
     | '/vocabulary/'
     | '/voice/'
     | '/voice/room/$conversationId'
+    | '/voice/scenarios/$scenarioId'
     | '/lessons/$lessonId/'
+    | '/voice/scenarios/'
     | '/lessons/$lessonId/parts/$part'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -200,12 +211,13 @@ export interface FileRouteTypes {
     | '/'
     | '/vocabulary/$itemId'
     | '/voice/preview'
-    | '/voice/scenarios'
     | '/lessons'
     | '/vocabulary'
     | '/voice'
     | '/voice/room/$conversationId'
+    | '/voice/scenarios/$scenarioId'
     | '/lessons/$lessonId'
+    | '/voice/scenarios'
     | '/lessons/$lessonId/parts/$part'
   id:
     | '__root__'
@@ -219,12 +231,13 @@ export interface FileRouteTypes {
     | '/_app/'
     | '/_app/vocabulary/$itemId'
     | '/_app/voice/preview'
-    | '/_app/voice/scenarios'
     | '/_app/lessons/'
     | '/_app/vocabulary/'
     | '/_app/voice/'
     | '/_app/voice/room/$conversationId'
+    | '/_app/voice/scenarios/$scenarioId'
     | '/_app/lessons/$lessonId/'
+    | '/_app/voice/scenarios/'
     | '/_app/lessons/$lessonId/parts/$part'
   fileRoutesById: FileRoutesById
 }
@@ -330,13 +343,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppVoicePreviewRouteImport
       parentRoute: typeof AppRouteRoute
     }
-    '/_app/voice/scenarios': {
-      id: '/_app/voice/scenarios'
-      path: '/voice/scenarios'
-      fullPath: '/voice/scenarios'
-      preLoaderRoute: typeof AppVoiceScenariosRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
     '/_app/lessons/$lessonId/': {
       id: '/_app/lessons/$lessonId/'
       path: '/lessons/$lessonId'
@@ -349,6 +355,20 @@ declare module '@tanstack/react-router' {
       path: '/voice/room/$conversationId'
       fullPath: '/voice/room/$conversationId'
       preLoaderRoute: typeof AppVoiceRoomConversationIdRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/voice/scenarios/': {
+      id: '/_app/voice/scenarios/'
+      path: '/voice/scenarios'
+      fullPath: '/voice/scenarios/'
+      preLoaderRoute: typeof AppVoiceScenariosIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/voice/scenarios/$scenarioId': {
+      id: '/_app/voice/scenarios/$scenarioId'
+      path: '/voice/scenarios/$scenarioId'
+      fullPath: '/voice/scenarios/$scenarioId'
+      preLoaderRoute: typeof AppVoiceScenariosScenarioIdRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/_app/lessons/$lessonId/parts/$part': {
@@ -366,12 +386,13 @@ interface AppRouteRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppVocabularyItemIdRoute: typeof AppVocabularyItemIdRoute
   AppVoicePreviewRoute: typeof AppVoicePreviewRoute
-  AppVoiceScenariosRoute: typeof AppVoiceScenariosRoute
   AppLessonsIndexRoute: typeof AppLessonsIndexRoute
   AppVocabularyIndexRoute: typeof AppVocabularyIndexRoute
   AppVoiceIndexRoute: typeof AppVoiceIndexRoute
   AppVoiceRoomConversationIdRoute: typeof AppVoiceRoomConversationIdRoute
+  AppVoiceScenariosScenarioIdRoute: typeof AppVoiceScenariosScenarioIdRoute
   AppLessonsLessonIdIndexRoute: typeof AppLessonsLessonIdIndexRoute
+  AppVoiceScenariosIndexRoute: typeof AppVoiceScenariosIndexRoute
   AppLessonsLessonIdPartsPartRoute: typeof AppLessonsLessonIdPartsPartRoute
 }
 
@@ -380,12 +401,13 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppVocabularyItemIdRoute: AppVocabularyItemIdRoute,
   AppVoicePreviewRoute: AppVoicePreviewRoute,
-  AppVoiceScenariosRoute: AppVoiceScenariosRoute,
   AppLessonsIndexRoute: AppLessonsIndexRoute,
   AppVocabularyIndexRoute: AppVocabularyIndexRoute,
   AppVoiceIndexRoute: AppVoiceIndexRoute,
   AppVoiceRoomConversationIdRoute: AppVoiceRoomConversationIdRoute,
+  AppVoiceScenariosScenarioIdRoute: AppVoiceScenariosScenarioIdRoute,
   AppLessonsLessonIdIndexRoute: AppLessonsLessonIdIndexRoute,
+  AppVoiceScenariosIndexRoute: AppVoiceScenariosIndexRoute,
   AppLessonsLessonIdPartsPartRoute: AppLessonsLessonIdPartsPartRoute,
 }
 

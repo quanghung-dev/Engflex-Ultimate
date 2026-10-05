@@ -3,6 +3,7 @@
   "voice": {
     "crumb": {
       "scenarios": "Tình huống",
+      "detail": "Chi tiết tình huống",
       "room": "Phiên luyện trực tiếp"
     },
     "room": {
@@ -12,7 +13,8 @@
         "spaceHint": "Nhấn Space để bật/tắt micrô",
         "micMute": "Tắt micrô",
         "micUnmute": "Bật micrô",
-        "micEnd": "Kết thúc phiên"
+        "micEnd": "Kết thúc phiên",
+        "timeLeft": "Còn {left}"
       },
       "freeTalk": {
         "title": "Khởi động nói tự do",
@@ -162,32 +164,40 @@
         "label": "Trình độ",
         "any": "Tất cả"
       },
-      "count": "{count} tình huống"
+      "count": "{count} tình huống",
+      "topicsFailed": "Không tải được danh sách tình huống. Hãy thử lại sau."
     },
     "custom": {
-      "section": "Tùy chỉnh",
-      "prompt": {
-        "title": "Cần tình huống tùy chỉnh?",
-        "body": "Tạo bài luyện cá nhân dựa trên buổi phỏng vấn, kickoff sprint hay slide thuyết trình sắp tới của bạn.",
-        "cta": "Tạo tình huống tùy chỉnh"
+      "section": "Tùy chỉnh"
+    },
+    "detail": {
+      "back": "Về danh sách tình huống",
+      "loading": "Đang tải tình huống…",
+      "upTo": "Tối đa {max} phút",
+      "start": "Bắt đầu luyện với Mo",
+      "context": {
+        "title": "Bối cảnh & tình huống",
+        "role": "Vai của bạn",
+        "interlocutor": "Đối tác",
+        "goal": "Định dạng mục tiêu"
       },
-      "dialog": {
-        "title": "Tạo tình huống tùy chỉnh",
-        "body": "Mô tả tình huống; nhân vật đối tác là tùy chọn.",
-        "titleLabel": "Tiêu đề",
-        "objectiveLabel": "Mục tiêu",
-        "difficultyLabel": "Độ khó",
-        "minLabel": "Thời lượng tối thiểu (phút)",
-        "maxLabel": "Thời lượng tối đa (phút)",
-        "add": "Thêm tình huống",
-        "required": "Tiêu đề và mục tiêu là bắt buộc.",
-        "durationError": "Hãy nhập thời lượng từ 1–60 phút, tối thiểu không lớn hơn tối đa."
+      "opening": {
+        "title": "Câu mở đầu của tình huống"
+      },
+      "vocab": {
+        "title": "Từ vựng mục tiêu",
+        "count": "{count} từ được gợi ý"
+      },
+      "runs": {
+        "title": "Các lượt luyện trước",
+        "emptyTitle": "Chưa có lượt nào",
+        "emptyBody": "Các buổi luyện đã hoàn thành của tình huống này sẽ hiện ở đây."
       }
     },
     "card": {
       "customTag": "Tình huống tùy chỉnh",
       "partner": "Đối tác: {role}",
-      "sessionRange": "Phiên {min}–{max} phút",
+      "maxSession": "Tối đa {max} phút",
       "start": "Bắt đầu luyện"
     },
     "tip": {

@@ -8,18 +8,3 @@
  */
 export interface ListPersonas extends ListParams {
 }
-
-//////////
-// source: scenario.go
-
-/**
- * CreateCustomScenario builds a user-authored roleplay scenario
- * ("Build custom scenario" CTA).
- */
-export interface CreateCustomScenario {
-  title: string;
-  objective: string;
-  difficulty: ScenarioDifficulty;
-  durationMin: number /* int */;
-  durationMax: number /* int */;
-}

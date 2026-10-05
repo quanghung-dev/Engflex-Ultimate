@@ -5,8 +5,7 @@ import { toast } from "sonner";
 import { APP_ROUTES } from "#/app/app-route";
 import { Button } from "#/components/ui/button";
 import { VOICE_PARTNER_SCENARIO_IDS } from "#/features/dashboard/fixtures";
-import { getScenario } from "#/features/voice/fixtures";
-import { useCreateConversation } from "#/features/voice/queries";
+import { useCreateConversation, useScenarios } from "#/features/voice/queries";
 import { m } from "#/paraglide/messages";
 import { ScenarioSelectorRow } from "./scenario-selector-row";
 
@@ -16,8 +15,9 @@ export function LiveVoicePartnerCard() {
 	const [selectedId, setSelectedId] = useState<string>(
 		VOICE_PARTNER_SCENARIO_IDS[0],
 	);
-	const rows = VOICE_PARTNER_SCENARIO_IDS.map((id) => getScenario(id)).filter(
-		(scenario) => scenario !== undefined,
+	const partnerScenarios = useScenarios();
+	const rows = (partnerScenarios.data?.items ?? []).filter((scenario) =>
+		(VOICE_PARTNER_SCENARIO_IDS as readonly string[]).includes(scenario.id),
 	);
 
 	async function startFreeTalk() {

@@ -10,12 +10,12 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"engflex-api/internal/common"
-	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
+	"engflex-api/internal/database/repositories"
 	repomocks "engflex-api/internal/database/repositories/mocks"
-	prequests "engflex-api/internal/modules/personas/dtos/requests"
 	"engflex-api/internal/modules/scenarios/dtos/requests"
 	"engflex-api/internal/modules/scenarios/services"
+	"gorm.io/gorm"
 )
 
 type boomErr struct{}
@@ -102,24 +102,196 @@ func TestScenarioList(t *testing.T) {
 	}
 }
 
-func TestScenarioCreate(t *testing.T) {
-	t.Run("custom scenario files under the seeded custom topic", func(t *testing.T) {
-		repo := repomocks.NewMockScenarioRepository(t)
-		repo.On("GetTopicBySlug", mock.Anything, "custom").
-			Return(&models.ScenarioTopic{ID: "t-custom", Slug: "custom"}, nil).Once()
-		repo.On("Create", mock.Anything, mock.MatchedBy(func(m *models.Scenario) bool {
-			return m.UserID != nil && *m.UserID == "user_1" &&
-				m.TopicID == "t-custom" &&
-				m.Title == "My review" &&
-				m.CEFRLevel == "B2"
-		})).Return(nil).Once()
-		svc := services.NewScenarioService(repo)
+func TestScenarioTopicsPreview(t *testing.T) {
+	b2 := "B2"
+	tests := []struct {
+		name         string
+		previewK     int
+		difficulty   *string
+		search       string
+		setup        func(*repomocks.MockScenarioRepository)
+		wantTopics   int
+		wantPreviews []int
+		wantErr      int
+	}{
+		{
+			name:     "zero k clamps to three and empty preview stays",
+			previewK: 0,
+			setup: func(repo *repomocks.MockScenarioRepository) {
+				repo.On("ListTopicsWithPreview", mock.Anything, 3, (*string)(nil), "").
+					Return([]repositories.TopicWithPreview{
+						{
+							Topic: &models.ScenarioTopic{ID: "t1", Slug: "job-interviews", Name: "Topic 1", Position: 1},
+							Scenarios: []*models.Scenario{
+								{ID: "s1", TopicID: "t1"},
+								{ID: "s2", TopicID: "t1"},
+							},
+						},
+						{
+							Topic: &models.ScenarioTopic{ID: "t2", Slug: "product-pitch", Name: "Topic 4", Position: 4},
+						},
+					}, nil).Once()
+			},
+			wantTopics:   2,
+			wantPreviews: []int{2, 0},
+		},
+		{
+			name:       "huge k clamps to six and passes filters through",
+			previewK:   999,
+			difficulty: &b2,
+			search:     "pitch",
+			setup: func(repo *repomocks.MockScenarioRepository) {
+				repo.On("ListTopicsWithPreview", mock.Anything, 6, &b2, "pitch").
+					Return([]repositories.TopicWithPreview{}, nil).Once()
+			},
+			wantTopics:   0,
+			wantPreviews: []int{},
+		},
+		{
+			name:     "repo failure maps to 500",
+			previewK: 3,
+			setup: func(repo *repomocks.MockScenarioRepository) {
+				repo.On("ListTopicsWithPreview", mock.Anything, 3, (*string)(nil), "").
+					Return(nil, boomErr{}).Once()
+			},
+			wantErr: http.StatusInternalServerError,
+		},
+	}
 
-		got, err := svc.Create(context.Background(), "user_1", prequests.CreateCustomScenario{
-			Title: "My review", Objective: "defend", Difficulty: enums.ScenarioDifficultyB2,
-			DurationMin: 5, DurationMax: 10,
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			repo := repomocks.NewMockScenarioRepository(t)
+			tt.setup(repo)
+			svc := services.NewScenarioService(repo)
+
+			got, err := svc.ListTopicsWithPreview(context.Background(), tt.previewK, tt.difficulty, tt.search)
+
+			if tt.wantErr != 0 {
+				requireAppError(t, err, tt.wantErr)
+				return
+			}
+			require.NoError(t, err)
+			assert.Len(t, got, tt.wantTopics)
+			for i, want := range tt.wantPreviews {
+				assert.Len(t, got[i].Scenarios, want)
+			}
 		})
-		require.NoError(t, err)
-		assert.Equal(t, "t-custom", got.TopicID)
-	})
+	}
+}
+
+func TestScenarioGetByID(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      string
+		setup   func(*repomocks.MockScenarioRepository)
+		wantID  string
+		wantErr int
+	}{
+		{
+			name: "returns the scenario",
+			id:   "01b9a032-e2cf-5bb0-8df5-7bf49704bee8",
+			setup: func(repo *repomocks.MockScenarioRepository) {
+				repo.On("GetByID", mock.Anything, "01b9a032-e2cf-5bb0-8df5-7bf49704bee8").
+					Return(&models.Scenario{ID: "01b9a032-e2cf-5bb0-8df5-7bf49704bee8", Title: "Behavioral questions on leadership"}, nil).Once()
+			},
+			wantID: "01b9a032-e2cf-5bb0-8df5-7bf49704bee8",
+		},
+		{
+			name: "unknown id maps to 404",
+			id:   "00000000-0000-0000-0000-000000000000",
+			setup: func(repo *repomocks.MockScenarioRepository) {
+				repo.On("GetByID", mock.Anything, "00000000-0000-0000-0000-000000000000").
+					Return(nil, gorm.ErrRecordNotFound).Once()
+			},
+			wantErr: http.StatusNotFound,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			repo := repomocks.NewMockScenarioRepository(t)
+			tt.setup(repo)
+			svc := services.NewScenarioService(repo)
+
+			got, err := svc.GetByID(context.Background(), tt.id)
+
+			if tt.wantErr != 0 {
+				requireAppError(t, err, tt.wantErr)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantID, got.ID)
+		})
+	}
+}
+
+func TestScenarioGetDetail(t *testing.T) {
+	scenarioID := "3a8b3191-c8a3-5855-8e05-0a268cedac3e"
+	full := &models.Scenario{
+		ID: scenarioID, Title: "Sprint retrospective",
+		Persona: &models.Persona{ID: "473d21cd-6a87-5e3a-b4eb-b9638b9d2bb2", Name: "Tom"},
+		Topic:   &models.ScenarioTopic{ID: "9735face-d870-5b51-ae3a-e18768a282fc", ShortName: "Architecture reviews"},
+	}
+	bare := &models.Scenario{
+		ID: scenarioID, Title: "Sprint retrospective",
+		Topic: &models.ScenarioTopic{ID: "9735face-d870-5b51-ae3a-e18768a282fc", ShortName: "Architecture reviews"},
+	}
+	tests := []struct {
+		name        string
+		id          string
+		setup       func(*repomocks.MockScenarioRepository)
+		wantPersona bool
+		wantErr     int
+	}{
+		{
+			name: "full detail with persona and topic",
+			id:   scenarioID,
+			setup: func(repo *repomocks.MockScenarioRepository) {
+				repo.On("GetDetail", mock.Anything, scenarioID).Return(full, nil).Once()
+			},
+			wantPersona: true,
+		},
+		{
+			name: "missing persona degrades to nil",
+			id:   scenarioID,
+			setup: func(repo *repomocks.MockScenarioRepository) {
+				repo.On("GetDetail", mock.Anything, scenarioID).Return(bare, nil).Once()
+			},
+			wantPersona: false,
+		},
+		{
+			name: "unknown scenario maps to 404",
+			id:   "00000000-0000-0000-0000-000000000000",
+			setup: func(repo *repomocks.MockScenarioRepository) {
+				repo.On("GetDetail", mock.Anything, "00000000-0000-0000-0000-000000000000").
+					Return(nil, gorm.ErrRecordNotFound).Once()
+			},
+			wantErr: http.StatusNotFound,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			repo := repomocks.NewMockScenarioRepository(t)
+			tt.setup(repo)
+			svc := services.NewScenarioService(repo)
+
+			got, err := svc.GetDetail(context.Background(), tt.id)
+
+			if tt.wantErr != 0 {
+				requireAppError(t, err, tt.wantErr)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, scenarioID, got.ID)
+			require.NotNil(t, got.Topic)
+			assert.Equal(t, "Architecture reviews", got.Topic.ShortName)
+			if tt.wantPersona {
+				require.NotNil(t, got.Persona)
+				assert.Equal(t, "Tom", got.Persona.Name)
+			} else {
+				assert.Nil(t, got.Persona)
+			}
+		})
+	}
 }
