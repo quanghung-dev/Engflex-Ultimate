@@ -61,11 +61,7 @@ export function ScenarioDetailHero({
 								) : null}
 							</span>
 						</div>
-					) : (
-						<span className="chip mt-4 px-2 py-0.5 text-[11px]">
-							{m["voice.card.customTag"]()}
-						</span>
-					)}
+					) : null}
 				</div>
 				<Button
 					type="button"

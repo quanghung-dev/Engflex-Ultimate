@@ -46,11 +46,7 @@ export function ScenarioCard({
 							</span>
 						</span>
 					</>
-				) : (
-					<span className="chip px-2 py-0.5 text-[11px]">
-						{m["voice.card.customTag"]()}
-					</span>
-				)}
+				) : null}
 				<span className="ml-auto shrink-0">
 					<CefrBadge value={scenario.cefrLevel} />
 				</span>

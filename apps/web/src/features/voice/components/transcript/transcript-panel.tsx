@@ -266,7 +266,7 @@ function TranscriptPanelView({
 												)}
 												{showAnalyze && (
 													<TurnFeedbackPanel
-														feedback={persistedTurn.feedback ?? undefined}
+														feedback={persistedTurn.feedback?.payload}
 														utterance={group.text}
 														pending={analyzePending}
 														failed={analyzeFailed}

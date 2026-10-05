@@ -19,7 +19,7 @@ import {
 } from "#/features/lessons/fixtures";
 import { lessonsStore } from "#/features/lessons/store";
 import { ScenarioCard } from "#/features/voice/components/scenarios/scenario-card";
-import { useScenarios, useTopicsWithPreview } from "#/features/voice/queries";
+import { useTopicsWithPreview } from "#/features/voice/queries";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/voice/scenarios/")({
@@ -54,6 +54,9 @@ function ScenariosPage() {
 		difficulty: difficulty === "all" ? undefined : difficulty,
 		search: deferredSearch || undefined,
 	});
+	// Banners arrive nested — each topic carries its own top-k scenarios — so the
+	// page renders what it got. A topic with no matching scenario keeps an
+	// empty `scenarios`, which is why the filter chips never disappear.
 	const topics = topicsQuery.data ?? [];
 	// Catalog failure is terminal (no retry by query design): say so once
 	// and leave the filters usable instead of spinning.
@@ -63,11 +66,6 @@ function ScenariosPage() {
 			toast.error(m["voice.scenarios.topicsFailed"]());
 		}
 	}, [topicsFailed]);
-	// Existing custom rows (if any) come from the API; the grouped endpoint
-	// excludes the custom bucket, so this second query stays.
-	const customQuery = useScenarios({ scope: "custom" });
-	const customScenarios = customQuery.data?.items ?? [];
-
 	const lessonState = useStore(lessonsStore);
 	const activeSlot = (() => {
 		for (const [lessonId, meta] of Object.entries(LESSON_META)) {
@@ -92,18 +90,10 @@ function ScenariosPage() {
 		(topicEntry) => topic === "all" || topicEntry.id === topic,
 	);
 
-	const visibleCustom = customScenarios.filter((scenario: Scenario) => {
-		if (difficulty !== "all" && scenario.cefrLevel !== difficulty) return false;
-		if (deferredSearch) {
-			const haystack = `${scenario.title} ${scenario.objective}`.toLowerCase();
-			if (!haystack.includes(deferredSearch.toLowerCase())) return false;
-		}
-		return true;
-	});
-
-	const totalVisible =
-		visibleTopics.reduce((sum, entry) => sum + entry.scenarios.length, 0) +
-		visibleCustom.length;
+	const totalVisible = visibleTopics.reduce(
+		(sum, entry) => sum + entry.scenarios.length,
+		0,
+	);
 
 	function openDetail(scenarioId: string) {
 		void navigate({
@@ -254,25 +244,6 @@ function ScenariosPage() {
 					</div>
 				</section>
 			))}
-
-			{visibleCustom.length > 0 ? (
-				<section className="flex flex-col gap-3">
-					<h2 className="text-lg font-bold text-foreground">
-						{m["voice.custom.section"]()}
-					</h2>
-					<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-						{visibleCustom.map((scenario) => (
-							<ScenarioCard
-								key={scenario.id}
-								scenario={scenario}
-								onStart={() => {
-									void openDetail(scenario.id);
-								}}
-							/>
-						))}
-					</div>
-				</section>
-			) : null}
 		</PageLayout>
 	);
 }

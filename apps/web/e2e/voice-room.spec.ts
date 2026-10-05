@@ -104,7 +104,9 @@ test("analyze: engine-down error, then seeded feedback card", async ({
 				occurrence: 1,
 				status: "incorrect",
 				correction: "went",
-				reason: "Use the past tense for yesterday.",
+				// Distinct from tip on purpose: identical strings render two
+				// nodes and make this assertion ambiguous under strict mode.
+				reason: "Simple past is required for a finished time.",
 			},
 		],
 		relevance: { status: "relevant", reason: null },

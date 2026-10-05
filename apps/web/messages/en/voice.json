@@ -167,9 +167,6 @@
       "count": "{count} scenarios",
       "topicsFailed": "Could not load scenarios. Please try again later."
     },
-    "custom": {
-      "section": "Custom"
-    },
     "detail": {
       "back": "Back to scenarios",
       "loading": "Loading scenario…",
@@ -195,7 +192,6 @@
       }
     },
     "card": {
-      "customTag": "Custom scenario",
       "partner": "Partner: {role}",
       "maxSession": "Max {max} min session",
       "start": "Start practice"

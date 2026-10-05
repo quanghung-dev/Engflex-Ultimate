@@ -4,10 +4,8 @@
 // source: pagination.go
 
 /**
- * ListScenarios pages the scenario catalog. Scope selects built-in rows
- * (user_id IS NULL) or the caller's own custom rows.
+ * ListScenarios pages the scenario catalog, optionally topic-filtered.
  */
 export interface ListScenarios extends ListParams {
   topicId?: string;
-  scope: string;
 }

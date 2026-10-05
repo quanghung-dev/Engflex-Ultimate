@@ -38,7 +38,7 @@ function PersistedTranscriptView({
 		accessory:
 			turn.role === "user" ? (
 				<TurnFeedbackPanel
-					feedback={turn.feedback ?? undefined}
+					feedback={turn.feedback?.payload}
 					utterance={turn.text}
 					pending={analyzePending}
 					failed={analyzeFailed}

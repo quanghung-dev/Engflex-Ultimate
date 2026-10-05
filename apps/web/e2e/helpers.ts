@@ -2,7 +2,7 @@ import { createClerkClient } from "@clerk/backend";
 import type { Conversation, TurnFeedback } from "@engflex/contracts";
 import { Pool } from "pg";
 
-const API_BASE = `http://localhost:${process.env.E2E_API_PORT ?? 8000}`;
+const API_BASE = `http://localhost:${process.env.E2E_API_PORT ?? 8001}`;
 
 function mustEnv(name: string): string {
 	const value = process.env[name];
@@ -144,7 +144,7 @@ export async function dbSeedFeedback(
 export async function dbDeleteConversation(id: string): Promise<void> {
 	// turns cascade; feedback rows are subject-keyed, delete explicitly
 	await db().query(
-		"DELETE FROM feedbacks WHERE subject_type = 'conversation_turn' AND subject_id IN (SELECT id::text FROM conversation_turns WHERE conversation_id = $1)",
+		"DELETE FROM feedbacks WHERE subject_type = 'conversation_turn' AND subject_id IN (SELECT id FROM conversation_turns WHERE conversation_id = $1)",
 		[id],
 	);
 	await db().query("DELETE FROM conversations WHERE id = $1", [id]);
@@ -183,7 +183,7 @@ export async function dbLearnerTurns(conversationId: string): Promise<
 		`SELECT t.id, t.position, t.role, t.text, f.payload
 		 FROM conversation_turns t
 		 LEFT JOIN feedbacks f
-		   ON f.subject_type = 'conversation_turn' AND f.subject_id = t.id::text
+		   ON f.subject_type = 'conversation_turn' AND f.subject_id = t.id
 		 WHERE t.conversation_id = $1 AND t.role = 'user'
 		 ORDER BY t.position`,
 		[conversationId],

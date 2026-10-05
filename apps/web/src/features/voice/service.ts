@@ -1,14 +1,14 @@
 import type {
 	Conversation,
 	ConversationSession,
+	Feedback,
 	Pagination,
 	Persona,
 	Scenario,
-	TopicWithPreviews,
+	ScenarioTopic,
 	StartConversation,
 	TranscribeResult,
 	TranscriptResult,
-	TurnFeedback,
 } from "@engflex/contracts";
 import { API_ROUTES } from "#/app/api-routes";
 import { api, apiPage } from "#/lib/api";
@@ -48,8 +48,8 @@ export type { Conversation, ConversationSession };
 export function analyzeTurn(
 	conversationId: string,
 	position: number,
-): Promise<TurnFeedback> {
-	return api<TurnFeedback>(
+): Promise<Feedback> {
+	return api<Feedback>(
 		API_ROUTES.CONVERSATIONS.ANALYZE_TURN(conversationId, position),
 		{ method: "POST" },
 		{ withCredentials: true },
@@ -93,11 +93,9 @@ export function transcribeAudio(
 
 export function listScenarios(params?: {
 	topicId?: string;
-	scope?: "all" | "custom";
 }): Promise<{ items: Scenario[]; pagination: Pagination }> {
 	const query: Record<string, string> = {};
 	if (params?.topicId) query.topicId = params.topicId;
-	if (params?.scope) query.scope = params.scope;
 	return apiPage<Scenario>(
 		API_ROUTES.SCENARIOS.LIST,
 		{ method: "GET" },
@@ -105,16 +103,18 @@ export function listScenarios(params?: {
 	);
 }
 
+/** Every topic in position order, each carrying up to `previewK` eligible
+ * scenarios with their partner persona — one banner per topic. */
 export function listTopicsWithPreview(params?: {
 	previewK?: number;
 	difficulty?: string;
 	search?: string;
-}): Promise<TopicWithPreviews[]> {
+}): Promise<ScenarioTopic[]> {
 	const query: Record<string, string> = {};
 	query.previewK = String(params?.previewK ?? 3);
 	if (params?.difficulty) query.difficulty = params.difficulty;
 	if (params?.search?.trim()) query.search = params.search.trim();
-	return api<TopicWithPreviews[]>(
+	return api<ScenarioTopic[]>(
 		API_ROUTES.SCENARIOS.TOPICS,
 		{ method: "GET" },
 		{ withCredentials: true, query },

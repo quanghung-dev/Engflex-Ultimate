@@ -1,11 +1,14 @@
 /**
- * Prepare the e2e database before the Go API boots.
+ * Prepare the database the Go API boots against, before it boots.
  *
  * Runs as the first half of the API's `webServer.command`
  * (`node e2e/ensure-e2e-db.mjs && go run ./cmd/server`) because Playwright
  * starts webServers *before* any setup hook — a globalSetup module or a setup
  * test project both run too late, and the API refuses to boot without its
- * database. Idempotent: existing database is kept, migrations are no-ops.
+ * database. Idempotent: `CREATE DATABASE` is skipped when it already exists
+ * (42P04) and migrations are no-ops for an up-to-date database, so pointing
+ * DATABASE_URL at the dev database is safe — the dev server's own `.env`
+ * never wins because the config passes DB_* through the real environment.
  *
  * Kept as a script rather than a TS module so it can run standalone, with cwd
  * anywhere: `pg` resolves from apps/web/node_modules, and `make` runs in
@@ -36,7 +39,8 @@ try {
 	await admin.end();
 }
 
-// Real env wins over apps/api/.env, so this migrates the e2e database.
+// Real env wins over apps/api/.env (godotenv never overwrites), so this
+// migrates the database DATABASE_URL names.
 execFileSync("make", ["migration-up"], {
 	cwd: path.join(import.meta.dirname, "../../api"),
 	env: { ...process.env },

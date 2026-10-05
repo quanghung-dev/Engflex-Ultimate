@@ -1,5 +1,8 @@
 # engflex-ultimate — Contributor Guide
 
+## NOTE
+- always ask or read real code if you have any confusion, DO NOT GUESSING.
+
 > Stack: Go + Gin + GORM (control plane), PostgreSQL, Clerk auth.
 > AI Voice (Python + Pipecat) is a separate stateless service, **uv-managed**
 > (`pyproject.toml` + `uv.lock` + `.python-version`; always `uv run`) — Go never
@@ -109,6 +112,35 @@ func (UserProfile) TableName() string { return "user_profiles" }
 - Arrays (`goals`, `skill_tags`, `topic`) as `pq.StringArray` / `text[]`.
 - `time.Time` → RFC3339 string in contracts.
 
+#### Relations: `->` for anything read-only
+
+A relation tag makes the field **writable**, and GORM will auto-save it. This is
+not a warning, it is what the tag asks for: `UpsertTurns` does
+`Create(&turns)`, so a turn carrying a populated `Feedback` silently INSERTs a
+duplicate `feedbacks` row — `err == nil`, nothing logged. Any read-then-write
+round-trip of a model does this. So pick the permission deliberately:
+
+| Tag | Joins | Auto-saves on write | Use for |
+| --- | --- | --- | --- |
+| `gorm:"foreignKey:X;references:Y"` | yes | **yes** | relations you genuinely own and write |
+| `gorm:"->;foreignKey:X;references:Y"` | yes | no | **read-mostly relations loaded by a join** |
+| `gorm:"-"` | **no** | no | never use on a field a query fills |
+| `gorm:"-:migration"` | yes | **yes** | never use to disable writes |
+
+`->` keeps `Creatable`/`Updatable` false and `Readable` true, so the field stays
+in `relationshipFields` (`schema.go:301` gates on
+`DataType == "" && GORMDataType == "" && (Creatable || Updatable || Readable)`),
+`Joins("Feedback")` still resolves, and `SelectAndOmitColumns` marks the relation
+excluded so `SaveBeforeAssociations` skips it. `-` clears all three permissions
+**and** `DataType`: the relation unregisters, the LEFT JOIN drops out of the SQL,
+and the query returns zero rows with no error. `-:migration` sets only
+`IgnoreMigration` — CRUD is untouched.
+
+Relations with no foreign key (the polymorphic `feedbacks.subject_id` pair) are
+declared in Go only; no migration. `models.ConversationTurn.Feedback` is the
+worked example, and `models/tests/turn_feedback_relation_test.go` pins all three
+properties from the parsed schema so the tag cannot be "simplified" back.
+
 ### Repository (DB access only, no HTTP, no business rules)
 
 Returns pointers: single `*Model`, list `[]*Model`. Never return values.
@@ -127,7 +159,101 @@ func NewAttemptRepository(db *gorm.DB) AttemptRepository
 - One method = one query. Aggregates (e.g. Progress over `attempts`) live in repos
   via query builder / `db.Raw()`, never string-built in services.
 - No joins in services; add a repo method instead.
+- **One repository per table, named for the model it returns.** The repo that
+  answers with turns is `ConversationTurnRepository`, even if its SQL joins
+  feedbacks; the scenario preview list is `ScenarioTopicRepository`, even
+  though its second query reads scenarios. The file is named for what comes
+  back, not for every table the SQL happens to touch.
+- **No custom struct in a repository.** A repo returns models — `*models.X`,
+  `[]*models.X` — never a query-only row shape. See "Never hand-build a query
+  result as a custom struct" below.
+- No in-memory join in a controller or service. If the page needs two tables,
+  that is one repo method with a `Joins`, not two calls plus a map-by-id loop.
 - All repo interfaces get mockery mocks in `repositories/mocks/`.
+
+#### Reading relations: `Joins`, and the four ways it bites
+
+`Joins("Relation")` is the read path — one round trip, and GORM fills the
+struct from the `Relation__*` column aliases it generates. `GetDetail`
+(`Joins("Topic").Joins("Persona")`) is the pattern. `Preload` is the other
+option and buys nothing here: it is a second query.
+
+1. **`Joins("Relation", conds...)` silently drops the conds.** They never reach
+   the generated SQL. Put relation filters in `Where` instead.
+2. **A `Where` on the joined table must use the join ALIAS, quoted.**
+   `Joins("Feedback")` aliases the table as `"Feedback"`, and that alias shadows
+   the bare name — `Where("feedbacks.subject_type = ?")` fails with SQLSTATE
+   42P01 `invalid reference to FROM-clause entry`. Write
+   `"Feedback".subject_type`.
+3. **Filters must be NULL-tolerant on a LEFT JOIN.** A bare `= ?` deletes every
+   row that has no match, because `NULL = 'x'` is never true. Use
+   `"Feedback".subject_type IS NULL OR "Feedback".subject_type = ?`, or the
+   missing rows vanish from the result entirely.
+4. **Column types must match across the join.** GORM emits
+   `ON parent.pk = child.fk` as a bare `clause.Eq{Column, Column}` — no cast, no
+   hook to add one. `uuid = text` is a runtime SQLSTATE 42883, so a text-typed
+   polymorphic key cannot be joined to a uuid parent. Fix the column type; do not
+   reach for a cast.
+
+A NULL join row yields a **nil** pointer, never a zero-valued struct — that is
+what makes "no coaching yet" expressible as `turn.Feedback == nil`.
+
+Two GORM behaviours worth knowing before you design a query around them: a
+has-many `Joins` **panics** in `scanIntoStruct` (use two queries, or group in Go
+from two constant queries), and `Preload` cannot limit rows per parent.
+
+#### Never hand-build a query result as a custom struct
+
+The anti-pattern this codebase has already paid for twice. Both times the repo
+declared a bespoke row struct, `db.Raw`/`db.Joins`d into it, and the service or
+controller reassembled the model by hand:
+
+```go
+// NEVER: a repo-only shape, then Go code to rebuild the model from it
+type topicPreviewRow struct { ... }              // repo struct, not a model
+var rows []topicPreviewRow
+... then in the controller: build []*ScenarioTopic by hand, one loop
+```
+
+```go
+// NEVER: two queries plus an in-memory join in a controller
+turns, _ := repo.ListTurns(ctx, id)
+feedbacks, _ := repo.ListForSubjects(ctx, userID, subjectType, ids)
+dto.Turns = attachFeedback(turns, feedbacks)     // maps by subject id in a loop
+```
+
+Both discard the model's type for a shape that only that query needs, and both
+push relationship logic into the layer that must not have it. Do this instead:
+
+- Return **`[]*models.X`** from the repository, with relations attached, and let
+  `utils.MapSlice` copy the whole graph in one call.
+- When a relation needs no foreign key, declare it in Go on the model
+  (`gorm:"->;foreignKey:SubjectID;references:ID"`) and let one `Joins` fill it.
+- When a query genuinely cannot be expressed as a model (a window function, a
+  CTE), it is the **only** raw SQL in the repo, it returns a model pointer, and
+  the result is grouped in Go from constant queries — never a custom struct, and
+  never a per-row hand-built model. `rankedIDs` in `scenario_repository.go` is
+  the worked example.
+
+One round trip beats two, but not at the price of the model's identity.
+
+#### Verify the SQL against a real database, not the string
+
+Asserting the emitted SQL string with sqlmock is necessary and **not
+sufficient** — the string was byte-for-byte what the plan expected while the
+query failed at runtime three separate ways:
+
+| Failure | sqlmock said | Postgres said |
+| --- | --- | --- |
+| `uuid = text` (42883) | correct | error |
+| `"Feedback"` alias unresolvable (42P01) | guard present | error |
+| subject guard deleted the feedback-less row | guard present | 0 turns |
+
+The first two are invisible in the string; the third is invisible until you look
+at row counts. So: check the SQL string *and* run the query against the real
+database and read the rows. Use a uuid for any id column in a fixture — a
+placeholder like `"c1"` fails validation before reaching SQL, which hides
+everything.
 
 ### Service (business logic, returns *Model / []*Model + error)
 
@@ -190,6 +316,8 @@ func (h *Ctl) Create(c *gin.Context) {
 - DTOs mirror the model structure, nested the same way; fields a view
   doesn't need are removed, never flattened. Same names on both sides
   (`ScenarioDetail`, not `ScenarioDetails`) so the mirror is grep-visible.
+- **The DTO adapts to the model and repository function, never the reverse.** Do
+  not reshape a model or bend a repository signature to fit a DTO.
 - One `utils.Map`/`MapSlice` call per mapping — no loops, no manual field
   lines, no per-call options. DeepCopy is the util default and descends
   into nested structs (proven), so a same-shaped DTO maps whole.
@@ -198,6 +326,23 @@ func (h *Ctl) Create(c *gin.Context) {
   (`MaxDuration int \`json:"maxDuration"\``).
 - Cross-package types in DTOs break tygo (per-package resolution): wire
   copies stay in the DTO package with identical field names.
+
+#### Never flatten a relation into its parent DTO
+
+A flattened field cannot be filled by copier, and copier **fails silently** —
+verified: mapping `*models.Feedback` into a flat `*responses.TurnFeedback`
+returns `err == nil` and yields `Corrected == ""` with zero spans. Green tests,
+empty panel, nothing in the logs.
+
+So nest, and drop only the columns the view does not render:
+
+```go
+type Turn struct { ... Feedback *Feedback `json:"feedback,omitempty"` }
+type Feedback struct { Payload TurnFeedback `json:"payload"` } // no UserID/SubjectType/SubjectID
+```
+
+The identity columns are relationship facts the join already proved; they do not
+cross the wire. `turn.feedback.tip` (flattened) is the shape to avoid.
 
 ### Response format (fixed envelope)
 
@@ -244,7 +389,7 @@ Assert with `require.ErrorAs(err, &appErr)` + check `.Status`.
 - Middleware: `RequestID()` honors/generates + echoes `X-Request-ID`;
   `RequireAuth()` stamps `userID` into gin ctx + log ctx;
   `RequestLogger()` writes one record per request
-  (`method,path,status,duration_ms,client_ip,size`), skips `/healthz` + `/swagger/`;
+  (`method,path,status,duration_ms,client_ip,size`), skips `/health` + `/swagger/`;
   `Recovery()` logs panic + stack via `slog.ErrorContext`, returns `common.Internal()`.
 - Tests: `logger.NewWithWriter(buf, level, format)` for buffer assertions
   (no ANSI in buffers, JSON fields, `Report` level mapping).
@@ -359,7 +504,7 @@ Assert with `require.ErrorAs(err, &appErr)` + check `.Status`.
 | Vet/fmt | `go vet ./...`, `gofmt -l internal/` (must be empty) |
 | Mocks | `make mocks` |
 | Contracts | `make contracts` |
-| Migrations | goose SQL is the **only** schema mechanism — never auto-apply from models. New: `make migration-create name=...`; apply/rollback: `make migration-up` / `migration-down` (`DATABASE_URL`). While a schema area is **unfrozen** (pre-deploy), edit existing migrations in place; create new ones only after it is deployed |
+| Migrations | goose SQL is the **only** schema mechanism — never auto-apply from models. **One migration per table**, named `create_<table>` and ordered so parents precede children (goose orders by version; the creation order IS the apply order). New: `make migration-create name=...`; apply/rollback: `make migration-up` / `migration-down` (`DATABASE_URL`). New tables do not get repositories until a module reads them: the interface arrives with the caller, not before. **This project is pre-deploy: edit the existing migration in place and re-run it (`make migration-down` then `make migration-up`) rather than adding a corrective one.** A `goose_db_version` row only means "applied to some local database", not "released" — there is no environment whose schema you may not rewrite. Do not gate a schema fix on a "frozen"/"deployed" distinction, and do not offer a new migration as the safer option: the databases here are disposable dev copies, the seed data is re-derivable, and splitting one logical change across two files leaves the history lying about the shape of the schema |
 | Swagger | `make swagger` (`swag init -g cmd/server/main.go`) |
 
 <!-- gitnexus:start -->

@@ -126,7 +126,7 @@ export function defineLiveConfig({
 				// start before every setup hook — so create/migrate it here.
 				command: `node ${ENSURE_E2E_DB} && go run ./cmd/server`,
 				cwd: "../api",
-				url: `http://localhost:${API_PORT}/healthz`,
+				url: `http://localhost:${API_PORT}/health`,
 				reuseExistingServer: false,
 				timeout: 60_000,
 				env: {

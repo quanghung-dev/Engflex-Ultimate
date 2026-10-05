@@ -56,23 +56,16 @@ export interface DetailOpening {
   text: string;
 }
 /**
- * ScenarioTopic mirrors models.ScenarioTopic field for field.
+ * ScenarioTopic mirrors models.ScenarioTopic: the banner taxonomy plus the
+ * top-k scenarios the repository attached. utils.MapSlice copies the whole
+ * banner — nested scenarios, their personas, and their detail documents — in
+ * one call, because every nested type mirrors its model by field name.
  */
 export interface ScenarioTopic {
   id: string;
   slug: string;
   name: string;
   shortName: string;
-  position: number /* int */;
-}
-/**
- * TopicWithPreviews is one browser banner: a topic with its top-k
- * scenario previews.
- */
-export interface TopicWithPreviews {
-  id: string;
-  slug: string;
-  name: string;
   position: number /* int */;
   scenarios: Scenario[];
 }

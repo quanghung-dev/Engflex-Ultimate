@@ -44,33 +44,35 @@ const PREVIEW_TURNS: Turn[] = [
 		text: "I didn't went to the beach yesterday. I really like seafood.",
 		wasInterrupted: false,
 		feedback: {
-			corrected: "I didn't go to the beach yesterday. I really like seafood.",
-			spans: [
-				{
-					text: "didn't went",
-					occurrence: 1,
-					status: "incorrect",
-					correction: "didn't go",
-					reason: "Use the base form after did or didn't.",
-				},
-			],
-			relevance: {
-				status: "partially_relevant",
-				reason:
-					"The first sentence answers the question, but the second shifts to a different topic.",
-			},
-			alternatives: {
-				language: {
-					text: "I spent yesterday at the beach.",
-					reason: "More natural phrasing of the same meaning.",
-				},
-				contextual: {
-					text: "I went to the beach yesterday and had some great seafood.",
+			payload: {
+				corrected: "I didn't go to the beach yesterday. I really like seafood.",
+				spans: [
+					{
+						text: "didn't went",
+						occurrence: 1,
+						status: "incorrect",
+						correction: "didn't go",
+						reason: "Use the base form after did or didn't.",
+					},
+				],
+				relevance: {
+					status: "partially_relevant",
 					reason:
-						"Answers the question, fixes the grammar, and connects the detail.",
+						"The first sentence answers the question, but the second shifts to a different topic.",
 				},
+				alternatives: {
+					language: {
+						text: "I spent yesterday at the beach.",
+						reason: "More natural phrasing of the same meaning.",
+					},
+					contextual: {
+						text: "I went to the beach yesterday and had some great seafood.",
+						reason:
+							"Answers the question, fixes the grammar, and connects the detail.",
+					},
+				},
+				tip: "Use the base form of the verb after did or didn't.",
 			},
-			tip: "Use the base form of the verb after did or didn't.",
 		},
 		createdAt: now,
 	},
@@ -89,25 +91,27 @@ const PREVIEW_TURNS: Turn[] = [
 		text: "We shipped on time, but I struggled to explain the delay in the API migration.",
 		wasInterrupted: false,
 		feedback: {
-			corrected: "We shipped on time, but I struggled to explain the delay.",
-			spans: [
-				{
-					text: "struggled to explain",
-					occurrence: 1,
-					status: "awkward",
-					correction: "had trouble explaining",
-					reason: "More natural verb choice.",
+			payload: {
+				corrected: "We shipped on time, but I struggled to explain the delay.",
+				spans: [
+					{
+						text: "struggled to explain",
+						occurrence: 1,
+						status: "awkward",
+						correction: "had trouble explaining",
+						reason: "More natural verb choice.",
+					},
+				],
+				relevance: { status: "relevant", reason: undefined },
+				alternatives: {
+					language: {
+						text: "We shipped on time, but justifying the delay was difficult.",
+						reason: "Leads with the outcome.",
+					},
+					contextual: undefined,
 				},
-			],
-			relevance: { status: "relevant", reason: undefined },
-			alternatives: {
-				language: {
-					text: "We shipped on time, but justifying the delay was difficult.",
-					reason: "Leads with the outcome.",
-				},
-				contextual: undefined,
+				tip: "Lead with the impact, then the cause.",
 			},
-			tip: "Lead with the impact, then the cause.",
 		},
 		createdAt: now,
 	},
@@ -126,20 +130,22 @@ const PREVIEW_TURNS: Turn[] = [
 		text: "My favorite movie is Interstellar.",
 		wasInterrupted: false,
 		feedback: {
-			corrected: "My favorite movie is Interstellar.",
-			spans: [],
-			relevance: {
-				status: "off_topic",
-				reason: "This does not answer the question about swimming.",
-			},
-			alternatives: {
-				language: undefined,
-				contextual: {
-					text: "No, I just watched Interstellar at the hotel instead.",
-					reason: "Answers the question while keeping your idea.",
+			payload: {
+				corrected: "My favorite movie is Interstellar.",
+				spans: [],
+				relevance: {
+					status: "off_topic",
+					reason: "This does not answer the question about swimming.",
 				},
+				alternatives: {
+					language: undefined,
+					contextual: {
+						text: "No, I just watched Interstellar at the hotel instead.",
+						reason: "Answers the question while keeping your idea.",
+					},
+				},
+				tip: "Answer the main question directly before adding unrelated information.",
 			},
-			tip: "Answer the main question directly before adding unrelated information.",
 		},
 		createdAt: now,
 	},
@@ -158,11 +164,13 @@ const PREVIEW_TURNS: Turn[] = [
 		text: "I went home and rested.",
 		wasInterrupted: false,
 		feedback: {
-			corrected: "I went home and rested.",
-			spans: [],
-			relevance: { status: "relevant", reason: undefined },
-			alternatives: { language: undefined, contextual: undefined },
-			tip: "Clean and direct — keep it up.",
+			payload: {
+				corrected: "I went home and rested.",
+				spans: [],
+				relevance: { status: "relevant", reason: undefined },
+				alternatives: { language: undefined, contextual: undefined },
+				tip: "Clean and direct — keep it up.",
+			},
 		},
 		createdAt: now,
 	},

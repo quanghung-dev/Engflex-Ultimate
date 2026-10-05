@@ -67,16 +67,9 @@ export const scenarioKeys = {
 	topic: (topicId: string) => ["scenarios", topicId] as const,
 };
 
-export function useScenarios(params?: {
-	topicId?: string;
-	scope?: "all" | "custom";
-}) {
+export function useScenarios(params?: { topicId?: string }) {
 	return useQuery({
-		queryKey: [
-			...scenarioKeys.all,
-			params?.topicId ?? "all",
-			params?.scope ?? "all",
-		],
+		queryKey: [...scenarioKeys.all, params?.topicId ?? "all"],
 		queryFn: () => listScenarios(params),
 	});
 }

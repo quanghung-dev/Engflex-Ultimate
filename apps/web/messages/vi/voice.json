@@ -167,9 +167,6 @@
       "count": "{count} tình huống",
       "topicsFailed": "Không tải được danh sách tình huống. Hãy thử lại sau."
     },
-    "custom": {
-      "section": "Tùy chỉnh"
-    },
     "detail": {
       "back": "Về danh sách tình huống",
       "loading": "Đang tải tình huống…",
@@ -195,7 +192,6 @@
       }
     },
     "card": {
-      "customTag": "Tình huống tùy chỉnh",
       "partner": "Đối tác: {role}",
       "maxSession": "Tối đa {max} phút",
       "start": "Bắt đầu luyện"
