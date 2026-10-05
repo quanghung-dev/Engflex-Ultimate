@@ -22,8 +22,8 @@ func newTranscriptService(t *testing.T) (*services.ConversationService, *repomoc
 	t.Helper()
 	repo := repomocks.NewMockConversationRepository(t)
 	voice := svcmocks.NewMockVoiceClient(t)
-	svc := services.NewConversationService(repo, voice, 300, repomocks.NewMockFeedbackRepository(t),
-		repomocks.NewMockScenarioRepository(t), repomocks.NewMockPersonaRepository(t))
+	svc := services.NewConversationService(repo, repomocks.NewMockConversationTurnRepository(t), voice, 300,
+		repomocks.NewMockFeedbackRepository(t), repomocks.NewMockScenarioRepository(t), repomocks.NewMockPersonaRepository(t))
 	return svc, repo, voice
 }
 

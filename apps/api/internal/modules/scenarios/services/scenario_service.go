@@ -14,16 +14,17 @@ import (
 // ScenarioService owns scenario browsing.
 type ScenarioService struct {
 	scenarios repositories.ScenarioRepository
+	topics    repositories.ScenarioTopicRepository
 }
 
-// NewScenarioService builds the service over the repository interface.
-func NewScenarioService(scenarios repositories.ScenarioRepository) *ScenarioService {
-	return &ScenarioService{scenarios: scenarios}
+// NewScenarioService builds the service over the repository interfaces.
+func NewScenarioService(scenarios repositories.ScenarioRepository, topics repositories.ScenarioTopicRepository) *ScenarioService {
+	return &ScenarioService{scenarios: scenarios, topics: topics}
 }
 
-// List pages built-in scenarios (optionally topic-filtered) or the caller's
-// own custom rows, per Scope.
-func (s *ScenarioService) List(ctx context.Context, userID string, req requests.ListScenarios) ([]*models.Scenario, int64, error) {
+// List pages catalog scenarios, optionally topic-filtered. Every row is a
+// seeded catalog entry, so the caller's identity never narrows the result.
+func (s *ScenarioService) List(ctx context.Context, req requests.ListScenarios) ([]*models.Scenario, int64, error) {
 	page, pageSize := req.Page, req.PageSize
 	if page < 1 {
 		page = common.DefaultPage
@@ -32,22 +33,6 @@ func (s *ScenarioService) List(ctx context.Context, userID string, req requests.
 		pageSize = common.DefaultPageSize
 	}
 	offset := utils.Offset(page, pageSize)
-
-	if req.Scope == "custom" {
-		items, err := s.scenarios.ListForUser(ctx, userID, pageSize, offset)
-		if err != nil {
-			appErr := common.FromDBError(err, "scenario")
-			logger.Report(ctx, "list custom scenarios failed", appErr, "userID", userID)
-			return nil, 0, appErr
-		}
-		total, err := s.scenarios.CountForUser(ctx, userID)
-		if err != nil {
-			appErr := common.FromDBError(err, "scenario")
-			logger.Report(ctx, "count custom scenarios failed", appErr, "userID", userID)
-			return nil, 0, appErr
-		}
-		return items, total, nil
-	}
 
 	items, err := s.scenarios.List(ctx, req.TopicID, pageSize, offset)
 	if err != nil {
@@ -64,23 +49,23 @@ func (s *ScenarioService) List(ctx context.Context, userID string, req requests.
 	return items, total, nil
 }
 
-// ListTopicsWithPreview returns banner rows with top-k previews. previewK
-// is clamped (default 3, max 6): the browser is preview-only, full
-// paging stays on List.
-func (s *ScenarioService) ListTopicsWithPreview(ctx context.Context, previewK int, difficulty *string, search string) ([]repositories.TopicWithPreview, error) {
+// ListTopicsWithPreview returns every topic with up to previewK scenarios
+// attached. previewK is clamped (default 3, max 6): the browser is
+// preview-only, full paging stays on List.
+func (s *ScenarioService) ListTopicsWithPreview(ctx context.Context, previewK int, difficulty *string, search string) ([]*models.ScenarioTopic, error) {
 	if previewK < 1 {
 		previewK = 3
 	}
 	if previewK > 6 {
 		previewK = 6
 	}
-	topics, err := s.scenarios.ListTopicsWithPreview(ctx, previewK, difficulty, search)
+	out, err := s.topics.ListWithPreview(ctx, previewK, difficulty, search)
 	if err != nil {
 		appErr := common.FromDBError(err, "scenario topic")
 		logger.Report(ctx, "list topics with preview failed", appErr)
 		return nil, appErr
 	}
-	return topics, nil
+	return out, nil
 }
 
 // GetDetail returns the scenario with its topic and partner persona for

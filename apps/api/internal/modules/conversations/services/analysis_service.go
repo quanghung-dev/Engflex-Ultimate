@@ -6,51 +6,45 @@ import (
 	"encoding/json"
 	"log/slog"
 
-	"gorm.io/datatypes"
-
 	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/logger"
-	"engflex-api/internal/modules/conversations/dtos/responses"
 )
 
 // analysisContextTurns is how many prior lines the engine sees: enough for
 // coherence, cheap enough to stay inside the caller's 60s budget.
 const analysisContextTurns = 5
 
-// NormalizeLanguageFeedback validates the engine payload and fills the
-// arrays the UI iterates. The engine already validated with pydantic; this
-// is the last gate before the database. Exported so the service's external
-// test package can reach it.
-func NormalizeLanguageFeedback(raw json.RawMessage) (datatypes.JSON, error) {
+// NormalizeLanguageFeedback validates the engine payload and returns it as
+// the stored document. The engine already validated with pydantic; this is
+// the last gate before the database, and the only place that guarantees the
+// arrays the UI iterates are non-null (the panel maps them directly). Exported
+// so the service's external test package can reach it.
+func NormalizeLanguageFeedback(raw json.RawMessage) (models.TurnFeedback, error) {
 	var present map[string]json.RawMessage
 	if err := json.Unmarshal(raw, &present); err != nil {
-		return nil, err
+		return models.TurnFeedback{}, err
 	}
 	// All five keys must be present: the engine contract guarantees them, so
 	// a missing key means validation was bypassed or the shape drifted.
 	for _, key := range []string{"corrected", "spans", "relevance", "alternatives", "tip"} {
 		if _, ok := present[key]; !ok {
-			return nil, common.BadRequest("feedback is missing " + key)
+			return models.TurnFeedback{}, common.BadRequest("feedback is missing " + key)
 		}
 	}
-	var fb responses.TurnFeedback
+	var fb models.TurnFeedback
 	if err := json.Unmarshal(raw, &fb); err != nil {
-		return nil, err
+		return models.TurnFeedback{}, err
 	}
 	if fb.Corrected == "" || fb.Tip == "" {
 		// The two fields the UI cannot render without.
-		return nil, common.BadRequest("feedback is missing corrected or tip")
+		return models.TurnFeedback{}, common.BadRequest("feedback is missing corrected or tip")
 	}
 	if fb.Spans == nil {
-		fb.Spans = []responses.AnalysisSpan{}
+		fb.Spans = []models.AnalysisSpan{}
 	}
-	out, err := json.Marshal(fb)
-	if err != nil {
-		return nil, err
-	}
-	return datatypes.JSON(out), nil
+	return fb, nil
 }
 
 // BuildAnalyzeRequest assembles the engine payload for one turn: the text
@@ -58,7 +52,7 @@ func NormalizeLanguageFeedback(raw json.RawMessage) (datatypes.JSON, error) {
 // already expresses the topic, and "is this correct English" does not vary
 // by level.
 func (s *ConversationService) BuildAnalyzeRequest(ctx context.Context, conversationID string, position int) (AnalyzeTurnRequest, error) {
-	turn, err := s.conversations.GetTurnByPosition(ctx, conversationID, position)
+	turn, err := s.turns.GetTurnByPosition(ctx, conversationID, position)
 	if err != nil {
 		appErr := common.FromDBError(err, "conversation turn")
 		logger.Report(ctx, "analyze turn lookup failed", appErr, "conversationID", conversationID, "position", position)
@@ -67,7 +61,7 @@ func (s *ConversationService) BuildAnalyzeRequest(ctx context.Context, conversat
 	if turn.Role != enums.TurnRoleUser {
 		return AnalyzeTurnRequest{}, common.BadRequest("only learner turns can be analyzed")
 	}
-	all, err := s.conversations.ListTurns(ctx, conversationID)
+	all, err := s.turns.ListTurns(ctx, conversationID)
 	if err != nil {
 		appErr := common.FromDBError(err, "conversation turn")
 		logger.Report(ctx, "analyze turn context failed", appErr, "conversationID", conversationID)
@@ -101,7 +95,12 @@ func (s *ConversationService) AnalyzeTurn(ctx context.Context, userID, conversat
 	}
 	payload, err := NormalizeLanguageFeedback(res.Feedback)
 	if err != nil {
-		logger.Report(ctx, "analyze turn feedback rejected", common.ServiceUnavailable("analysis unavailable"), "conversationID", conversationID, "position", position)
+		// A shape drift from the engine is not an outage. The caller can act
+		// on neither answer, so the response stays 503 — but the log must say
+		// what actually happened, or an engine contract change reads as a
+		// voice-service outage for hours.
+		logger.Report(ctx, "analyze turn feedback rejected", common.ServiceUnavailable("analysis unavailable"),
+			"conversationID", conversationID, "position", position, "reason", err.Error())
 		return nil, common.ServiceUnavailable("analysis unavailable")
 	}
 
@@ -140,29 +139,29 @@ func priorTurns(all []*models.ConversationTurn, targetID string, limit int) []Co
 	return out
 }
 
-// GetWithFeedback returns the conversation with its turns and their feedback
-// as two queries, not a join in the service (repo rule: no joins here).
-func (s *ConversationService) GetWithFeedback(ctx context.Context, userID, id string) (*models.Conversation, []*models.ConversationTurn, []*models.Feedback, error) {
+// GetWithFeedback returns the conversation and its transcript, with each
+// turn's coaching record already attached by the repository join: one query,
+// no in-memory join here. A turn whose stored payload cannot be decoded comes
+// back with a nil Feedback, because an empty coaching panel is worse than no
+// panel.
+func (s *ConversationService) GetWithFeedback(ctx context.Context, userID, id string) (*models.Conversation, []*models.ConversationTurn, error) {
 	conv, err := s.getOwned(ctx, userID, id)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
-	turns, err := s.conversations.ListTurns(ctx, id)
+	turns, err := s.turns.ListTurnsWithFeedback(ctx, id)
 	if err != nil {
 		// A transcript read failure must not 404 the conversation.
 		appErr := common.FromDBError(err, "conversation turn")
 		logger.Report(ctx, "get conversation turns failed", appErr, "conversationID", id)
-		return conv, nil, nil, nil
+		return conv, nil, nil
 	}
-	ids := make([]string, 0, len(turns))
 	for _, turn := range turns {
-		ids = append(ids, turn.ID)
+		// NormalizeLanguageFeedback rejects an empty corrected string on
+		// write, so an empty one here means the stored blob is unreadable.
+		if turn.Feedback != nil && turn.Feedback.Payload.Corrected == "" {
+			turn.Feedback = nil
+		}
 	}
-	feedbacks, err := s.feedbacks.ListForSubjects(ctx, userID, string(enums.FeedbackSubjectConversationTurn), ids)
-	if err != nil {
-		appErr := common.FromDBError(err, "feedback")
-		logger.Report(ctx, "get conversation feedback failed", appErr, "conversationID", id)
-		return conv, turns, nil, nil
-	}
-	return conv, turns, feedbacks, nil
+	return conv, turns, nil
 }

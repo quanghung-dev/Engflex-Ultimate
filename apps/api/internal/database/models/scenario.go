@@ -2,15 +2,14 @@ package models
 
 import (
 	"database/sql/driver"
-	"encoding/json"
 	"time"
 
 	"engflex-api/internal/common/enums"
 )
 
-// Scenario is a roleplay practice card under a topic banner. A non-null
-// UserID marks a user's custom scenario; MaxDuration is the fixed session
-// cap in minutes; Details carries the rich detail-page content.
+// Scenario is a roleplay practice card under a topic banner. Every row is a
+// catalog entry: MaxDuration is the fixed session cap in minutes and Details
+// carries the rich detail-page content.
 //
 // Topic and Persona are belongs-to associations inferred from TopicID and
 // PersonaID by naming convention (no tags needed). They are nil unless
@@ -28,7 +27,6 @@ type Scenario struct {
 	Details     ScenarioDetail           `gorm:"type:jsonb;not null" json:"details"`
 	Topic       *ScenarioTopic           `json:"topic,omitempty"`
 	Persona     *Persona                 `json:"persona,omitempty"`
-	UserID      *string                  `json:"userId"`
 	CreatedAt   time.Time                `gorm:"autoCreateTime" json:"createdAt"`
 	UpdatedAt   time.Time                `gorm:"autoUpdateTime" json:"updatedAt"`
 }
@@ -56,33 +54,13 @@ type ScenarioDetail struct {
 // GormDataType pins the column type for migrations handled outside GORM.
 func (ScenarioDetail) GormDataType() string { return "jsonb" }
 
-// Value marshals the detail for writes; nil slices stay null-free via
-// json.Marshal defaults (nil slice encodes as null — callers treat a
-// missing blob the same as an empty one).
-func (d ScenarioDetail) Value() (driver.Value, error) {
-	return json.Marshal(d)
-}
+// Value marshals the detail for writes.
+func (d ScenarioDetail) Value() (driver.Value, error) { return jsonbValue(d) }
 
-// Scan decodes the column on reads. NULL or malformed JSON yields the zero
-// value so the detail page always renders instead of failing the query.
+// Scan decodes the column on reads. NULL, an empty blob, or malformed JSON
+// leaves the zero value, so the detail page always renders instead of failing
+// the query.
 func (d *ScenarioDetail) Scan(value any) error {
-	if value == nil {
-		return nil
-	}
-	var raw []byte
-	switch v := value.(type) {
-	case []byte:
-		raw = v
-	case string:
-		raw = []byte(v)
-	default:
-		return nil
-	}
-	if len(raw) == 0 {
-		return nil
-	}
-	if err := json.Unmarshal(raw, d); err != nil {
-		*d = ScenarioDetail{}
-	}
+	jsonbScan(value, d)
 	return nil
 }

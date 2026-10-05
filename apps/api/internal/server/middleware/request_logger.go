@@ -47,5 +47,5 @@ func RequestLogger() gin.HandlerFunc {
 }
 
 func shouldSkipRequestLog(path string) bool {
-	return path == "/healthz" || strings.HasPrefix(path, "/swagger/")
+	return path == "/health" || strings.HasPrefix(path, "/swagger/")
 }

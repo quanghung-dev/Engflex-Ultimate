@@ -11,7 +11,6 @@ import (
 
 	"engflex-api/internal/common"
 	"engflex-api/internal/database/models"
-	"engflex-api/internal/database/repositories"
 	repomocks "engflex-api/internal/database/repositories/mocks"
 	"engflex-api/internal/modules/scenarios/dtos/requests"
 	"engflex-api/internal/modules/scenarios/services"
@@ -62,18 +61,6 @@ func TestScenarioList(t *testing.T) {
 			wantTotal: 0,
 		},
 		{
-			name: "custom scenarios of one user only",
-			req: requests.ListScenarios{
-				ListParams: common.ListParams{Page: 2, PageSize: 10},
-				Scope:      "custom",
-			},
-			setup: func(repo *repomocks.MockScenarioRepository) {
-				repo.On("ListForUser", mock.Anything, "user_1", 10, 10).Return([]*models.Scenario{}, nil).Once()
-				repo.On("CountForUser", mock.Anything, "user_1").Return(int64(0), nil).Once()
-			},
-			wantTotal: 0,
-		},
-		{
 			name: "list failure maps to 500",
 			req:  requests.ListScenarios{ListParams: common.ListParams{Page: 1, PageSize: 20}},
 			setup: func(repo *repomocks.MockScenarioRepository) {
@@ -87,9 +74,9 @@ func TestScenarioList(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := repomocks.NewMockScenarioRepository(t)
 			tt.setup(repo)
-			svc := services.NewScenarioService(repo)
+			svc := services.NewScenarioService(repo, repomocks.NewMockScenarioTopicRepository(t))
 
-			items, total, err := svc.List(context.Background(), "user_1", tt.req)
+			items, total, err := svc.List(context.Background(), tt.req)
 
 			if tt.wantErr != 0 {
 				requireAppError(t, err, tt.wantErr)
@@ -109,49 +96,52 @@ func TestScenarioTopicsPreview(t *testing.T) {
 		previewK     int
 		difficulty   *string
 		search       string
-		setup        func(*repomocks.MockScenarioRepository)
+		setup        func(*repomocks.MockScenarioTopicRepository)
 		wantTopics   int
 		wantPreviews []int
+		wantShort    []string
 		wantErr      int
 	}{
 		{
-			name:     "zero k clamps to three and empty preview stays",
+			name:     "zero k clamps to three and banners carry topics with previews",
 			previewK: 0,
-			setup: func(repo *repomocks.MockScenarioRepository) {
-				repo.On("ListTopicsWithPreview", mock.Anything, 3, (*string)(nil), "").
-					Return([]repositories.TopicWithPreview{
+			setup: func(topics *repomocks.MockScenarioTopicRepository) {
+				topics.On("ListWithPreview", mock.Anything, 3, (*string)(nil), "").
+					Return([]*models.ScenarioTopic{
 						{
-							Topic: &models.ScenarioTopic{ID: "t1", Slug: "job-interviews", Name: "Topic 1", Position: 1},
+							ID: "t1", Slug: "job-interviews", ShortName: "Job interviews", Position: 1,
 							Scenarios: []*models.Scenario{
 								{ID: "s1", TopicID: "t1"},
 								{ID: "s2", TopicID: "t1"},
 							},
 						},
 						{
-							Topic: &models.ScenarioTopic{ID: "t2", Slug: "product-pitch", Name: "Topic 4", Position: 4},
+							ID: "t2", Slug: "product-pitch", ShortName: "Product pitch", Position: 4,
 						},
 					}, nil).Once()
 			},
 			wantTopics:   2,
 			wantPreviews: []int{2, 0},
+			wantShort:    []string{"Job interviews", "Product pitch"},
 		},
 		{
 			name:       "huge k clamps to six and passes filters through",
 			previewK:   999,
 			difficulty: &b2,
 			search:     "pitch",
-			setup: func(repo *repomocks.MockScenarioRepository) {
-				repo.On("ListTopicsWithPreview", mock.Anything, 6, &b2, "pitch").
-					Return([]repositories.TopicWithPreview{}, nil).Once()
+			setup: func(topics *repomocks.MockScenarioTopicRepository) {
+				topics.On("ListWithPreview", mock.Anything, 6, &b2, "pitch").
+					Return([]*models.ScenarioTopic{}, nil).Once()
 			},
 			wantTopics:   0,
 			wantPreviews: []int{},
+			wantShort:    []string{},
 		},
 		{
 			name:     "repo failure maps to 500",
 			previewK: 3,
-			setup: func(repo *repomocks.MockScenarioRepository) {
-				repo.On("ListTopicsWithPreview", mock.Anything, 3, (*string)(nil), "").
+			setup: func(topics *repomocks.MockScenarioTopicRepository) {
+				topics.On("ListWithPreview", mock.Anything, 3, (*string)(nil), "").
 					Return(nil, boomErr{}).Once()
 			},
 			wantErr: http.StatusInternalServerError,
@@ -160,9 +150,9 @@ func TestScenarioTopicsPreview(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			repo := repomocks.NewMockScenarioRepository(t)
-			tt.setup(repo)
-			svc := services.NewScenarioService(repo)
+			topics := repomocks.NewMockScenarioTopicRepository(t)
+			tt.setup(topics)
+			svc := services.NewScenarioService(repomocks.NewMockScenarioRepository(t), topics)
 
 			got, err := svc.ListTopicsWithPreview(context.Background(), tt.previewK, tt.difficulty, tt.search)
 
@@ -171,9 +161,10 @@ func TestScenarioTopicsPreview(t *testing.T) {
 				return
 			}
 			require.NoError(t, err)
-			assert.Len(t, got, tt.wantTopics)
-			for i, want := range tt.wantPreviews {
-				assert.Len(t, got[i].Scenarios, want)
+			require.Len(t, got, tt.wantTopics)
+			for i, topic := range got {
+				assert.Len(t, topic.Scenarios, tt.wantPreviews[i])
+				assert.Equal(t, tt.wantShort[i], topic.ShortName)
 			}
 		})
 	}
@@ -211,7 +202,7 @@ func TestScenarioGetByID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := repomocks.NewMockScenarioRepository(t)
 			tt.setup(repo)
-			svc := services.NewScenarioService(repo)
+			svc := services.NewScenarioService(repo, repomocks.NewMockScenarioTopicRepository(t))
 
 			got, err := svc.GetByID(context.Background(), tt.id)
 
@@ -274,7 +265,7 @@ func TestScenarioGetDetail(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := repomocks.NewMockScenarioRepository(t)
 			tt.setup(repo)
-			svc := services.NewScenarioService(repo)
+			svc := services.NewScenarioService(repo, repomocks.NewMockScenarioTopicRepository(t))
 
 			got, err := svc.GetDetail(context.Background(), tt.id)
 

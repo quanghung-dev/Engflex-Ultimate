@@ -14,7 +14,6 @@ import (
 // subject rather than accumulate rows.
 type FeedbackRepository interface {
 	Upsert(ctx context.Context, f *models.Feedback) error
-	ListForSubjects(ctx context.Context, userID, subjectType string, subjectIDs []string) ([]*models.Feedback, error)
 	WithTx(tx *gorm.DB) FeedbackRepository
 }
 
@@ -41,18 +40,4 @@ func (r *feedbackRepository) Upsert(ctx context.Context, f *models.Feedback) err
 			DoUpdates: clause.AssignmentColumns([]string{"payload", "user_id", "updated_at"}),
 		}).
 		Create(f).Error
-}
-
-func (r *feedbackRepository) ListForSubjects(ctx context.Context, userID, subjectType string, subjectIDs []string) ([]*models.Feedback, error) {
-	if len(subjectIDs) == 0 {
-		return nil, nil
-	}
-	var out []*models.Feedback
-	if err := r.db.WithContext(ctx).
-		Where("user_id = ? AND subject_type = ? AND subject_id IN ?", userID, subjectType, subjectIDs).
-		Order("created_at ASC").
-		Find(&out).Error; err != nil {
-		return nil, err
-	}
-	return out, nil
 }

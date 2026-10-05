@@ -22,7 +22,7 @@ import (
 // @securitydefinitions.apikey	BearerAuth
 // @in							header
 // @name						Authorization
-// @description				Clerk session token: "Bearer <token>"
+// @description				Clerk session token: "Bearer <token>". Paste any token into the Authorize dialog (remembered across reloads); apps/api/.env carries a long-lived SWAGGER_TESTING_JWT for manual curl calls.
 func main() {
 	// Load .env (when present) + environment into a typed config.
 	// Run from apps/api so the default ".env" resolves.

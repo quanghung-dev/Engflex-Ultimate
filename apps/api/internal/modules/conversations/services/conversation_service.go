@@ -23,6 +23,7 @@ var errEmptyAnswer = errors.New("voice engine returned an empty offer answer")
 // ConversationService owns the conversation lifecycle rules.
 type ConversationService struct {
 	conversations repositories.ConversationRepository
+	turns         repositories.ConversationTurnRepository
 	voice         VoiceClient
 	maxDuration   int
 	feedbacks     repositories.FeedbackRepository
@@ -31,8 +32,8 @@ type ConversationService struct {
 }
 
 // NewConversationService builds the service over repository + engine interfaces.
-func NewConversationService(conversations repositories.ConversationRepository, voice VoiceClient, maxDuration int, feedbacks repositories.FeedbackRepository, scenarios repositories.ScenarioRepository, personas repositories.PersonaRepository) *ConversationService {
-	return &ConversationService{conversations: conversations, voice: voice, maxDuration: maxDuration, feedbacks: feedbacks, scenarios: scenarios, personas: personas}
+func NewConversationService(conversations repositories.ConversationRepository, turns repositories.ConversationTurnRepository, voice VoiceClient, maxDuration int, feedbacks repositories.FeedbackRepository, scenarios repositories.ScenarioRepository, personas repositories.PersonaRepository) *ConversationService {
+	return &ConversationService{conversations: conversations, turns: turns, voice: voice, maxDuration: maxDuration, feedbacks: feedbacks, scenarios: scenarios, personas: personas}
 }
 
 // Create provisions a pending conversation. The close of the caller's other
@@ -239,7 +240,7 @@ func (s *ConversationService) IngestTurns(ctx context.Context, id string, req ca
 		})
 	}
 
-	stored, err := s.conversations.UpsertTurns(ctx, id, turns)
+	stored, err := s.turns.UpsertTurns(ctx, id, turns)
 	if err != nil {
 		appErr := common.FromDBError(err, "conversation turn")
 		logger.Report(ctx, "ingest turns failed", appErr, "conversationID", id)

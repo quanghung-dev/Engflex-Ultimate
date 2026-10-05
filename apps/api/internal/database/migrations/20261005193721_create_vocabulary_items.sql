@@ -20,21 +20,5 @@ CREATE UNIQUE INDEX uq_vocabulary_items_user_term
 CREATE INDEX idx_vocabulary_items_cefr ON vocabulary_items (cefr);
 CREATE INDEX idx_vocabulary_items_domain ON vocabulary_items (domain);
 
-CREATE TABLE user_vocabulary (
-    user_id     text NOT NULL,
-    item_id     uuid NOT NULL REFERENCES vocabulary_items (id) ON DELETE CASCADE,
-    source_type text NOT NULL CONSTRAINT chk_user_vocabulary_source_type
-        CHECK (source_type IN ('lesson', 'conversation', 'manual')),
-    source_id   uuid,
-    note        text,
-    mastered    boolean NOT NULL DEFAULT false,
-    srs_due_at  timestamptz,
-    created_at  timestamptz NOT NULL DEFAULT now(),
-    updated_at  timestamptz NOT NULL DEFAULT now(),
-    PRIMARY KEY (user_id, item_id)
-);
-CREATE INDEX idx_user_vocabulary_due ON user_vocabulary (user_id, srs_due_at);
-
 -- +goose Down
-DROP TABLE IF EXISTS user_vocabulary;
 DROP TABLE IF EXISTS vocabulary_items;

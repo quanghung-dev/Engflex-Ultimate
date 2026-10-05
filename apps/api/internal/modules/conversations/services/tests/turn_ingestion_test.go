@@ -30,17 +30,17 @@ func TestIngestTurns(t *testing.T) {
 	tests := []struct {
 		name       string
 		req        dtoscallbacks.IngestTurns
-		setup      func(*repomocks.MockConversationRepository)
+		setup      func(*repomocks.MockConversationRepository, *repomocks.MockConversationTurnRepository)
 		wantStored int
 		wantStatus int
 	}{
 		{
 			name: "user turn is stored",
 			req:  oneUserTurn(),
-			setup: func(repo *repomocks.MockConversationRepository) {
+			setup: func(repo *repomocks.MockConversationRepository, turns *repomocks.MockConversationTurnRepository) {
 				repo.On("GetByID", mock.Anything, convID).
 					Return(&models.Conversation{ID: convID, UserID: userID}, nil).Once()
-				repo.On("UpsertTurns", mock.Anything, convID, mock.Anything).
+				turns.On("UpsertTurns", mock.Anything, convID, mock.Anything).
 					Run(func(args mock.Arguments) {
 						turns := args.Get(2).([]*models.ConversationTurn)
 						assert.Equal(t, "hello", turns[0].Text)
@@ -56,10 +56,10 @@ func TestIngestTurns(t *testing.T) {
 				Position: 3, Role: enums.TurnRoleUser, Text: "wait, no",
 				WasInterrupted: true,
 			}}},
-			setup: func(repo *repomocks.MockConversationRepository) {
+			setup: func(repo *repomocks.MockConversationRepository, turns *repomocks.MockConversationTurnRepository) {
 				repo.On("GetByID", mock.Anything, convID).
 					Return(&models.Conversation{ID: convID, UserID: userID}, nil).Once()
-				repo.On("UpsertTurns", mock.Anything, convID, mock.Anything).
+				turns.On("UpsertTurns", mock.Anything, convID, mock.Anything).
 					Run(func(args mock.Arguments) {
 						turns := args.Get(2).([]*models.ConversationTurn)
 						assert.True(t, turns[0].WasInterrupted)
@@ -71,13 +71,13 @@ func TestIngestTurns(t *testing.T) {
 		{
 			name:       "batch over the cap is rejected",
 			req:        dtoscallbacks.IngestTurns{Turns: manyTurns(501)},
-			setup:      func(*repomocks.MockConversationRepository) {},
+			setup:      func(*repomocks.MockConversationRepository, *repomocks.MockConversationTurnRepository) {},
 			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name: "unknown conversation is 404",
 			req:  oneUserTurn(),
-			setup: func(repo *repomocks.MockConversationRepository) {
+			setup: func(repo *repomocks.MockConversationRepository, turns *repomocks.MockConversationTurnRepository) {
 				repo.On("GetByID", mock.Anything, convID).
 					Return(nil, gorm.ErrRecordNotFound).Once()
 			},
@@ -86,15 +86,15 @@ func TestIngestTurns(t *testing.T) {
 		{
 			name:       "empty batch is 400",
 			req:        dtoscallbacks.IngestTurns{Turns: nil},
-			setup:      func(*repomocks.MockConversationRepository) {},
+			setup:      func(*repomocks.MockConversationRepository, *repomocks.MockConversationTurnRepository) {},
 			wantStatus: http.StatusBadRequest,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc, repo, _, _ := newService(t)
-			tt.setup(repo)
+			svc, repo, turns, _, _ := newService(t)
+			tt.setup(repo, turns)
 
 			got, err := svc.IngestTurns(context.Background(), convID, tt.req)
 
@@ -121,12 +121,12 @@ func manyTurns(n int) []dtoscallbacks.IngestTurn {
 }
 
 func TestIngestTurns_DuplicateBatchCreatesNoDuplicates(t *testing.T) {
-	svc, repo, _, _ := newService(t)
+	svc, repo, turns, _, _ := newService(t)
 	repo.On("GetByID", mock.Anything, convID).
 		Return(&models.Conversation{ID: convID, UserID: userID}, nil).Twice()
 	// The repository's ON CONFLICT DO NOTHING reports zero new rows on replay.
-	repo.On("UpsertTurns", mock.Anything, convID, mock.Anything).Return(1, nil).Once()
-	repo.On("UpsertTurns", mock.Anything, convID, mock.Anything).Return(0, nil).Once()
+	turns.On("UpsertTurns", mock.Anything, convID, mock.Anything).Return(1, nil).Once()
+	turns.On("UpsertTurns", mock.Anything, convID, mock.Anything).Return(0, nil).Once()
 
 	first, err := svc.IngestTurns(context.Background(), convID, oneUserTurn())
 	require.NoError(t, err)

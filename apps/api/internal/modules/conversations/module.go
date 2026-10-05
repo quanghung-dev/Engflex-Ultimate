@@ -17,9 +17,10 @@ import (
 // RegisterRoutes mounts the conversation endpoints under /api/v1.
 func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.VoiceConfig) {
 	repo := repositories.NewConversationRepository(db)
+	turns := repositories.NewConversationTurnRepository(db)
 	feedbacks := repositories.NewFeedbackRepository(db)
 	voice := services.NewHTTPVoiceClient(cfg)
-	svc := services.NewConversationService(repo, voice, cfg.MaxDurationSec, feedbacks,
+	svc := services.NewConversationService(repo, turns, voice, cfg.MaxDurationSec, feedbacks,
 		repositories.NewScenarioRepository(db), repositories.NewPersonaRepository(db))
 	ctl := controllers.NewConversationController(svc, cfg.MaxDurationSec)
 

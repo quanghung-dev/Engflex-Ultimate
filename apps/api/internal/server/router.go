@@ -35,10 +35,34 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 		MaxAge:          12 * time.Hour,
 	}))
 
-	r.GET("/healthz", func(c *gin.Context) {
+	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	// gin-swagger gates every request on a regexp that only accepts an
+	// allowlist of asset names (index.html, doc.json, the swagger-ui bundles),
+	// so a bare /swagger or /swagger/ is refused from *inside* the handler —
+	// gin's own trailing-slash redirect lands straight on that 404. Route both
+	// bare forms to the UI entry point so the URL people type works.
+	swaggerIndex := func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
+	}
+	// PersistAuthorization keeps whatever token is pasted into the Authorize
+	// dialog in localStorage, so the long-lived SWAGGER_TESTING_JWT (or any
+	// freshly minted session token) is entered once instead of on every
+	// reload. The doc JSON is unaffected — this is UI state only.
+	swaggerAssets := ginSwagger.WrapHandler(swaggerFiles.Handler,
+		ginSwagger.PersistAuthorization(true))
+	r.GET("/swagger", swaggerIndex)
+	r.GET("/swagger/*any", func(c *gin.Context) {
+		// The catch-all also matches the bare directory, so screen it here:
+		// gin cannot route /swagger/ separately (it panics on the conflict
+		// with *any), and c.Param("any") is "/" rather than "" for it.
+		if c.Request.URL.Path == "/swagger/" {
+			swaggerIndex(c)
+			return
+		}
+		swaggerAssets(c)
+	})
 
 	v1 := r.Group("/api/v1")
 	conversations.RegisterRoutes(v1, db, cfg.Voice)

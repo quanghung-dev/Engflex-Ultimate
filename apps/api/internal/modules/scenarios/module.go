@@ -13,7 +13,8 @@ import (
 
 // RegisterRoutes mounts the endpoints under /api/v1.
 func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
-	svc := services.NewScenarioService(repositories.NewScenarioRepository(db))
+	svc := services.NewScenarioService(
+		repositories.NewScenarioRepository(db), repositories.NewScenarioTopicRepository(db))
 	ctl := controllers.NewScenarioController(svc)
 
 	g := rg.Group("/scenarios")

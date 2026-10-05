@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"io"
 	"net/http"
 	"strconv"
@@ -9,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"engflex-api/internal/common"
-	"engflex-api/internal/database/models"
 	"engflex-api/internal/modules/conversations/dtos/requests"
 	"engflex-api/internal/modules/conversations/dtos/responses"
 	"engflex-api/internal/modules/conversations/services"
@@ -68,39 +66,17 @@ func (h *ConversationController) Create(c *gin.Context) {
 // @Router       /conversations/{id} [get]
 func (h *ConversationController) Get(c *gin.Context) {
 	userID := middleware.UserID(c)
-	m, turns, feedbacks, err := h.service.GetWithFeedback(c.Request.Context(), userID, c.Param("id"))
+	m, turns, err := h.service.GetWithFeedback(c.Request.Context(), userID, c.Param("id"))
 	if err != nil {
 		common.Fail(c, err)
 		return
 	}
 	var dto responses.Conversation
 	_ = utils.Map(&dto, m)
-	dto.Turns = attachFeedback(turns, feedbacks)
+	var turnDtos []responses.Turn
+	_ = utils.MapSlice(&turnDtos, turns)
+	dto.Turns = turnDtos
 	common.OK(c, "conversation", dto)
-}
-
-// attachFeedback maps turns into wire DTOs and joins each feedback row onto
-// its turn by subject id. Turns without feedback keep a nil Feedback.
-func attachFeedback(turns []*models.ConversationTurn, feedbacks []*models.Feedback) []responses.Turn {
-	bySubject := make(map[string]responses.TurnFeedback, len(feedbacks))
-	for _, fb := range feedbacks {
-		var tf responses.TurnFeedback
-		if err := json.Unmarshal(fb.Payload, &tf); err != nil {
-			// A stored payload is always valid (NormalizeLanguageFeedback
-			// validated it on write); skip rather than fail the whole read.
-			continue
-		}
-		bySubject[fb.SubjectID] = tf
-	}
-	var dtos []responses.Turn
-	_ = utils.MapSlice(&dtos, turns)
-	for i := range dtos {
-		if tf, ok := bySubject[turns[i].ID]; ok {
-			tf := tf
-			dtos[i].Feedback = &tf
-		}
-	}
-	return dtos
 }
 
 // Start godoc
@@ -181,7 +157,7 @@ func (h *ConversationController) End(c *gin.Context) {
 // @Produce      json
 // @Param        id path string true "conversation id"
 // @Param        position path int true "turn position (1-based)"
-// @Success      200 {object} common.ApiResponse{data=responses.TurnFeedback}
+// @Success      200 {object} common.ApiResponse{data=responses.Feedback}
 // @Failure      400 {object} common.ApiResponse
 // @Failure      404 {object} common.ApiResponse
 // @Failure      503 {object} common.ApiResponse
@@ -198,8 +174,8 @@ func (h *ConversationController) AnalyzeTurn(c *gin.Context) {
 		common.Fail(c, err)
 		return
 	}
-	var dto responses.TurnFeedback
-	_ = json.Unmarshal(feedback.Payload, &dto)
+	var dto responses.Feedback
+	_ = utils.Map(&dto, feedback)
 	common.OK(c, "turn analyzed", dto)
 }
 

@@ -28,12 +28,13 @@ func userTurn() *models.ConversationTurn {
 	}
 }
 
-func newAnalysisService(t *testing.T) (*services.ConversationService, *repomocks.MockConversationRepository, *svcmocks.MockVoiceClient, *repomocks.MockFeedbackRepository) {
+func newAnalysisService(t *testing.T) (*services.ConversationService, *repomocks.MockConversationRepository, *repomocks.MockConversationTurnRepository, *svcmocks.MockVoiceClient, *repomocks.MockFeedbackRepository) {
 	t.Helper()
 	repo := repomocks.NewMockConversationRepository(t)
+	turnsRepo := repomocks.NewMockConversationTurnRepository(t)
 	feedback := repomocks.NewMockFeedbackRepository(t)
 	voice := svcmocks.NewMockVoiceClient(t)
-	return services.NewConversationService(repo, voice, 300, feedback, repomocks.NewMockScenarioRepository(t), repomocks.NewMockPersonaRepository(t)), repo, voice, feedback
+	return services.NewConversationService(repo, turnsRepo, voice, 300, feedback, repomocks.NewMockScenarioRepository(t), repomocks.NewMockPersonaRepository(t)), repo, turnsRepo, voice, feedback
 }
 
 const goodFeedback = `{"corrected":"I went yesterday.","spans":[],"relevance":{"status":"relevant","reason":null},"alternatives":{"language":null,"contextual":null},"tip":"past tense"}`
@@ -41,17 +42,17 @@ const goodFeedback = `{"corrected":"I went yesterday.","spans":[],"relevance":{"
 func TestAnalyzeTurn(t *testing.T) {
 	tests := []struct {
 		name       string
-		setup      func(*repomocks.MockConversationRepository, *svcmocks.MockVoiceClient, *repomocks.MockFeedbackRepository)
+		setup      func(*repomocks.MockConversationRepository, *repomocks.MockConversationTurnRepository, *svcmocks.MockVoiceClient, *repomocks.MockFeedbackRepository)
 		wantStatus int
 		check      func(*testing.T, *models.Feedback)
 	}{
 		{
 			name: "upserts feedback for the turn",
-			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient, fb *repomocks.MockFeedbackRepository) {
+			setup: func(repo *repomocks.MockConversationRepository, turnsRepo *repomocks.MockConversationTurnRepository, voice *svcmocks.MockVoiceClient, fb *repomocks.MockFeedbackRepository) {
 				repo.On("GetByID", mock.Anything, convID).
 					Return(&models.Conversation{ID: convID, UserID: userID}, nil)
-				repo.On("GetTurnByPosition", mock.Anything, convID, 1).Return(userTurn(), nil)
-				repo.On("ListTurns", mock.Anything, convID).Return([]*models.ConversationTurn{userTurn()}, nil)
+				turnsRepo.On("GetTurnByPosition", mock.Anything, convID, 1).Return(userTurn(), nil)
+				turnsRepo.On("ListTurns", mock.Anything, convID).Return([]*models.ConversationTurn{userTurn()}, nil)
 				voice.On("AnalyzeTurn", mock.Anything, mock.MatchedBy(
 					func(req services.AnalyzeTurnRequest) bool {
 						return req.Text == "I go yesterday." && req.TurnID == turnID
@@ -62,15 +63,17 @@ func TestAnalyzeTurn(t *testing.T) {
 				assert.Equal(t, enums.FeedbackSubjectConversationTurn, f.SubjectType)
 				assert.Equal(t, turnID, f.SubjectID)
 				assert.Equal(t, userID, f.UserID)
-				assert.JSONEq(t, goodFeedback, string(f.Payload))
+				raw, err := json.Marshal(f.Payload)
+				require.NoError(t, err)
+				assert.JSONEq(t, goodFeedback, string(raw))
 			},
 		},
 		{
 			name: "rejects a bot turn",
-			setup: func(repo *repomocks.MockConversationRepository, _ *svcmocks.MockVoiceClient, _ *repomocks.MockFeedbackRepository) {
+			setup: func(repo *repomocks.MockConversationRepository, turnsRepo *repomocks.MockConversationTurnRepository, _ *svcmocks.MockVoiceClient, _ *repomocks.MockFeedbackRepository) {
 				repo.On("GetByID", mock.Anything, convID).
 					Return(&models.Conversation{ID: convID, UserID: userID}, nil)
-				repo.On("GetTurnByPosition", mock.Anything, convID, 1).Return(&models.ConversationTurn{
+				turnsRepo.On("GetTurnByPosition", mock.Anything, convID, 1).Return(&models.ConversationTurn{
 					ID: turnID, ConversationID: convID, Role: enums.TurnRoleAI, Text: "hi",
 				}, nil)
 			},
@@ -78,21 +81,21 @@ func TestAnalyzeTurn(t *testing.T) {
 		},
 		{
 			name: "unknown position is 404",
-			setup: func(repo *repomocks.MockConversationRepository, _ *svcmocks.MockVoiceClient, _ *repomocks.MockFeedbackRepository) {
+			setup: func(repo *repomocks.MockConversationRepository, turnsRepo *repomocks.MockConversationTurnRepository, _ *svcmocks.MockVoiceClient, _ *repomocks.MockFeedbackRepository) {
 				repo.On("GetByID", mock.Anything, convID).
 					Return(&models.Conversation{ID: convID, UserID: userID}, nil)
-				repo.On("GetTurnByPosition", mock.Anything, convID, 1).
+				turnsRepo.On("GetTurnByPosition", mock.Anything, convID, 1).
 					Return(nil, gorm.ErrRecordNotFound)
 			},
 			wantStatus: http.StatusNotFound,
 		},
 		{
 			name: "engine failure persists nothing",
-			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient, _ *repomocks.MockFeedbackRepository) {
+			setup: func(repo *repomocks.MockConversationRepository, turnsRepo *repomocks.MockConversationTurnRepository, voice *svcmocks.MockVoiceClient, _ *repomocks.MockFeedbackRepository) {
 				repo.On("GetByID", mock.Anything, convID).
 					Return(&models.Conversation{ID: convID, UserID: userID}, nil)
-				repo.On("GetTurnByPosition", mock.Anything, convID, 1).Return(userTurn(), nil)
-				repo.On("ListTurns", mock.Anything, convID).Return([]*models.ConversationTurn{userTurn()}, nil)
+				turnsRepo.On("GetTurnByPosition", mock.Anything, convID, 1).Return(userTurn(), nil)
+				turnsRepo.On("ListTurns", mock.Anything, convID).Return([]*models.ConversationTurn{userTurn()}, nil)
 				voice.On("AnalyzeTurn", mock.Anything, mock.Anything).
 					Return(nil, errors.New("engine 500"))
 			},
@@ -100,11 +103,11 @@ func TestAnalyzeTurn(t *testing.T) {
 		},
 		{
 			name: "empty engine feedback persists nothing",
-			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient, _ *repomocks.MockFeedbackRepository) {
+			setup: func(repo *repomocks.MockConversationRepository, turnsRepo *repomocks.MockConversationTurnRepository, voice *svcmocks.MockVoiceClient, _ *repomocks.MockFeedbackRepository) {
 				repo.On("GetByID", mock.Anything, convID).
 					Return(&models.Conversation{ID: convID, UserID: userID}, nil)
-				repo.On("GetTurnByPosition", mock.Anything, convID, 1).Return(userTurn(), nil)
-				repo.On("ListTurns", mock.Anything, convID).Return([]*models.ConversationTurn{userTurn()}, nil)
+				turnsRepo.On("GetTurnByPosition", mock.Anything, convID, 1).Return(userTurn(), nil)
+				turnsRepo.On("ListTurns", mock.Anything, convID).Return([]*models.ConversationTurn{userTurn()}, nil)
 				voice.On("AnalyzeTurn", mock.Anything, mock.Anything).
 					Return(&services.AnalyzeTurnResponse{Feedback: json.RawMessage("")}, nil)
 			},
@@ -112,11 +115,11 @@ func TestAnalyzeTurn(t *testing.T) {
 		},
 		{
 			name: "non-object feedback persists nothing",
-			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient, _ *repomocks.MockFeedbackRepository) {
+			setup: func(repo *repomocks.MockConversationRepository, turnsRepo *repomocks.MockConversationTurnRepository, voice *svcmocks.MockVoiceClient, _ *repomocks.MockFeedbackRepository) {
 				repo.On("GetByID", mock.Anything, convID).
 					Return(&models.Conversation{ID: convID, UserID: userID}, nil)
-				repo.On("GetTurnByPosition", mock.Anything, convID, 1).Return(userTurn(), nil)
-				repo.On("ListTurns", mock.Anything, convID).Return([]*models.ConversationTurn{userTurn()}, nil)
+				turnsRepo.On("GetTurnByPosition", mock.Anything, convID, 1).Return(userTurn(), nil)
+				turnsRepo.On("ListTurns", mock.Anything, convID).Return([]*models.ConversationTurn{userTurn()}, nil)
 				voice.On("AnalyzeTurn", mock.Anything, mock.Anything).
 					Return(&services.AnalyzeTurnResponse{Feedback: json.RawMessage(`[1,2,3]`)}, nil)
 			},
@@ -124,11 +127,11 @@ func TestAnalyzeTurn(t *testing.T) {
 		},
 		{
 			name: "wrong-shape feedback persists nothing",
-			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient, _ *repomocks.MockFeedbackRepository) {
+			setup: func(repo *repomocks.MockConversationRepository, turnsRepo *repomocks.MockConversationTurnRepository, voice *svcmocks.MockVoiceClient, _ *repomocks.MockFeedbackRepository) {
 				repo.On("GetByID", mock.Anything, convID).
 					Return(&models.Conversation{ID: convID, UserID: userID}, nil)
-				repo.On("GetTurnByPosition", mock.Anything, convID, 1).Return(userTurn(), nil)
-				repo.On("ListTurns", mock.Anything, convID).Return([]*models.ConversationTurn{userTurn()}, nil)
+				turnsRepo.On("GetTurnByPosition", mock.Anything, convID, 1).Return(userTurn(), nil)
+				turnsRepo.On("ListTurns", mock.Anything, convID).Return([]*models.ConversationTurn{userTurn()}, nil)
 				// The engine's pydantic validation should have caught this, but
 				// Go is the last gate before the database.
 				voice.On("AnalyzeTurn", mock.Anything, mock.Anything).
@@ -140,7 +143,7 @@ func TestAnalyzeTurn(t *testing.T) {
 		},
 		{
 			name: "foreign conversation is 404",
-			setup: func(repo *repomocks.MockConversationRepository, _ *svcmocks.MockVoiceClient, _ *repomocks.MockFeedbackRepository) {
+			setup: func(repo *repomocks.MockConversationRepository, turnsRepo *repomocks.MockConversationTurnRepository, _ *svcmocks.MockVoiceClient, _ *repomocks.MockFeedbackRepository) {
 				repo.On("GetByID", mock.Anything, convID).
 					Return(&models.Conversation{ID: convID, UserID: "someone_else"}, nil)
 			},
@@ -150,8 +153,8 @@ func TestAnalyzeTurn(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc, repo, voice, fb := newAnalysisService(t)
-			tt.setup(repo, voice, fb)
+			svc, repo, turnsRepo, voice, fb := newAnalysisService(t)
+			tt.setup(repo, turnsRepo, voice, fb)
 
 			stored, err := svc.AnalyzeTurn(context.Background(), userID, convID, 1)
 
@@ -167,7 +170,7 @@ func TestAnalyzeTurn(t *testing.T) {
 }
 
 func TestAnalyze_SendsUpToFiveContextTurns(t *testing.T) {
-	svc, repo, voice, fb := newAnalysisService(t)
+	svc, repo, turnsRepo, voice, fb := newAnalysisService(t)
 	turns := []*models.ConversationTurn{}
 	for i := 1; i <= 8; i++ {
 		turns = append(turns, &models.ConversationTurn{
@@ -182,8 +185,8 @@ func TestAnalyze_SendsUpToFiveContextTurns(t *testing.T) {
 	turns = append(turns, target)
 	repo.On("GetByID", mock.Anything, convID).
 		Return(&models.Conversation{ID: convID, UserID: userID}, nil)
-	repo.On("GetTurnByPosition", mock.Anything, convID, 1).Return(userTurn(), nil)
-	repo.On("ListTurns", mock.Anything, convID).Return(turns, nil)
+	turnsRepo.On("GetTurnByPosition", mock.Anything, convID, 1).Return(userTurn(), nil)
+	turnsRepo.On("ListTurns", mock.Anything, convID).Return(turns, nil)
 	voice.On("AnalyzeTurn", mock.Anything, mock.MatchedBy(
 		func(req services.AnalyzeTurnRequest) bool { return len(req.Context) == 5 },
 	)).Return(&services.AnalyzeTurnResponse{Feedback: json.RawMessage(goodFeedback)}, nil)
@@ -194,11 +197,11 @@ func TestAnalyze_SendsUpToFiveContextTurns(t *testing.T) {
 }
 
 func TestAnalyze_RequestCarriesNoLevelOrObjective(t *testing.T) {
-	svc, repo, _, _ := newAnalysisService(t)
+	svc, _, turnsRepo, _, _ := newAnalysisService(t)
 	// BuildAnalyzeRequest performs no ownership check (AnalyzeTurn does that
 	// first), so GetByID is deliberately unmocked here.
-	repo.On("GetTurnByPosition", mock.Anything, convID, 1).Return(userTurn(), nil)
-	repo.On("ListTurns", mock.Anything, convID).Return([]*models.ConversationTurn{userTurn()}, nil)
+	turnsRepo.On("GetTurnByPosition", mock.Anything, convID, 1).Return(userTurn(), nil)
+	turnsRepo.On("ListTurns", mock.Anything, convID).Return([]*models.ConversationTurn{userTurn()}, nil)
 	// BuildAnalyzeRequest stops before the engine call: voice and Upsert are
 	// deliberately unmocked, so any call to them would fail the test.
 
@@ -211,19 +214,56 @@ func TestAnalyze_RequestCarriesNoLevelOrObjective(t *testing.T) {
 }
 
 func TestGetWithFeedback_AttachesFeedbackToTurns(t *testing.T) {
-	svc, repo, _, fb := newAnalysisService(t)
-	repo.On("GetByID", mock.Anything, convID).
-		Return(&models.Conversation{ID: convID, UserID: userID}, nil)
-	repo.On("ListTurns", mock.Anything, convID).Return([]*models.ConversationTurn{userTurn()}, nil)
-	fb.On("ListForSubjects", mock.Anything, userID,
-		string(enums.FeedbackSubjectConversationTurn), []string{turnID}).
-		Return([]*models.Feedback{{
-			SubjectID: turnID, Payload: []byte(goodFeedback),
-		}}, nil)
+	tests := []struct {
+		name      string
+		turns     []*models.ConversationTurn
+		wantTip   string
+		wantFirst bool
+	}{
+		{
+			name: "coaching record rides along with the turn",
+			turns: []*models.ConversationTurn{
+				{
+					ID: turnID, ConversationID: convID, Position: 1,
+					Feedback: &models.Feedback{
+						SubjectID: turnID,
+						Payload:   models.TurnFeedback{Corrected: "I went yesterday.", Tip: "past tense"},
+					},
+				},
+				{ID: "44444444-4444-4444-4444-444444444444", ConversationID: convID, Position: 2, Role: enums.TurnRoleAI},
+			},
+			wantTip:   "past tense",
+			wantFirst: true,
+		},
+		{
+			name: "a corrupt payload leaves the turn without coaching",
+			turns: []*models.ConversationTurn{
+				{
+					ID: turnID, ConversationID: convID, Position: 1,
+					Feedback: &models.Feedback{SubjectID: turnID},
+				},
+			},
+		},
+	}
 
-	_, turns, feedbacks, err := svc.GetWithFeedback(context.Background(), userID, convID)
-	require.NoError(t, err)
-	require.Len(t, turns, 1)
-	require.Len(t, feedbacks, 1)
-	assert.Equal(t, turnID, feedbacks[0].SubjectID)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc, repo, turnsRepo, _, _ := newAnalysisService(t)
+			repo.On("GetByID", mock.Anything, convID).
+				Return(&models.Conversation{ID: convID, UserID: userID}, nil)
+			turnsRepo.On("ListTurnsWithFeedback", mock.Anything, convID).Return(tt.turns, nil)
+
+			_, turns, err := svc.GetWithFeedback(context.Background(), userID, convID)
+
+			require.NoError(t, err)
+			require.Len(t, turns, len(tt.turns))
+			if tt.wantFirst {
+				require.NotNil(t, turns[0].Feedback)
+				assert.Equal(t, tt.wantTip, turns[0].Feedback.Payload.Tip)
+				assert.Nil(t, turns[1].Feedback, "a turn with no feedback keeps a nil relation")
+				return
+			}
+			assert.Nil(t, turns[0].Feedback)
+		})
+	}
 }

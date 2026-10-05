@@ -35,21 +35,15 @@ type DetailOpening struct {
 	Text  string `json:"text"`
 }
 
-// ScenarioTopic mirrors models.ScenarioTopic field for field.
+// ScenarioTopic mirrors models.ScenarioTopic: the banner taxonomy plus the
+// top-k scenarios the repository attached. utils.MapSlice copies the whole
+// banner — nested scenarios, their personas, and their detail documents — in
+// one call, because every nested type mirrors its model by field name.
 type ScenarioTopic struct {
-	ID        string `json:"id"`
-	Slug      string `json:"slug"`
-	Name      string `json:"name"`
-	ShortName string `json:"shortName"`
-	Position  int    `json:"position"`
-}
-
-// TopicWithPreviews is one browser banner: a topic with its top-k
-// scenario previews.
-type TopicWithPreviews struct {
 	ID        string     `json:"id"`
 	Slug      string     `json:"slug"`
 	Name      string     `json:"name"`
+	ShortName string     `json:"shortName"`
 	Position  int        `json:"position"`
 	Scenarios []Scenario `json:"scenarios"`
 }

@@ -33,12 +33,13 @@ func requireAppError(t *testing.T, err error, status int) {
 	require.Equal(t, status, appErr.Status)
 }
 
-func newService(t *testing.T) (*services.ConversationService, *repomocks.MockConversationRepository, *svcmocks.MockVoiceClient, *repomocks.MockScenarioRepository) {
+func newService(t *testing.T) (*services.ConversationService, *repomocks.MockConversationRepository, *repomocks.MockConversationTurnRepository, *svcmocks.MockVoiceClient, *repomocks.MockScenarioRepository) {
 	t.Helper()
 	repo := repomocks.NewMockConversationRepository(t)
+	turns := repomocks.NewMockConversationTurnRepository(t)
 	voice := svcmocks.NewMockVoiceClient(t)
 	scenarios := repomocks.NewMockScenarioRepository(t)
-	return services.NewConversationService(repo, voice, 300, repomocks.NewMockFeedbackRepository(t), scenarios, repomocks.NewMockPersonaRepository(t)), repo, voice, scenarios
+	return services.NewConversationService(repo, turns, voice, 300, repomocks.NewMockFeedbackRepository(t), scenarios, repomocks.NewMockPersonaRepository(t)), repo, turns, voice, scenarios
 }
 
 func pendingConv() *models.Conversation {
@@ -84,7 +85,7 @@ func TestCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc, repo, _, _ := newService(t)
+			svc, repo, _, _, _ := newService(t)
 			tt.setup(repo)
 
 			m, err := svc.Create(context.Background(), userID, tt.req)
@@ -112,7 +113,7 @@ func TestGetOwnership(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc, repo, _, _ := newService(t)
+			svc, repo, _, _, _ := newService(t)
 			repo.On("GetByID", mock.Anything, convID).Return(tt.conv, tt.dbErr).Once()
 
 			m, err := svc.Get(context.Background(), userID, convID)
@@ -203,7 +204,7 @@ func TestStart(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc, repo, voice, scenarios := newService(t)
+			svc, repo, _, voice, scenarios := newService(t)
 			tt.setup(repo, voice, scenarios)
 
 			_, _, err := svc.Start(context.Background(), userID, convID)
@@ -269,7 +270,7 @@ func TestOfferTransitions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc, repo, voice, _ := newService(t)
+			svc, repo, _, voice, _ := newService(t)
 			repo.On("GetByID", mock.Anything, convID).Return(&models.Conversation{
 				ID: convID, UserID: userID, Status: enums.ConversationStatusPending, SpeechSessionID: "eng-1",
 			}, nil).Once()
@@ -321,7 +322,7 @@ func TestEnd(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc, repo, _, _ := newService(t)
+			svc, repo, _, _, _ := newService(t)
 			repo.On("GetByID", mock.Anything, convID).Return(tt.conv, tt.dbErr).Once()
 			if tt.setEnded {
 				repo.On("SetEnded", mock.Anything, convID, (*int)(nil)).Return(int64(1), nil).Once()
@@ -354,7 +355,7 @@ func TestFinalize(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc, repo, _, _ := newService(t)
+			svc, repo, _, _, _ := newService(t)
 			if tt.wantStatus == 0 {
 				repo.On("GetByID", mock.Anything, convID).Return(&models.Conversation{
 					ID: convID, UserID: userID, Status: tt.status,
