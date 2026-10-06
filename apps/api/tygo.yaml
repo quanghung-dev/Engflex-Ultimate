@@ -42,6 +42,10 @@ packages:
     output_path: "../../packages/contracts/src/enums.ts"
     enum_style: "union"
     fallback_type: "unknown"
+    # UserRole is server-only (Clerk claim -> middleware gate); it must not
+    # cross the wire. Same precedent as errors.go above.
+    exclude_files:
+      - "user_role.go"
 
   # Module wire DTOs: dtos/requests + dtos/responses per module.
   - path: "engflex-api/internal/modules/profiles/dtos/requests"

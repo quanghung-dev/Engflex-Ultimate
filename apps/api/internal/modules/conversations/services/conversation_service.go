@@ -288,8 +288,8 @@ func (s *ConversationService) getOwned(ctx context.Context, userID, id string) (
 		}
 		return nil, appErr
 	}
-	if m.UserID != userID {
-		return nil, common.NotFound("conversation not found")
+	if appErr := common.RequireOwner(m.UserID, userID, "conversation"); appErr != nil {
+		return nil, appErr
 	}
 	return m, nil
 }
