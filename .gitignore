@@ -65,3 +65,6 @@ temp/
 
 # --- Design handoff bundles (Stitch exports; large, binary, not source) ---
 *.zip
+
+# --- Voice model artifacts (downloaded TTS weights, not source) ---
+apps/voice/models/
