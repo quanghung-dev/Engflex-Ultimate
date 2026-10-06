@@ -32,7 +32,14 @@ func (r *transcriptRepository) Create(ctx context.Context, transcript *models.Tr
 }
 
 func (r *transcriptRepository) Update(ctx context.Context, transcript *models.Transcript) error {
-	return r.db.WithContext(ctx).Save(transcript).Error
+	result := r.db.WithContext(ctx).Save(transcript)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
 }
 
 func (r *transcriptRepository) Delete(ctx context.Context, id string) error {
@@ -60,7 +67,7 @@ func (r *transcriptRepository) Count(ctx context.Context) (int64, error) {
 }
 
 func (r *transcriptRepository) List(ctx context.Context, limit, offset int) ([]*models.Transcript, error) {
-	var transcripts []*models.Transcript
+	transcripts := make([]*models.Transcript, 0)
 	query := r.db.WithContext(ctx).Order("id asc")
 	if limit > 0 {
 		query = query.Limit(limit).Offset(offset)
@@ -86,7 +93,7 @@ func (r *transcriptRepository) GetByID(ctx context.Context, id string) (*models.
 }
 
 func (r *transcriptRepository) GetByLessonID(ctx context.Context, lessonID string) ([]*models.Transcript, error) {
-	var transcripts []*models.Transcript
+	transcripts := make([]*models.Transcript, 0)
 	uintLessonID, err := parseUintID(lessonID, "lesson_id")
 	if err != nil {
 		return nil, err

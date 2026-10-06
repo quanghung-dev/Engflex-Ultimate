@@ -29,7 +29,7 @@ func (r *lessonRepository) WithTx(tx *gorm.DB) LessonRepository {
 }
 
 func (r *lessonRepository) List(ctx context.Context, limit int, offset int) ([]*models.Lesson, error) {
-	var lessons []*models.Lesson
+	lessons := make([]*models.Lesson, 0)
 	query := r.db.WithContext(ctx).Order("id asc")
 	if limit > 0 {
 		query = query.Limit(limit).Offset(offset)
