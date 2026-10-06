@@ -1,27 +1,23 @@
 package models
 
-import (
-	"time"
+import "time"
 
-	"gorm.io/datatypes"
-
-	"engflex-api/internal/common/enums"
-)
-
-// VocabularyItem is the shared dictionary entry (one row per term for all
-// users). A non-null CreatedByUserID marks a user's custom word. details
-// (jsonb) holds ipa, pos, audio, syllables, stress, etymology, contexts,
-// collocations, and word forms.
 type VocabularyItem struct {
-	ID              string                  `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	Term            string                  `gorm:"not null" json:"term"`
-	Definition      string                  `gorm:"not null;default:''" json:"definition"`
-	CEFR            enums.CEFR              `gorm:"column:cefr;not null" json:"cefr"`
-	Domain          *enums.VocabularyDomain `gorm:"column:domain" json:"domain"`
-	CreatedByUserID *string                 `json:"createdByUserId"`
-	Details         datatypes.JSON          `gorm:"type:jsonb;not null;default:'{}'" json:"details"`
-	CreatedAt       time.Time               `gorm:"autoCreateTime" json:"createdAt"`
-	UpdatedAt       time.Time               `gorm:"autoUpdateTime" json:"updatedAt"`
+	ID               uint            `gorm:"primaryKey" json:"id"`
+	DeckID           uint            `gorm:"not null;index" json:"deck_id"`
+	LessonID         *uint           `json:"lesson_id"`
+	TranscriptID     *uint           `json:"transcript_id"`
+	Phrase           string          `gorm:"type:varchar(500);not null" json:"phrase"`
+	NormalizedPhrase string          `gorm:"type:varchar(500);not null" json:"normalized_phrase"`
+	Meaning          string          `gorm:"type:text;not null" json:"meaning"`
+	ExampleSentence  string          `gorm:"type:text" json:"example_sentence"`
+	Note             string          `gorm:"type:text" json:"note"`
+	CreatedAt        time.Time       `json:"created_at"`
+	UpdatedAt        time.Time       `json:"updated_at"`
+	Deck             *VocabularyDeck `gorm:"foreignKey:DeckID" json:"deck,omitempty"`
 }
 
-func (VocabularyItem) TableName() string { return "vocabulary_items" }
+func (VocabularyItem) TableName() string {
+	return "vocabulary_items"
+}
+
