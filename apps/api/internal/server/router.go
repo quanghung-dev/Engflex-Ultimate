@@ -1,11 +1,15 @@
 package server
 
 import (
+	"context"
+	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
@@ -26,6 +30,24 @@ import (
 func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	r := gin.New()
 	r.Use(middleware.RequestID(), middleware.RequestLogger(), middleware.Recovery())
+	// Trust X-Forwarded-For only from configured proxies so the IP-keyed
+	// limiter buckets by real client IP (sona parity). Empty
+	// RATE_LIMIT_TRUSTED_PROXIES trusts none: spoofed headers are ignored.
+	// Gin defaults to trust-all, which lets any client rotate the header
+	// and dodge the limiter — hence the explicit call.
+	r.ForwardedByClientIP = true
+	proxies := []string{}
+	for _, p := range strings.Split(cfg.RateLimit.TrustedProxies, ",") {
+		if p = strings.TrimSpace(p); p != "" {
+			proxies = append(proxies, p)
+		}
+	}
+	if err := middleware.ApplyProxyTrust(r, proxies); err != nil {
+		slog.Error("invalid trusted proxies, trusting none", "value", cfg.RateLimit.TrustedProxies, "error", err)
+		if terr := middleware.ApplyProxyTrust(r, nil); terr != nil {
+			slog.Error("failed to reset proxy trust", "error", terr)
+		}
+	}
 	r.Use(cors.New(cors.Config{
 		// Dev: allow all origins. For production, switch to
 		// AllowOrigins: cfg.Cors.AllowedOrigins (and re-enable
@@ -71,7 +93,55 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	})
 
 	v1 := r.Group("/api/v1")
-	conversations.RegisterRoutes(v1, db, cfg.Voice)
+	// buildLimiter selects the Redis store when REDIS_URL is set (shared
+	// buckets across replicas) and falls back to the in-memory store
+	// otherwise. Any failure degrades loudly but never blocks boot.
+	buildLimiter := func(kind, rate, prefix string) gin.HandlerFunc {
+		if !cfg.RateLimit.Enabled {
+			return nil
+		}
+		if cfg.RateLimit.RedisURL == "" {
+			h, err := middleware.NewInMemoryRateLimitMiddleware(rate)
+			if err != nil {
+				slog.Error("rate limiting disabled: invalid rate", "kind", kind, "rate", rate, "error", err)
+				return nil
+			}
+			return h
+		}
+		memoryFallback := func(reason string, err error) gin.HandlerFunc {
+			slog.Warn("rate limiting degraded to memory store", "kind", kind, "reason", reason, "error", err)
+			h, rerr := middleware.NewInMemoryRateLimitMiddleware(rate)
+			if rerr != nil {
+				slog.Error("rate limiting disabled: invalid rate", "kind", kind, "rate", rate, "error", rerr)
+				return nil
+			}
+			return h
+		}
+		opt, err := redis.ParseURL(cfg.RateLimit.RedisURL)
+		if err != nil {
+			return memoryFallback("bad REDIS_URL", err)
+		}
+		client := redis.NewClient(opt)
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+		if err := client.Ping(ctx).Err(); err != nil {
+			return memoryFallback("redis unreachable", err)
+		}
+		h, err := middleware.NewRedisRateLimitMiddleware(
+			client, cfg.RateLimit.RedisKeyPrefix+":rl:"+prefix, rate)
+		if err != nil {
+			slog.Error("rate limiting disabled", "kind", kind, "error", err)
+			return nil
+		}
+		return h
+	}
+	if global := buildLimiter("global", cfg.RateLimit.GlobalRate, "global"); global != nil {
+		// Machine-to-machine engine callbacks must never 429: they share
+		// the v1 group (and its per-IP bucket) with user traffic.
+		v1.Use(middleware.BypassRateLimitForPrefix("/api/v1/internal/", global))
+	}
+	sessionLimiter := buildLimiter("session", cfg.RateLimit.SessionRate, "session")
+	conversations.RegisterRoutes(v1, db, cfg.Voice, sessionLimiter)
 	lessons.RegisterRoutes(v1, db)
 	scenarios.RegisterRoutes(v1, db)
 	videos.RegisterRoutes(v1, db)

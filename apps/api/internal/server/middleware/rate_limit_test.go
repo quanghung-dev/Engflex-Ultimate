@@ -1,0 +1,240 @@
+package middleware_test
+
+import (
+	"context"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/ulule/limiter/v3"
+
+	"engflex-api/internal/server/middleware"
+)
+
+func TestRateLimitMiddleware(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	tests := []struct {
+		name         string
+		rate         string
+		requests     int
+		wantLastCode int
+		wantErr      bool
+	}{
+		{name: "invalid rate errors", rate: "not-a-rate", requests: 1, wantErr: true},
+		{name: "empty rate errors", rate: "", requests: 1, wantErr: true},
+		{name: "allows under limit", rate: "5-M", requests: 2, wantLastCode: http.StatusOK},
+		{name: "rejects over limit", rate: "2-M", requests: 3, wantLastCode: http.StatusTooManyRequests},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h, err := middleware.NewInMemoryRateLimitMiddleware(tt.rate)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			require.NotNil(t, h)
+
+			r := gin.New()
+			r.GET("/ping", h, func(c *gin.Context) { c.Status(http.StatusOK) })
+			rec := httptest.NewRecorder()
+			for i := 0; i < tt.requests; i++ {
+				rec = httptest.NewRecorder()
+				req := httptest.NewRequest(http.MethodGet, "/ping", nil)
+				req.RemoteAddr = "10.0.0.9:1234"
+				r.ServeHTTP(rec, req)
+			}
+			assert.Equal(t, tt.wantLastCode, rec.Code)
+		})
+	}
+}
+
+func TestNewRedisRateLimitMiddlewareBadRate(t *testing.T) {
+	tests := []struct {
+		name string
+		rate string
+	}{
+		{name: "garbage", rate: "zzz"},
+		{name: "empty", rate: ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// nil client is safe here: rate parsing fails before the client is touched.
+			_, err := middleware.NewRedisRateLimitMiddleware(nil, "engflex:rl:test", tt.rate)
+			require.Error(t, err)
+		})
+	}
+}
+
+func TestConversationsSessionLimiterShape(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	tests := []struct {
+		name     string
+		rate     string
+		requests int
+		wantLast int
+	}{
+		{name: "sona parity 5-M trips on 6th", rate: "5-M", requests: 6, wantLast: http.StatusTooManyRequests},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h, err := middleware.NewInMemoryRateLimitMiddleware(tt.rate)
+			require.NoError(t, err)
+			r := gin.New()
+			// Mirrors module.go order: limiter BEFORE auth (IP-keyed, sona parity).
+			r.POST("/conversations", h, func(c *gin.Context) { c.Status(http.StatusCreated) })
+			var rec *httptest.ResponseRecorder
+			for i := 0; i < tt.requests; i++ {
+				rec = httptest.NewRecorder()
+				req := httptest.NewRequest(http.MethodPost, "/conversations", nil)
+				req.RemoteAddr = "10.0.0.7:1234"
+				r.ServeHTTP(rec, req)
+			}
+			assert.Equal(t, tt.wantLast, rec.Code)
+		})
+	}
+}
+
+// errStore fails every read: a Redis outage after boot surfaces as store
+// errors (not as missing middleware), and requests must still be served.
+type errStore struct{}
+
+func (errStore) Get(ctx context.Context, key string, rate limiter.Rate) (limiter.Context, error) {
+	return limiter.Context{}, assert.AnError
+}
+
+func (errStore) Peek(ctx context.Context, key string, rate limiter.Rate) (limiter.Context, error) {
+	return limiter.Context{}, assert.AnError
+}
+
+func (errStore) Reset(ctx context.Context, key string, rate limiter.Rate) (limiter.Context, error) {
+	return limiter.Context{}, assert.AnError
+}
+
+func (errStore) Increment(ctx context.Context, key string, count int64, rate limiter.Rate) (limiter.Context, error) {
+	return limiter.Context{}, assert.AnError
+}
+
+func TestApplyProxyTrust(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	tests := []struct {
+		name       string
+		trusted    []string
+		remoteAddr string
+		xff        string
+		wantIP     string
+		wantErr    bool
+	}{
+		{
+			name:       "trust none ignores spoofed header",
+			trusted:    nil,
+			remoteAddr: "1.2.3.4:1234",
+			xff:        "9.9.9.9",
+			wantIP:     "1.2.3.4",
+		},
+		{
+			name:       "trusted proxy honors header",
+			trusted:    []string{"10.0.0.0/8"},
+			remoteAddr: "10.1.2.3:1234",
+			xff:        "9.9.9.9",
+			wantIP:     "9.9.9.9",
+		},
+		{
+			name:       "untrusted remote ignores header",
+			trusted:    []string{"10.0.0.0/8"},
+			remoteAddr: "1.2.3.4:1234",
+			xff:        "9.9.9.9",
+			wantIP:     "1.2.3.4",
+		},
+		{
+			name:       "invalid cidr errors",
+			trusted:    []string{"not-a-cidr"},
+			remoteAddr: "1.2.3.4:1234",
+			wantErr:    true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := gin.New()
+			err := middleware.ApplyProxyTrust(r, tt.trusted)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			var got string
+			r.GET("/whoami", func(c *gin.Context) {
+				got = c.ClientIP()
+				c.Status(http.StatusOK)
+			})
+			req := httptest.NewRequest(http.MethodGet, "/whoami", nil)
+			req.RemoteAddr = tt.remoteAddr
+			if tt.xff != "" {
+				req.Header.Set("X-Forwarded-For", tt.xff)
+			}
+			rec := httptest.NewRecorder()
+			r.ServeHTTP(rec, req)
+			require.Equal(t, http.StatusOK, rec.Code)
+			assert.Equal(t, tt.wantIP, got)
+		})
+	}
+}
+
+func TestRateLimitStoreErrorFailsOpen(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	tests := []struct {
+		name string
+		rate string
+	}{
+		{name: "store outage serves request", rate: "1-M"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h, err := middleware.NewRateLimitMiddleware(errStore{}, tt.rate)
+			require.NoError(t, err)
+			r := gin.New()
+			r.GET("/ping", h, func(c *gin.Context) { c.Status(http.StatusOK) })
+			req := httptest.NewRequest(http.MethodGet, "/ping", nil)
+			req.RemoteAddr = "10.0.0.9:1234"
+			rec := httptest.NewRecorder()
+			require.NotPanics(t, func() { r.ServeHTTP(rec, req) })
+			assert.Equal(t, http.StatusOK, rec.Code)
+		})
+	}
+}
+
+func TestBypassRateLimitForPrefix(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	tests := []struct {
+		name         string
+		path         string
+		requests     int
+		wantLastCode int
+	}{
+		{name: "internal prefix bypasses limiter", path: "/api/v1/internal/job", requests: 3, wantLastCode: http.StatusOK},
+		{name: "public path still limited", path: "/api/v1/scenarios", requests: 2, wantLastCode: http.StatusTooManyRequests},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			lim, err := middleware.NewInMemoryRateLimitMiddleware("1-M")
+			require.NoError(t, err)
+			r := gin.New()
+			r.Use(middleware.BypassRateLimitForPrefix("/api/v1/internal/", lim))
+			v1 := r.Group("/api/v1")
+			v1.GET("/internal/job", func(c *gin.Context) { c.Status(http.StatusOK) })
+			v1.GET("/scenarios", func(c *gin.Context) { c.Status(http.StatusOK) })
+			var rec *httptest.ResponseRecorder
+			for i := 0; i < tt.requests; i++ {
+				rec = httptest.NewRecorder()
+				req := httptest.NewRequest(http.MethodGet, tt.path, nil)
+				req.RemoteAddr = "10.0.0.9:1234"
+				r.ServeHTTP(rec, req)
+			}
+			assert.Equal(t, tt.wantLastCode, rec.Code)
+		})
+	}
+}

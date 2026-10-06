@@ -6,12 +6,13 @@ import (
 
 // Config aggregates every configuration section of the API.
 type Config struct {
-	Server   ServerConfig
-	Database DatabaseConfig
-	Auth     AuthConfig
-	Cors     CorsConfig
-	Log      LogConfig
-	Voice    VoiceConfig
+	Server    ServerConfig
+	Database  DatabaseConfig
+	Auth      AuthConfig
+	Cors      CorsConfig
+	Log       LogConfig
+	Voice     VoiceConfig
+	RateLimit RateLimitConfig
 }
 
 // Load reads .env files (if present) and then resolves every config section
@@ -26,11 +27,12 @@ func Load(dotEnvPaths ...string) (Config, error) {
 
 	server := LoadServerConfig()
 	return Config{
-		Server:   server,
-		Database: LoadDatabaseConfig(),
-		Auth:     LoadAuthConfig(),
-		Cors:     LoadCorsConfig(),
-		Log:      LoadLogConfig(server.Env),
-		Voice:    LoadVoiceConfig(),
+		Server:    server,
+		Database:  LoadDatabaseConfig(),
+		Auth:      LoadAuthConfig(),
+		Cors:      LoadCorsConfig(),
+		Log:       LoadLogConfig(server.Env),
+		Voice:     LoadVoiceConfig(),
+		RateLimit: LoadRateLimitConfig(),
 	}, nil
 }

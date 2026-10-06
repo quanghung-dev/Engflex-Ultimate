@@ -15,7 +15,10 @@ import (
 )
 
 // RegisterRoutes mounts the conversation endpoints under /api/v1.
-func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.VoiceConfig) {
+// sessionLimiter is an optional IP-keyed throttle (nil = disabled) applied
+// BEFORE auth on engine-costly routes (sona parity: limiter precedes auth
+// because the userID is unavailable pre-auth).
+func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.VoiceConfig, sessionLimiter gin.HandlerFunc) {
 	repo := repositories.NewConversationRepository(db)
 	turns := repositories.NewConversationTurnRepository(db)
 	feedbacks := repositories.NewFeedbackRepository(db)
@@ -25,13 +28,18 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.VoiceConfig) {
 	ctl := controllers.NewConversationController(svc, cfg.MaxDurationSec)
 
 	g := rg.Group("/conversations")
-	g.POST("", middleware.RequireAuth(), ctl.Create)
+	strict := []gin.HandlerFunc{}
+	if sessionLimiter != nil {
+		strict = append(strict, sessionLimiter)
+	}
+	strictAuth := append(append([]gin.HandlerFunc{}, strict...), middleware.RequireAuth())
+	g.POST("", append(strictAuth, ctl.Create)...)
 	g.GET("/:id", middleware.RequireAuth(), ctl.Get)
-	g.POST("/:id/start", middleware.RequireAuth(), ctl.Start)
-	g.POST("/:id/offer", middleware.RequireAuth(), ctl.Offer)
-	g.PATCH("/:id/offer", middleware.RequireAuth(), ctl.Offer)
+	g.POST("/:id/start", append(strictAuth, ctl.Start)...)
+	g.POST("/:id/offer", append(strictAuth, ctl.Offer)...)
+	g.PATCH("/:id/offer", append(strictAuth, ctl.Offer)...)
 	g.POST("/:id/end", middleware.RequireAuth(), ctl.End)
-	g.POST("/:id/turns/:position/analyze", middleware.RequireAuth(), ctl.AnalyzeTurn)
+	g.POST("/:id/turns/:position/analyze", append(strictAuth, ctl.AnalyzeTurn)...)
 	// One command for the correction modal: the engine owns the reviewed turn.
 	// Retake audio uploads here; gin buffers the multipart file in memory, so
 	// the controller caps the declared size and the service re-checks the
