@@ -33,7 +33,14 @@ func (r *categoryRepository) Create(ctx context.Context, category *models.Catego
 }
 
 func (r *categoryRepository) Update(ctx context.Context, category *models.Category) error {
-	return r.db.WithContext(ctx).Save(category).Error
+	result := r.db.WithContext(ctx).Save(category)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
 }
 
 func (r *categoryRepository) Delete(ctx context.Context, id string) error {
@@ -65,7 +72,7 @@ func (r *categoryRepository) GetByID(ctx context.Context, id string) (*models.Ca
 }
 
 func (r *categoryRepository) List(ctx context.Context, limit int, offset int) ([]*models.Category, error) {
-	var categories []*models.Category
+	categories := make([]*models.Category, 0)
 	query := r.db.WithContext(ctx).Order("id asc")
 	if limit > 0 {
 		query = query.Limit(limit).Offset(offset)
