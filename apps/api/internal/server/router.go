@@ -17,6 +17,7 @@ import (
 	"engflex-api/internal/modules/lessons"
 	"engflex-api/internal/modules/transcripts"
 	"engflex-api/internal/modules/users"
+	vocabularycategory "engflex-api/internal/modules/vocabulary_category"
 	"engflex-api/internal/server/middleware"
 )
 
@@ -43,5 +44,6 @@ func NewRouter(db *gorm.DB, corsCfg config.CorsConfig) *gin.Engine {
 	lessons.RegisterRoutes(v1, repositories.NewLessonRepository(db))
 	transcripts.RegisterRoutes(v1, repositories.NewTranscriptRepository(db))
 	users.RegisterRoutes(v1, repositories.NewUserRepository(db))
+	vocabularycategory.RegisterRoutes(v1, repositories.NewVocabularyCategoryRepository(db))
 	return r
 }
