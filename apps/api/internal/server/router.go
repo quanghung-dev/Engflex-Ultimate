@@ -12,9 +12,12 @@ import (
 
 	"engflex-api/config"
 	_ "engflex-api/docs"
+	"engflex-api/internal/database/repositories"
 	"engflex-api/internal/modules/conversations"
 	"engflex-api/internal/modules/personas"
 	"engflex-api/internal/modules/scenarios"
+	"engflex-api/internal/modules/videos"
+	vocabularycategory "engflex-api/internal/modules/vocabulary_category"
 	"engflex-api/internal/server/middleware"
 )
 
@@ -36,6 +39,10 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	}))
 
 	r.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+	// Kept from origin/dev so existing probes keep working.
+	r.GET("/healthz", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
 	// gin-swagger gates every request on a regexp that only accepts an
@@ -68,10 +75,8 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	conversations.RegisterRoutes(v1, db, cfg.Voice)
 	personas.RegisterRoutes(v1, db)
 	scenarios.RegisterRoutes(v1, db)
-	// TODO: register remaining engflex modules, e.g.
-	// profiles.RegisterRoutes(v1, repositories.NewProfileRepository(db))
-	// contents.RegisterRoutes(v1, repositories.NewContentRepository(db))
-	// attempts.RegisterRoutes(v1, repositories.NewAttemptRepository(db))
+	videos.RegisterRoutes(v1, db)
+	vocabularycategory.RegisterRoutes(v1, repositories.NewVocabularyCategoryRepository(db))
 
 	return r
 }

@@ -9,7 +9,7 @@ ifneq (,$(wildcard .env))
 	DATABASE_URL ?= $(shell sed -n 's/^DATABASE_URL=//p' .env | head -1)
 endif
 
-.PHONY: migration-create migration-up migration-down mocks contracts swagger
+.PHONY: migration-create migration-up migration-down migration-status migration-reset mocks contracts swagger
 
 # usage: make migration-create name=your_migration_name
 migration-create:
@@ -20,6 +20,12 @@ migration-up:
 
 migration-down:
 	@goose -dir $(MIGRATIONS_DIR) postgres "$(DATABASE_URL)" down
+
+migration-status:
+	@goose -dir $(MIGRATIONS_DIR) postgres "$(DATABASE_URL)" status
+
+migration-reset:
+	@goose -dir $(MIGRATIONS_DIR) postgres "$(DATABASE_URL)" reset
 
 # regenerate repository mocks (see .mockery.yaml)
 mocks:
