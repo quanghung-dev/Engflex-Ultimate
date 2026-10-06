@@ -69,6 +69,7 @@ export function addCustomWord(input: AddWordInput): void {
 				domain: "backend_db",
 				definition: input.definition,
 				userState: {
+					itemId: id,
 					sourceType: "manual",
 					sourceId: input.example || undefined,
 					mastered: false,

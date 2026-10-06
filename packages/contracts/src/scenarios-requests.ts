@@ -9,3 +9,12 @@
 export interface ListScenarios extends ListParams {
   topicId?: string;
 }
+
+//////////
+// source: persona_pagination.go
+
+/**
+ * ListPersonas pages the persona catalog.
+ */
+export interface ListPersonas extends ListParams {
+}

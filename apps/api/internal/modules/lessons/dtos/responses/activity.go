@@ -1,6 +1,12 @@
 package responses
 
-import "engflex-api/internal/common/enums"
+import (
+	"encoding/json"
+
+	"gorm.io/datatypes"
+
+	"engflex-api/internal/common/enums"
+)
 
 // QuestionOption is one multiple-choice option. Correctness is intentionally
 // not exposed: answer checking becomes a server endpoint (see spec).
@@ -46,6 +52,39 @@ type WritingPayload struct {
 // VoicePayload is lesson_activities.config for type=voice.
 type VoicePayload struct {
 	ScenarioID string `json:"scenarioId"`
+}
+
+// SplitPayload unmarshals the raw config blob into exactly one typed payload
+// by activity type. utils.Map cannot do this split (it matches Go field
+// names; Config has no Reading/Dictation/Writing/Voice counterpart), so every
+// controller that renders an Activity calls this after Map. Unknown types
+// and broken blobs leave all payloads nil — the part header still renders.
+func (a *Activity) SplitPayload(activityType enums.ActivityType, config datatypes.JSON) {
+	if len(config) == 0 {
+		return
+	}
+	switch activityType {
+	case enums.ActivityTypeReading:
+		var p ReadingPayload
+		if json.Unmarshal(config, &p) == nil {
+			a.Reading = &p
+		}
+	case enums.ActivityTypeDictation:
+		var p DictationPayload
+		if json.Unmarshal(config, &p) == nil {
+			a.Dictation = &p
+		}
+	case enums.ActivityTypeWriting:
+		var p WritingPayload
+		if json.Unmarshal(config, &p) == nil {
+			a.Writing = &p
+		}
+	case enums.ActivityTypeVoice:
+		var p VoicePayload
+		if json.Unmarshal(config, &p) == nil {
+			a.Voice = &p
+		}
+	}
 }
 
 // Activity is one ordered lesson part. Exactly one of Reading, Dictation,

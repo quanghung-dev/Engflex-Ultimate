@@ -17,4 +17,7 @@ type VideoExerciseResponse struct {
 	Duration     float64     `json:"duration"`
 	CreatedAt    time.Time   `json:"createdAt"`
 	UpdatedAt    time.Time   `json:"updatedAt"`
+
+	Category    *VideoCategoryResponse    `json:"category,omitempty"`
+	Transcripts []VideoTranscriptResponse `json:"transcripts,omitempty"`
 }

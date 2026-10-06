@@ -62,15 +62,11 @@ packages:
     output_path: "../../packages/contracts/src/lessons-responses.ts"
     fallback_type: "unknown"
 
-  - path: "engflex-api/internal/modules/personas/dtos/requests"
-    output_path: "../../packages/contracts/src/personas-requests.ts"
-    fallback_type: "unknown"
-  - path: "engflex-api/internal/modules/personas/dtos/responses"
-    output_path: "../../packages/contracts/src/personas-responses.ts"
-    fallback_type: "unknown"
-
   - path: "engflex-api/internal/modules/scenarios/dtos/requests"
     output_path: "../../packages/contracts/src/scenarios-requests.ts"
+    fallback_type: "unknown"
+  - path: "engflex-api/internal/modules/scenarios/dtos/responses"
+    output_path: "../../packages/contracts/src/scenarios-responses.ts"
     fallback_type: "unknown"
 
   - path: "engflex-api/internal/modules/conversations/dtos/requests"

@@ -116,6 +116,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 			],
 		},
 		userState: {
+			itemId: "idempotent",
 			sourceType: "lesson",
 			sourceId: "Distributed Systems Architecture",
 			mastered: false,
@@ -142,6 +143,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 			syllables: "back · presh · er",
 		}),
 		userState: {
+			itemId: "backpressure",
 			sourceType: "conversation",
 			mastered: false,
 			srsDueAt: "2026-09-23T09:00:00Z",
@@ -166,6 +168,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 			syllables: "bot · tl · neck",
 		}),
 		userState: {
+			itemId: "bottleneck",
 			sourceType: "manual",
 			mastered: true,
 			createdAt: "2026-06-10T09:00:00Z",
@@ -190,6 +193,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 			syllables: "re · en · tran · cy",
 		}),
 		userState: {
+			itemId: "re-entrancy",
 			sourceType: "lesson",
 			sourceId: "Smart Contract & Concurrency Pitfalls",
 			mastered: false,
@@ -215,6 +219,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 			syllables: "trade · off",
 		}),
 		userState: {
+			itemId: "trade-off",
 			sourceType: "manual",
 			mastered: false,
 			createdAt: "2026-06-20T09:00:00Z",
@@ -239,6 +244,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 			syllables: "con · cur · ren · cy",
 		}),
 		userState: {
+			itemId: "concurrency",
 			sourceType: "manual",
 			mastered: false,
 			createdAt: "2026-09-23T10:14:00Z",
@@ -263,6 +269,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 			syllables: "heu · ris · tics",
 		}),
 		userState: {
+			itemId: "heuristics",
 			sourceType: "manual",
 			mastered: false,
 			createdAt: "2026-09-22T09:00:00Z",
@@ -287,6 +294,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 			syllables: "fault · tol · er · ance",
 		}),
 		userState: {
+			itemId: "fault-tolerance",
 			sourceType: "manual",
 			mastered: false,
 			createdAt: "2026-09-20T09:00:00Z",

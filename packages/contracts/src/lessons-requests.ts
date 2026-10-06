@@ -16,3 +16,15 @@ export interface ListLessons extends ListParams {
   skill: ActivityType;
   status: LessonStatus;
 }
+/**
+ * ListActivities filters GET /lesson-activities (?lessonId= required).
+ */
+export interface ListActivities {
+  lessonId: string;
+}
+/**
+ * SaveBookmark is the POST /lesson-bookmarks body.
+ */
+export interface SaveBookmark {
+  lessonId: string;
+}

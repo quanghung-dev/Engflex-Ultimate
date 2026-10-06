@@ -7,6 +7,7 @@ import (
 	"engflex-api/internal/database/repositories"
 	"engflex-api/internal/logger"
 	"engflex-api/internal/modules/videos/dtos/requests"
+	"engflex-api/internal/utils"
 	"log/slog"
 )
 
@@ -28,9 +29,10 @@ func NewVideoCategoryService(repo repositories.VideoCategoryRepository) VideoCat
 }
 
 func (s *videoCategoryService) Create(ctx context.Context, req requests.CreateVideoCategory) (*models.VideoCategory, error) {
-	category := &models.VideoCategory{
-		Slug: req.Slug,
-		Name: req.Name,
+	category := &models.VideoCategory{}
+	if err := utils.Map(category, req); err != nil {
+		logger.Report(ctx, "map create video category failed", err, "name", req.Name)
+		return nil, common.Internal()
 	}
 	err := s.repo.Create(ctx, category)
 	if err != nil {
@@ -49,8 +51,10 @@ func (s *videoCategoryService) Update(ctx context.Context, id string, req reques
 		logger.Report(ctx, "failed to find video category for update", appErr, "id", id)
 		return nil, appErr
 	}
-	category.Slug = req.Slug
-	category.Name = req.Name
+	if err := utils.Map(category, req); err != nil {
+		logger.Report(ctx, "map update video category failed", err, "id", id)
+		return nil, common.Internal()
+	}
 	if err := s.repo.Update(ctx, category); err != nil {
 		appErr := common.FromDBError(err, "video category")
 		logger.Report(ctx, "failed to update video category", appErr, "id", id)

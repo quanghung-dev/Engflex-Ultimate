@@ -5,6 +5,8 @@
 package mocks
 
 import (
+	"context"
+	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories"
 
 	mock "github.com/stretchr/testify/mock"
@@ -45,6 +47,276 @@ type MockLessonCategoryRepository_Expecter struct {
 
 func (_m *MockLessonCategoryRepository) EXPECT() *MockLessonCategoryRepository_Expecter {
 	return &MockLessonCategoryRepository_Expecter{mock: &_m.Mock}
+}
+
+// Count provides a mock function for the type MockLessonCategoryRepository
+func (_mock *MockLessonCategoryRepository) Count(ctx context.Context) (int64, error) {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Count")
+	}
+
+	var r0 int64
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) (int64, error)); ok {
+		return returnFunc(ctx)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context) int64); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = returnFunc(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockLessonCategoryRepository_Count_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Count'
+type MockLessonCategoryRepository_Count_Call struct {
+	*mock.Call
+}
+
+// Count is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockLessonCategoryRepository_Expecter) Count(ctx any) *MockLessonCategoryRepository_Count_Call {
+	return &MockLessonCategoryRepository_Count_Call{Call: _e.mock.On("Count", ctx)}
+}
+
+func (_c *MockLessonCategoryRepository_Count_Call) Run(run func(ctx context.Context)) *MockLessonCategoryRepository_Count_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockLessonCategoryRepository_Count_Call) Return(n int64, err error) *MockLessonCategoryRepository_Count_Call {
+	_c.Call.Return(n, err)
+	return _c
+}
+
+func (_c *MockLessonCategoryRepository_Count_Call) RunAndReturn(run func(ctx context.Context) (int64, error)) *MockLessonCategoryRepository_Count_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetByID provides a mock function for the type MockLessonCategoryRepository
+func (_mock *MockLessonCategoryRepository) GetByID(ctx context.Context, id string) (*models.LessonCategory, error) {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByID")
+	}
+
+	var r0 *models.LessonCategory
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*models.LessonCategory, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *models.LessonCategory); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.LessonCategory)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockLessonCategoryRepository_GetByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByID'
+type MockLessonCategoryRepository_GetByID_Call struct {
+	*mock.Call
+}
+
+// GetByID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *MockLessonCategoryRepository_Expecter) GetByID(ctx any, id any) *MockLessonCategoryRepository_GetByID_Call {
+	return &MockLessonCategoryRepository_GetByID_Call{Call: _e.mock.On("GetByID", ctx, id)}
+}
+
+func (_c *MockLessonCategoryRepository_GetByID_Call) Run(run func(ctx context.Context, id string)) *MockLessonCategoryRepository_GetByID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockLessonCategoryRepository_GetByID_Call) Return(lessonCategory *models.LessonCategory, err error) *MockLessonCategoryRepository_GetByID_Call {
+	_c.Call.Return(lessonCategory, err)
+	return _c
+}
+
+func (_c *MockLessonCategoryRepository_GetByID_Call) RunAndReturn(run func(ctx context.Context, id string) (*models.LessonCategory, error)) *MockLessonCategoryRepository_GetByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetBySlug provides a mock function for the type MockLessonCategoryRepository
+func (_mock *MockLessonCategoryRepository) GetBySlug(ctx context.Context, slug string) (*models.LessonCategory, error) {
+	ret := _mock.Called(ctx, slug)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetBySlug")
+	}
+
+	var r0 *models.LessonCategory
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*models.LessonCategory, error)); ok {
+		return returnFunc(ctx, slug)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *models.LessonCategory); ok {
+		r0 = returnFunc(ctx, slug)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.LessonCategory)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, slug)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockLessonCategoryRepository_GetBySlug_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetBySlug'
+type MockLessonCategoryRepository_GetBySlug_Call struct {
+	*mock.Call
+}
+
+// GetBySlug is a helper method to define mock.On call
+//   - ctx context.Context
+//   - slug string
+func (_e *MockLessonCategoryRepository_Expecter) GetBySlug(ctx any, slug any) *MockLessonCategoryRepository_GetBySlug_Call {
+	return &MockLessonCategoryRepository_GetBySlug_Call{Call: _e.mock.On("GetBySlug", ctx, slug)}
+}
+
+func (_c *MockLessonCategoryRepository_GetBySlug_Call) Run(run func(ctx context.Context, slug string)) *MockLessonCategoryRepository_GetBySlug_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockLessonCategoryRepository_GetBySlug_Call) Return(lessonCategory *models.LessonCategory, err error) *MockLessonCategoryRepository_GetBySlug_Call {
+	_c.Call.Return(lessonCategory, err)
+	return _c
+}
+
+func (_c *MockLessonCategoryRepository_GetBySlug_Call) RunAndReturn(run func(ctx context.Context, slug string) (*models.LessonCategory, error)) *MockLessonCategoryRepository_GetBySlug_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// List provides a mock function for the type MockLessonCategoryRepository
+func (_mock *MockLessonCategoryRepository) List(ctx context.Context, limit int, offset int) ([]*models.LessonCategory, error) {
+	ret := _mock.Called(ctx, limit, offset)
+
+	if len(ret) == 0 {
+		panic("no return value specified for List")
+	}
+
+	var r0 []*models.LessonCategory
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int, int) ([]*models.LessonCategory, error)); ok {
+		return returnFunc(ctx, limit, offset)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int, int) []*models.LessonCategory); ok {
+		r0 = returnFunc(ctx, limit, offset)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.LessonCategory)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, int, int) error); ok {
+		r1 = returnFunc(ctx, limit, offset)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockLessonCategoryRepository_List_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'List'
+type MockLessonCategoryRepository_List_Call struct {
+	*mock.Call
+}
+
+// List is a helper method to define mock.On call
+//   - ctx context.Context
+//   - limit int
+//   - offset int
+func (_e *MockLessonCategoryRepository_Expecter) List(ctx any, limit any, offset any) *MockLessonCategoryRepository_List_Call {
+	return &MockLessonCategoryRepository_List_Call{Call: _e.mock.On("List", ctx, limit, offset)}
+}
+
+func (_c *MockLessonCategoryRepository_List_Call) Run(run func(ctx context.Context, limit int, offset int)) *MockLessonCategoryRepository_List_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 int
+		if args[1] != nil {
+			arg1 = args[1].(int)
+		}
+		var arg2 int
+		if args[2] != nil {
+			arg2 = args[2].(int)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockLessonCategoryRepository_List_Call) Return(lessonCategorys []*models.LessonCategory, err error) *MockLessonCategoryRepository_List_Call {
+	_c.Call.Return(lessonCategorys, err)
+	return _c
+}
+
+func (_c *MockLessonCategoryRepository_List_Call) RunAndReturn(run func(ctx context.Context, limit int, offset int) ([]*models.LessonCategory, error)) *MockLessonCategoryRepository_List_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // WithTx provides a mock function for the type MockLessonCategoryRepository

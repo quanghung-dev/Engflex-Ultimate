@@ -199,8 +199,13 @@ A NULL join row yields a **nil** pointer, never a zero-valued struct — that is
 what makes "no coaching yet" expressible as `turn.Feedback == nil`.
 
 Two GORM behaviours worth knowing before you design a query around them: a
-has-many `Joins` **panics** in `scanIntoStruct` (use two queries, or group in Go
-from two constant queries), and `Preload` cannot limit rows per parent.
+has-many `Joins` is forbidden (use two queries, or group in Go from two
+constant queries), and `Preload` cannot limit rows per parent. The join
+builder does not discriminate by relation type, so a has-many join executes
+as a cartesian product — one row per parent×child — silently breaking
+`Limit`/`Offset` pagination and row counts. (The old "panics in
+`scanIntoStruct`" wording was version-specific; verified absent on gorm
+v1.31.0. The duplication is the version-independent reason.)
 
 #### Never hand-build a query result as a custom struct
 

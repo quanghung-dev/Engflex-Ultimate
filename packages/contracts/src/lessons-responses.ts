@@ -120,3 +120,25 @@ export interface Lesson {
   partCount: number /* int */;
   progress?: LessonProgress;
 }
+/**
+ * LessonDetail is the GET /lessons/:id shape: header + category + ordered
+ * activities. No Progress in v1 (attempts stays outside the module).
+ */
+export interface LessonDetail {
+  id: string;
+  slug: string;
+  title: string;
+  category?: Category;
+  cefrLevel: CEFR;
+  description: string;
+  details: LessonDetails;
+  activities: Activity[];
+}
+/**
+ * Bookmark is one saved lesson for the caller. Go name CreatedAt matches
+ * the model for copier; wire name savedAt is the product term.
+ */
+export interface Bookmark {
+  lessonId: string;
+  savedAt: string /* RFC3339 */;
+}

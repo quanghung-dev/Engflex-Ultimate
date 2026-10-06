@@ -42,9 +42,11 @@ export interface VocabularyDetails {
   wordForms: WordForm[];
 }
 /**
- * UserVocabularyState is the user's row over a shared item.
+ * UserVocabularyState is the user's row over a shared item. ItemID is the
+ * shared item (needed to correlate, display, and DELETE the row).
  */
 export interface UserVocabularyState {
+  itemId: string;
   sourceType: VocabularySource;
   sourceId?: string;
   note?: string;
@@ -77,4 +79,49 @@ export interface VocabularyStats {
   customAdditions: number /* int */;
   dueToday: number /* int */;
   retentionPct: number /* int */;
+}
+
+//////////
+// source: vocabulary_category.go
+
+export interface VocabularyCategoryResponse {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: string /* RFC3339 */;
+  updatedAt: string /* RFC3339 */;
+}
+
+//////////
+// source: vocabulary_decks.go
+
+/**
+ * VocabularyDeckDetail is the GET /vocabulary-decks/:id shape: deck header
+ * plus its category. Items page separately via /vocabulary-deck-items.
+ */
+export interface VocabularyDeckDetail {
+  id: string;
+  categoryId?: string;
+  name: string;
+  description: string;
+  thumbnailUrl: string;
+  level: string;
+  isDefault: boolean;
+  category?: VocabularyCategoryResponse;
+  createdAt: string /* RFC3339 */;
+  updatedAt: string /* RFC3339 */;
+}
+/**
+ * VocabularyDeckItemResponse is one flashcard row.
+ */
+export interface VocabularyDeckItemResponse {
+  id: string;
+  deckId: string;
+  videoExerciseId?: string;
+  videoTranscriptId?: string;
+  phrase: string;
+  normalizedPhrase: string;
+  meaning: string;
+  exampleSentence: string;
+  note: string;
 }

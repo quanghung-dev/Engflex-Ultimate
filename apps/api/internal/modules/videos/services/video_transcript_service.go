@@ -9,6 +9,7 @@ import (
 	"engflex-api/internal/database/repositories"
 	"engflex-api/internal/logger"
 	"engflex-api/internal/modules/videos/dtos/requests"
+	"engflex-api/internal/utils"
 )
 
 type VideoTranscriptService interface {
@@ -30,14 +31,10 @@ func NewVideoTranscriptService(repo repositories.VideoTranscriptRepository) Vide
 }
 
 func (s *videoTranscriptService) Create(ctx context.Context, req requests.CreateVideoTranscript) (*models.VideoTranscript, error) {
-	transcript := &models.VideoTranscript{
-		VideoExerciseID: req.VideoExerciseID,
-		Sequence:        req.Sequence,
-		Content:         req.Content,
-		Phonetic:        req.Phonetic,
-		Vietnamese:      req.Vietnamese,
-		StartTimestamp:  req.StartTimestamp,
-		EndTimestamp:    req.EndTimestamp,
+	transcript := &models.VideoTranscript{}
+	if err := utils.Map(transcript, req); err != nil {
+		logger.Report(ctx, "map create video transcript failed", err)
+		return nil, common.Internal()
 	}
 	err := s.repo.Create(ctx, transcript)
 	if err != nil {
@@ -56,23 +53,11 @@ func (s *videoTranscriptService) Update(ctx context.Context, id string, req requ
 		logger.Report(ctx, "failed to get video transcript for update", appErr, "id", id)
 		return nil, appErr
 	}
-	if req.Sequence != nil {
-		transcript.Sequence = *req.Sequence
-	}
-	if req.Content != nil {
-		transcript.Content = *req.Content
-	}
-	if req.Phonetic != nil {
-		transcript.Phonetic = *req.Phonetic
-	}
-	if req.Vietnamese != nil {
-		transcript.Vietnamese = *req.Vietnamese
-	}
-	if req.StartTimestamp != nil {
-		transcript.StartTimestamp = *req.StartTimestamp
-	}
-	if req.EndTimestamp != nil {
-		transcript.EndTimestamp = *req.EndTimestamp
+	// UpdateVideoTranscript fields are pointers; copier skips nil sources,
+	// so one Map call is the partial update — no manual nil checks.
+	if err := utils.Map(transcript, req); err != nil {
+		logger.Report(ctx, "map update video transcript failed", err, "id", id)
+		return nil, common.Internal()
 	}
 	if err = s.repo.Update(ctx, transcript); err != nil {
 		appErr := common.FromDBError(err, "video transcript")

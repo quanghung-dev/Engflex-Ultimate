@@ -10,6 +10,9 @@ import (
 type VideoExerciseRepository interface {
 	List(ctx context.Context, limit int, offset int) ([]*models.VideoExercise, error)
 	GetByID(ctx context.Context, id string) (*models.VideoExercise, error)
+	// GetDetail returns the exercise with its category (one join) and its
+	// transcripts (second query, ordered by sequence) attached.
+	GetDetail(ctx context.Context, id string) (*models.VideoExercise, error)
 	Create(ctx context.Context, lesson *models.VideoExercise) error
 	Update(ctx context.Context, lesson *models.VideoExercise) error
 	Delete(ctx context.Context, id string) error
@@ -51,6 +54,29 @@ func (r *videoExerciseRepository) GetByID(ctx context.Context, id string) (*mode
 	if err != nil {
 		return nil, err
 	}
+	return &lesson, nil
+}
+
+// GetDetail returns one exercise with its category joined in a single
+// round trip and its transcripts attached from a second query ordered by
+// sequence. Transcripts stay out of the join: a has-many join would
+// cartesian-duplicate the parent and break pagination.
+func (r *videoExerciseRepository) GetDetail(ctx context.Context, id string) (*models.VideoExercise, error) {
+	if _, err := parseID(id, "id"); err != nil {
+		return nil, err
+	}
+	var lesson models.VideoExercise
+	if err := r.db.WithContext(ctx).Joins("Category").First(&lesson, "video_exercises.id = ?", id).Error; err != nil {
+		return nil, err
+	}
+	transcripts := make([]*models.VideoTranscript, 0)
+	if err := r.db.WithContext(ctx).
+		Where("video_exercise_id = ?", id).
+		Order("sequence asc").
+		Find(&transcripts).Error; err != nil {
+		return nil, err
+	}
+	lesson.Transcripts = transcripts
 	return &lesson, nil
 }
 

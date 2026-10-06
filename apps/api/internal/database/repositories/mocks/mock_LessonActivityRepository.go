@@ -5,6 +5,8 @@
 package mocks
 
 import (
+	"context"
+	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories"
 
 	mock "github.com/stretchr/testify/mock"
@@ -45,6 +47,142 @@ type MockLessonActivityRepository_Expecter struct {
 
 func (_m *MockLessonActivityRepository) EXPECT() *MockLessonActivityRepository_Expecter {
 	return &MockLessonActivityRepository_Expecter{mock: &_m.Mock}
+}
+
+// GetByID provides a mock function for the type MockLessonActivityRepository
+func (_mock *MockLessonActivityRepository) GetByID(ctx context.Context, id string) (*models.LessonActivity, error) {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByID")
+	}
+
+	var r0 *models.LessonActivity
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*models.LessonActivity, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *models.LessonActivity); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.LessonActivity)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockLessonActivityRepository_GetByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByID'
+type MockLessonActivityRepository_GetByID_Call struct {
+	*mock.Call
+}
+
+// GetByID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *MockLessonActivityRepository_Expecter) GetByID(ctx any, id any) *MockLessonActivityRepository_GetByID_Call {
+	return &MockLessonActivityRepository_GetByID_Call{Call: _e.mock.On("GetByID", ctx, id)}
+}
+
+func (_c *MockLessonActivityRepository_GetByID_Call) Run(run func(ctx context.Context, id string)) *MockLessonActivityRepository_GetByID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockLessonActivityRepository_GetByID_Call) Return(lessonActivity *models.LessonActivity, err error) *MockLessonActivityRepository_GetByID_Call {
+	_c.Call.Return(lessonActivity, err)
+	return _c
+}
+
+func (_c *MockLessonActivityRepository_GetByID_Call) RunAndReturn(run func(ctx context.Context, id string) (*models.LessonActivity, error)) *MockLessonActivityRepository_GetByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListByLesson provides a mock function for the type MockLessonActivityRepository
+func (_mock *MockLessonActivityRepository) ListByLesson(ctx context.Context, lessonID string) ([]*models.LessonActivity, error) {
+	ret := _mock.Called(ctx, lessonID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListByLesson")
+	}
+
+	var r0 []*models.LessonActivity
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) ([]*models.LessonActivity, error)); ok {
+		return returnFunc(ctx, lessonID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) []*models.LessonActivity); ok {
+		r0 = returnFunc(ctx, lessonID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.LessonActivity)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, lessonID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockLessonActivityRepository_ListByLesson_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListByLesson'
+type MockLessonActivityRepository_ListByLesson_Call struct {
+	*mock.Call
+}
+
+// ListByLesson is a helper method to define mock.On call
+//   - ctx context.Context
+//   - lessonID string
+func (_e *MockLessonActivityRepository_Expecter) ListByLesson(ctx any, lessonID any) *MockLessonActivityRepository_ListByLesson_Call {
+	return &MockLessonActivityRepository_ListByLesson_Call{Call: _e.mock.On("ListByLesson", ctx, lessonID)}
+}
+
+func (_c *MockLessonActivityRepository_ListByLesson_Call) Run(run func(ctx context.Context, lessonID string)) *MockLessonActivityRepository_ListByLesson_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockLessonActivityRepository_ListByLesson_Call) Return(lessonActivitys []*models.LessonActivity, err error) *MockLessonActivityRepository_ListByLesson_Call {
+	_c.Call.Return(lessonActivitys, err)
+	return _c
+}
+
+func (_c *MockLessonActivityRepository_ListByLesson_Call) RunAndReturn(run func(ctx context.Context, lessonID string) ([]*models.LessonActivity, error)) *MockLessonActivityRepository_ListByLesson_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // WithTx provides a mock function for the type MockLessonActivityRepository

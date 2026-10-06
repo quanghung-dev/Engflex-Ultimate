@@ -5,6 +5,8 @@
 package mocks
 
 import (
+	"context"
+	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories"
 
 	mock "github.com/stretchr/testify/mock"
@@ -45,6 +47,265 @@ type MockVocabularyItemRepository_Expecter struct {
 
 func (_m *MockVocabularyItemRepository) EXPECT() *MockVocabularyItemRepository_Expecter {
 	return &MockVocabularyItemRepository_Expecter{mock: &_m.Mock}
+}
+
+// Count provides a mock function for the type MockVocabularyItemRepository
+func (_mock *MockVocabularyItemRepository) Count(ctx context.Context) (int64, error) {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Count")
+	}
+
+	var r0 int64
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) (int64, error)); ok {
+		return returnFunc(ctx)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context) int64); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = returnFunc(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockVocabularyItemRepository_Count_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Count'
+type MockVocabularyItemRepository_Count_Call struct {
+	*mock.Call
+}
+
+// Count is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockVocabularyItemRepository_Expecter) Count(ctx any) *MockVocabularyItemRepository_Count_Call {
+	return &MockVocabularyItemRepository_Count_Call{Call: _e.mock.On("Count", ctx)}
+}
+
+func (_c *MockVocabularyItemRepository_Count_Call) Run(run func(ctx context.Context)) *MockVocabularyItemRepository_Count_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockVocabularyItemRepository_Count_Call) Return(n int64, err error) *MockVocabularyItemRepository_Count_Call {
+	_c.Call.Return(n, err)
+	return _c
+}
+
+func (_c *MockVocabularyItemRepository_Count_Call) RunAndReturn(run func(ctx context.Context) (int64, error)) *MockVocabularyItemRepository_Count_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Create provides a mock function for the type MockVocabularyItemRepository
+func (_mock *MockVocabularyItemRepository) Create(ctx context.Context, i *models.VocabularyItem) error {
+	ret := _mock.Called(ctx, i)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Create")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *models.VocabularyItem) error); ok {
+		r0 = returnFunc(ctx, i)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockVocabularyItemRepository_Create_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Create'
+type MockVocabularyItemRepository_Create_Call struct {
+	*mock.Call
+}
+
+// Create is a helper method to define mock.On call
+//   - ctx context.Context
+//   - i *models.VocabularyItem
+func (_e *MockVocabularyItemRepository_Expecter) Create(ctx any, i any) *MockVocabularyItemRepository_Create_Call {
+	return &MockVocabularyItemRepository_Create_Call{Call: _e.mock.On("Create", ctx, i)}
+}
+
+func (_c *MockVocabularyItemRepository_Create_Call) Run(run func(ctx context.Context, i *models.VocabularyItem)) *MockVocabularyItemRepository_Create_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *models.VocabularyItem
+		if args[1] != nil {
+			arg1 = args[1].(*models.VocabularyItem)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockVocabularyItemRepository_Create_Call) Return(err error) *MockVocabularyItemRepository_Create_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockVocabularyItemRepository_Create_Call) RunAndReturn(run func(ctx context.Context, i *models.VocabularyItem) error) *MockVocabularyItemRepository_Create_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetByID provides a mock function for the type MockVocabularyItemRepository
+func (_mock *MockVocabularyItemRepository) GetByID(ctx context.Context, id string) (*models.VocabularyItem, error) {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByID")
+	}
+
+	var r0 *models.VocabularyItem
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*models.VocabularyItem, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *models.VocabularyItem); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.VocabularyItem)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockVocabularyItemRepository_GetByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByID'
+type MockVocabularyItemRepository_GetByID_Call struct {
+	*mock.Call
+}
+
+// GetByID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *MockVocabularyItemRepository_Expecter) GetByID(ctx any, id any) *MockVocabularyItemRepository_GetByID_Call {
+	return &MockVocabularyItemRepository_GetByID_Call{Call: _e.mock.On("GetByID", ctx, id)}
+}
+
+func (_c *MockVocabularyItemRepository_GetByID_Call) Run(run func(ctx context.Context, id string)) *MockVocabularyItemRepository_GetByID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockVocabularyItemRepository_GetByID_Call) Return(vocabularyItem *models.VocabularyItem, err error) *MockVocabularyItemRepository_GetByID_Call {
+	_c.Call.Return(vocabularyItem, err)
+	return _c
+}
+
+func (_c *MockVocabularyItemRepository_GetByID_Call) RunAndReturn(run func(ctx context.Context, id string) (*models.VocabularyItem, error)) *MockVocabularyItemRepository_GetByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// List provides a mock function for the type MockVocabularyItemRepository
+func (_mock *MockVocabularyItemRepository) List(ctx context.Context, limit int, offset int) ([]*models.VocabularyItem, error) {
+	ret := _mock.Called(ctx, limit, offset)
+
+	if len(ret) == 0 {
+		panic("no return value specified for List")
+	}
+
+	var r0 []*models.VocabularyItem
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int, int) ([]*models.VocabularyItem, error)); ok {
+		return returnFunc(ctx, limit, offset)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int, int) []*models.VocabularyItem); ok {
+		r0 = returnFunc(ctx, limit, offset)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.VocabularyItem)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, int, int) error); ok {
+		r1 = returnFunc(ctx, limit, offset)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockVocabularyItemRepository_List_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'List'
+type MockVocabularyItemRepository_List_Call struct {
+	*mock.Call
+}
+
+// List is a helper method to define mock.On call
+//   - ctx context.Context
+//   - limit int
+//   - offset int
+func (_e *MockVocabularyItemRepository_Expecter) List(ctx any, limit any, offset any) *MockVocabularyItemRepository_List_Call {
+	return &MockVocabularyItemRepository_List_Call{Call: _e.mock.On("List", ctx, limit, offset)}
+}
+
+func (_c *MockVocabularyItemRepository_List_Call) Run(run func(ctx context.Context, limit int, offset int)) *MockVocabularyItemRepository_List_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 int
+		if args[1] != nil {
+			arg1 = args[1].(int)
+		}
+		var arg2 int
+		if args[2] != nil {
+			arg2 = args[2].(int)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockVocabularyItemRepository_List_Call) Return(vocabularyItems []*models.VocabularyItem, err error) *MockVocabularyItemRepository_List_Call {
+	_c.Call.Return(vocabularyItems, err)
+	return _c
+}
+
+func (_c *MockVocabularyItemRepository_List_Call) RunAndReturn(run func(ctx context.Context, limit int, offset int) ([]*models.VocabularyItem, error)) *MockVocabularyItemRepository_List_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // WithTx provides a mock function for the type MockVocabularyItemRepository

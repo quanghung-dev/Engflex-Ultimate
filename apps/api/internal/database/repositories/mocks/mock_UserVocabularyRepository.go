@@ -5,6 +5,8 @@
 package mocks
 
 import (
+	"context"
+	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories"
 
 	mock "github.com/stretchr/testify/mock"
@@ -45,6 +47,280 @@ type MockUserVocabularyRepository_Expecter struct {
 
 func (_m *MockUserVocabularyRepository) EXPECT() *MockUserVocabularyRepository_Expecter {
 	return &MockUserVocabularyRepository_Expecter{mock: &_m.Mock}
+}
+
+// Delete provides a mock function for the type MockUserVocabularyRepository
+func (_mock *MockUserVocabularyRepository) Delete(ctx context.Context, userID string, itemID string) error {
+	ret := _mock.Called(ctx, userID, itemID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = returnFunc(ctx, userID, itemID)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockUserVocabularyRepository_Delete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Delete'
+type MockUserVocabularyRepository_Delete_Call struct {
+	*mock.Call
+}
+
+// Delete is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - itemID string
+func (_e *MockUserVocabularyRepository_Expecter) Delete(ctx any, userID any, itemID any) *MockUserVocabularyRepository_Delete_Call {
+	return &MockUserVocabularyRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, userID, itemID)}
+}
+
+func (_c *MockUserVocabularyRepository_Delete_Call) Run(run func(ctx context.Context, userID string, itemID string)) *MockUserVocabularyRepository_Delete_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockUserVocabularyRepository_Delete_Call) Return(err error) *MockUserVocabularyRepository_Delete_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockUserVocabularyRepository_Delete_Call) RunAndReturn(run func(ctx context.Context, userID string, itemID string) error) *MockUserVocabularyRepository_Delete_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Get provides a mock function for the type MockUserVocabularyRepository
+func (_mock *MockUserVocabularyRepository) Get(ctx context.Context, userID string, itemID string) (*models.UserVocabulary, error) {
+	ret := _mock.Called(ctx, userID, itemID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Get")
+	}
+
+	var r0 *models.UserVocabulary
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) (*models.UserVocabulary, error)); ok {
+		return returnFunc(ctx, userID, itemID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) *models.UserVocabulary); ok {
+		r0 = returnFunc(ctx, userID, itemID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.UserVocabulary)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = returnFunc(ctx, userID, itemID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockUserVocabularyRepository_Get_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Get'
+type MockUserVocabularyRepository_Get_Call struct {
+	*mock.Call
+}
+
+// Get is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - itemID string
+func (_e *MockUserVocabularyRepository_Expecter) Get(ctx any, userID any, itemID any) *MockUserVocabularyRepository_Get_Call {
+	return &MockUserVocabularyRepository_Get_Call{Call: _e.mock.On("Get", ctx, userID, itemID)}
+}
+
+func (_c *MockUserVocabularyRepository_Get_Call) Run(run func(ctx context.Context, userID string, itemID string)) *MockUserVocabularyRepository_Get_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockUserVocabularyRepository_Get_Call) Return(userVocabulary *models.UserVocabulary, err error) *MockUserVocabularyRepository_Get_Call {
+	_c.Call.Return(userVocabulary, err)
+	return _c
+}
+
+func (_c *MockUserVocabularyRepository_Get_Call) RunAndReturn(run func(ctx context.Context, userID string, itemID string) (*models.UserVocabulary, error)) *MockUserVocabularyRepository_Get_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListByUser provides a mock function for the type MockUserVocabularyRepository
+func (_mock *MockUserVocabularyRepository) ListByUser(ctx context.Context, userID string, limit int, offset int) ([]*models.UserVocabulary, error) {
+	ret := _mock.Called(ctx, userID, limit, offset)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListByUser")
+	}
+
+	var r0 []*models.UserVocabulary
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, int, int) ([]*models.UserVocabulary, error)); ok {
+		return returnFunc(ctx, userID, limit, offset)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, int, int) []*models.UserVocabulary); ok {
+		r0 = returnFunc(ctx, userID, limit, offset)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.UserVocabulary)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, int, int) error); ok {
+		r1 = returnFunc(ctx, userID, limit, offset)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockUserVocabularyRepository_ListByUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListByUser'
+type MockUserVocabularyRepository_ListByUser_Call struct {
+	*mock.Call
+}
+
+// ListByUser is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - limit int
+//   - offset int
+func (_e *MockUserVocabularyRepository_Expecter) ListByUser(ctx any, userID any, limit any, offset any) *MockUserVocabularyRepository_ListByUser_Call {
+	return &MockUserVocabularyRepository_ListByUser_Call{Call: _e.mock.On("ListByUser", ctx, userID, limit, offset)}
+}
+
+func (_c *MockUserVocabularyRepository_ListByUser_Call) Run(run func(ctx context.Context, userID string, limit int, offset int)) *MockUserVocabularyRepository_ListByUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 int
+		if args[2] != nil {
+			arg2 = args[2].(int)
+		}
+		var arg3 int
+		if args[3] != nil {
+			arg3 = args[3].(int)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *MockUserVocabularyRepository_ListByUser_Call) Return(userVocabularys []*models.UserVocabulary, err error) *MockUserVocabularyRepository_ListByUser_Call {
+	_c.Call.Return(userVocabularys, err)
+	return _c
+}
+
+func (_c *MockUserVocabularyRepository_ListByUser_Call) RunAndReturn(run func(ctx context.Context, userID string, limit int, offset int) ([]*models.UserVocabulary, error)) *MockUserVocabularyRepository_ListByUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Upsert provides a mock function for the type MockUserVocabularyRepository
+func (_mock *MockUserVocabularyRepository) Upsert(ctx context.Context, u *models.UserVocabulary) error {
+	ret := _mock.Called(ctx, u)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Upsert")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *models.UserVocabulary) error); ok {
+		r0 = returnFunc(ctx, u)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockUserVocabularyRepository_Upsert_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Upsert'
+type MockUserVocabularyRepository_Upsert_Call struct {
+	*mock.Call
+}
+
+// Upsert is a helper method to define mock.On call
+//   - ctx context.Context
+//   - u *models.UserVocabulary
+func (_e *MockUserVocabularyRepository_Expecter) Upsert(ctx any, u any) *MockUserVocabularyRepository_Upsert_Call {
+	return &MockUserVocabularyRepository_Upsert_Call{Call: _e.mock.On("Upsert", ctx, u)}
+}
+
+func (_c *MockUserVocabularyRepository_Upsert_Call) Run(run func(ctx context.Context, u *models.UserVocabulary)) *MockUserVocabularyRepository_Upsert_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *models.UserVocabulary
+		if args[1] != nil {
+			arg1 = args[1].(*models.UserVocabulary)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockUserVocabularyRepository_Upsert_Call) Return(err error) *MockUserVocabularyRepository_Upsert_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockUserVocabularyRepository_Upsert_Call) RunAndReturn(run func(ctx context.Context, u *models.UserVocabulary) error) *MockUserVocabularyRepository_Upsert_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // WithTx provides a mock function for the type MockUserVocabularyRepository

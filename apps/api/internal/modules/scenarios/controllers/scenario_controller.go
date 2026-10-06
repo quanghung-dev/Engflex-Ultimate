@@ -7,8 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"engflex-api/internal/common"
-	"engflex-api/internal/modules/personas/dtos/responses"
 	"engflex-api/internal/modules/scenarios/dtos/requests"
+	"engflex-api/internal/modules/scenarios/dtos/responses"
 	"engflex-api/internal/modules/scenarios/services"
 	"engflex-api/internal/utils"
 )

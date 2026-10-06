@@ -12,12 +12,11 @@ import (
 
 	"engflex-api/config"
 	_ "engflex-api/docs"
-	"engflex-api/internal/database/repositories"
 	"engflex-api/internal/modules/conversations"
-	"engflex-api/internal/modules/personas"
+	"engflex-api/internal/modules/lessons"
 	"engflex-api/internal/modules/scenarios"
 	"engflex-api/internal/modules/videos"
-	vocabularycategory "engflex-api/internal/modules/vocabulary_category"
+	"engflex-api/internal/modules/vocabulary"
 	"engflex-api/internal/server/middleware"
 )
 
@@ -73,10 +72,10 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 
 	v1 := r.Group("/api/v1")
 	conversations.RegisterRoutes(v1, db, cfg.Voice)
-	personas.RegisterRoutes(v1, db)
+	lessons.RegisterRoutes(v1, db)
 	scenarios.RegisterRoutes(v1, db)
 	videos.RegisterRoutes(v1, db)
-	vocabularycategory.RegisterRoutes(v1, repositories.NewVocabularyCategoryRepository(db))
+	vocabulary.RegisterRoutes(v1, db)
 
 	return r
 }

@@ -11,11 +11,15 @@ import (
 	"engflex-api/internal/server/middleware"
 )
 
-// RegisterRoutes mounts the endpoints under /api/v1.
+// RegisterRoutes mounts the catalog endpoints under /api/v1: scenarios,
+// scenario topics, and personas (one feature, three route groups).
 func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 	svc := services.NewScenarioService(
 		repositories.NewScenarioRepository(db), repositories.NewScenarioTopicRepository(db))
 	ctl := controllers.NewScenarioController(svc)
+
+	personaSvc := services.NewPersonaService(repositories.NewPersonaRepository(db))
+	personaCtl := controllers.NewPersonaController(personaSvc)
 
 	g := rg.Group("/scenarios")
 	g.GET("", middleware.RequireAuth(), ctl.List)
@@ -23,4 +27,7 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 
 	t := rg.Group("/scenario-topics")
 	t.GET("", middleware.RequireAuth(), ctl.TopicsWithPreview)
+
+	p := rg.Group("/personas")
+	p.GET("", middleware.RequireAuth(), personaCtl.List)
 }

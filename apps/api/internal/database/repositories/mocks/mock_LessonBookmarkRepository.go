@@ -5,6 +5,8 @@
 package mocks
 
 import (
+	"context"
+	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories"
 
 	mock "github.com/stretchr/testify/mock"
@@ -45,6 +47,268 @@ type MockLessonBookmarkRepository_Expecter struct {
 
 func (_m *MockLessonBookmarkRepository) EXPECT() *MockLessonBookmarkRepository_Expecter {
 	return &MockLessonBookmarkRepository_Expecter{mock: &_m.Mock}
+}
+
+// Create provides a mock function for the type MockLessonBookmarkRepository
+func (_mock *MockLessonBookmarkRepository) Create(ctx context.Context, b *models.LessonBookmark) error {
+	ret := _mock.Called(ctx, b)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Create")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *models.LessonBookmark) error); ok {
+		r0 = returnFunc(ctx, b)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockLessonBookmarkRepository_Create_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Create'
+type MockLessonBookmarkRepository_Create_Call struct {
+	*mock.Call
+}
+
+// Create is a helper method to define mock.On call
+//   - ctx context.Context
+//   - b *models.LessonBookmark
+func (_e *MockLessonBookmarkRepository_Expecter) Create(ctx any, b any) *MockLessonBookmarkRepository_Create_Call {
+	return &MockLessonBookmarkRepository_Create_Call{Call: _e.mock.On("Create", ctx, b)}
+}
+
+func (_c *MockLessonBookmarkRepository_Create_Call) Run(run func(ctx context.Context, b *models.LessonBookmark)) *MockLessonBookmarkRepository_Create_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *models.LessonBookmark
+		if args[1] != nil {
+			arg1 = args[1].(*models.LessonBookmark)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockLessonBookmarkRepository_Create_Call) Return(err error) *MockLessonBookmarkRepository_Create_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockLessonBookmarkRepository_Create_Call) RunAndReturn(run func(ctx context.Context, b *models.LessonBookmark) error) *MockLessonBookmarkRepository_Create_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Delete provides a mock function for the type MockLessonBookmarkRepository
+func (_mock *MockLessonBookmarkRepository) Delete(ctx context.Context, userID string, lessonID string) error {
+	ret := _mock.Called(ctx, userID, lessonID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = returnFunc(ctx, userID, lessonID)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockLessonBookmarkRepository_Delete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Delete'
+type MockLessonBookmarkRepository_Delete_Call struct {
+	*mock.Call
+}
+
+// Delete is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - lessonID string
+func (_e *MockLessonBookmarkRepository_Expecter) Delete(ctx any, userID any, lessonID any) *MockLessonBookmarkRepository_Delete_Call {
+	return &MockLessonBookmarkRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, userID, lessonID)}
+}
+
+func (_c *MockLessonBookmarkRepository_Delete_Call) Run(run func(ctx context.Context, userID string, lessonID string)) *MockLessonBookmarkRepository_Delete_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockLessonBookmarkRepository_Delete_Call) Return(err error) *MockLessonBookmarkRepository_Delete_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockLessonBookmarkRepository_Delete_Call) RunAndReturn(run func(ctx context.Context, userID string, lessonID string) error) *MockLessonBookmarkRepository_Delete_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Get provides a mock function for the type MockLessonBookmarkRepository
+func (_mock *MockLessonBookmarkRepository) Get(ctx context.Context, userID string, lessonID string) (*models.LessonBookmark, error) {
+	ret := _mock.Called(ctx, userID, lessonID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Get")
+	}
+
+	var r0 *models.LessonBookmark
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) (*models.LessonBookmark, error)); ok {
+		return returnFunc(ctx, userID, lessonID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) *models.LessonBookmark); ok {
+		r0 = returnFunc(ctx, userID, lessonID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.LessonBookmark)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = returnFunc(ctx, userID, lessonID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockLessonBookmarkRepository_Get_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Get'
+type MockLessonBookmarkRepository_Get_Call struct {
+	*mock.Call
+}
+
+// Get is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - lessonID string
+func (_e *MockLessonBookmarkRepository_Expecter) Get(ctx any, userID any, lessonID any) *MockLessonBookmarkRepository_Get_Call {
+	return &MockLessonBookmarkRepository_Get_Call{Call: _e.mock.On("Get", ctx, userID, lessonID)}
+}
+
+func (_c *MockLessonBookmarkRepository_Get_Call) Run(run func(ctx context.Context, userID string, lessonID string)) *MockLessonBookmarkRepository_Get_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockLessonBookmarkRepository_Get_Call) Return(lessonBookmark *models.LessonBookmark, err error) *MockLessonBookmarkRepository_Get_Call {
+	_c.Call.Return(lessonBookmark, err)
+	return _c
+}
+
+func (_c *MockLessonBookmarkRepository_Get_Call) RunAndReturn(run func(ctx context.Context, userID string, lessonID string) (*models.LessonBookmark, error)) *MockLessonBookmarkRepository_Get_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListByUser provides a mock function for the type MockLessonBookmarkRepository
+func (_mock *MockLessonBookmarkRepository) ListByUser(ctx context.Context, userID string) ([]*models.LessonBookmark, error) {
+	ret := _mock.Called(ctx, userID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListByUser")
+	}
+
+	var r0 []*models.LessonBookmark
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) ([]*models.LessonBookmark, error)); ok {
+		return returnFunc(ctx, userID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) []*models.LessonBookmark); ok {
+		r0 = returnFunc(ctx, userID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.LessonBookmark)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockLessonBookmarkRepository_ListByUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListByUser'
+type MockLessonBookmarkRepository_ListByUser_Call struct {
+	*mock.Call
+}
+
+// ListByUser is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+func (_e *MockLessonBookmarkRepository_Expecter) ListByUser(ctx any, userID any) *MockLessonBookmarkRepository_ListByUser_Call {
+	return &MockLessonBookmarkRepository_ListByUser_Call{Call: _e.mock.On("ListByUser", ctx, userID)}
+}
+
+func (_c *MockLessonBookmarkRepository_ListByUser_Call) Run(run func(ctx context.Context, userID string)) *MockLessonBookmarkRepository_ListByUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockLessonBookmarkRepository_ListByUser_Call) Return(lessonBookmarks []*models.LessonBookmark, err error) *MockLessonBookmarkRepository_ListByUser_Call {
+	_c.Call.Return(lessonBookmarks, err)
+	return _c
+}
+
+func (_c *MockLessonBookmarkRepository_ListByUser_Call) RunAndReturn(run func(ctx context.Context, userID string) ([]*models.LessonBookmark, error)) *MockLessonBookmarkRepository_ListByUser_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // WithTx provides a mock function for the type MockLessonBookmarkRepository

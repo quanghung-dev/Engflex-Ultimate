@@ -40,8 +40,10 @@ type VocabularyDetails struct {
 	WordForms      []WordForm          `json:"wordForms"`
 }
 
-// UserVocabularyState is the user's row over a shared item.
+// UserVocabularyState is the user's row over a shared item. ItemID is the
+// shared item (needed to correlate, display, and DELETE the row).
 type UserVocabularyState struct {
+	ItemID     string                 `json:"itemId"`
 	SourceType enums.VocabularySource `json:"sourceType"`
 	SourceID   *string                `json:"sourceId"`
 	Note       *string                `json:"note"`

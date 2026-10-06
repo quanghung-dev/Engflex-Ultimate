@@ -7,6 +7,7 @@ import (
 	"engflex-api/internal/database/repositories"
 	"engflex-api/internal/logger"
 	"engflex-api/internal/modules/videos/dtos/requests"
+	"engflex-api/internal/utils"
 	"log/slog"
 )
 
@@ -45,7 +46,7 @@ func (s *videoExerciseService) List(ctx context.Context, limit, offset int) ([]*
 }
 
 func (s *videoExerciseService) GetByID(ctx context.Context, id string) (*models.VideoExercise, error) {
-	lesson, err := s.repo.GetByID(ctx, id)
+	lesson, err := s.repo.GetDetail(ctx, id)
 	if err != nil {
 		appErr := common.FromDBError(err, "video exercise")
 		logger.Report(ctx, "failed to get video exercise", appErr, "id", id)
@@ -56,14 +57,10 @@ func (s *videoExerciseService) GetByID(ctx context.Context, id string) (*models.
 }
 
 func (s *videoExerciseService) Create(ctx context.Context, req requests.CreateVideoExercise) (*models.VideoExercise, error) {
-	lesson := &models.VideoExercise{
-		CategoryID:   req.CategoryID,
-		Title:        req.Title,
-		Description:  req.Description,
-		VideoURL:     req.VideoURL,
-		ThumbnailURL: req.ThumbnailURL,
-		CEFRLevel:    req.CEFRLevel,
-		Duration:     req.Duration,
+	lesson := &models.VideoExercise{}
+	if err := utils.Map(lesson, req); err != nil {
+		logger.Report(ctx, "map create video exercise failed", err)
+		return nil, common.Internal()
 	}
 	err := s.repo.Create(ctx, lesson)
 	if err != nil {
@@ -82,13 +79,10 @@ func (s *videoExerciseService) Update(ctx context.Context, id string, req reques
 		logger.Report(ctx, "failed to get video exercise for update", appErr, "id", id)
 		return nil, appErr
 	}
-	lesson.CategoryID = req.CategoryID
-	lesson.Title = req.Title
-	lesson.Description = req.Description
-	lesson.VideoURL = req.VideoURL
-	lesson.ThumbnailURL = req.ThumbnailURL
-	lesson.CEFRLevel = req.CEFRLevel
-	lesson.Duration = req.Duration
+	if err := utils.Map(lesson, req); err != nil {
+		logger.Report(ctx, "map update video exercise failed", err, "id", id)
+		return nil, common.Internal()
+	}
 	if err := s.repo.Update(ctx, lesson); err != nil {
 		appErr := common.FromDBError(err, "video exercise")
 		logger.Report(ctx, "failed to update video exercise", appErr, "id", id)

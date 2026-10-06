@@ -20,6 +20,11 @@ type VideoExercise struct {
 	Duration     float64     `json:"duration"`
 	CreatedAt    time.Time   `gorm:"autoCreateTime" json:"createdAt"`
 	UpdatedAt    time.Time   `gorm:"autoUpdateTime" json:"updatedAt"`
+
+	// Read-only relations: Category joins in one round trip; Transcripts
+	// loads via a second query (has-many must not use Joins).
+	Category    *VideoCategory     `gorm:"->;foreignKey:CategoryID;references:ID" json:"category,omitempty"`
+	Transcripts []*VideoTranscript `gorm:"->;foreignKey:VideoExerciseID;references:ID" json:"transcripts,omitempty"`
 }
 
 func (VideoExercise) TableName() string { return "video_exercises" }

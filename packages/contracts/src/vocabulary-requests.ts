@@ -15,3 +15,79 @@ export interface ListVocabulary extends ListParams {
   cefr: CEFR;
   source: VocabularySource;
 }
+
+//////////
+// source: vocabulary_category.go
+
+export interface CreateVocabularyCategory {
+  name: string;
+  description: string;
+}
+export interface UpdateVocabularyCategory {
+  name?: string;
+  description?: string;
+}
+
+//////////
+// source: vocabulary_mutations.go
+
+/**
+ * CreateVocabularyDeck creates a user-owned flashcard deck.
+ */
+export interface CreateVocabularyDeck {
+  categoryId?: string;
+  name: string;
+  description: string;
+  thumbnailUrl: string;
+  level: string;
+}
+/**
+ * UpdateVocabularyDeck renames or re-categorises a deck.
+ */
+export interface UpdateVocabularyDeck {
+  categoryId?: string;
+  name?: string;
+  description?: string;
+  thumbnailUrl?: string;
+  level?: string;
+}
+/**
+ * CreateVocabularyDeckItem adds one flashcard row to a deck.
+ */
+export interface CreateVocabularyDeckItem {
+  deckId: string;
+  videoExerciseId?: string;
+  videoTranscriptId?: string;
+  phrase: string;
+  meaning: string;
+  exampleSentence: string;
+  note: string;
+}
+/**
+ * UpdateVocabularyDeckItem edits a flashcard row.
+ */
+export interface UpdateVocabularyDeckItem {
+  phrase?: string;
+  meaning?: string;
+  exampleSentence?: string;
+  note?: string;
+}
+/**
+ * CreateVocabularyItem adds a shared dictionary entry or a custom word.
+ */
+export interface CreateVocabularyItem {
+  term: string;
+  definition: string;
+  cefr: string;
+  domain?: string;
+}
+/**
+ * SaveUserVocabulary saves per-user state over a shared item (idempotent).
+ */
+export interface SaveUserVocabulary {
+  itemId: string;
+  sourceType: string;
+  sourceId?: string;
+  note?: string;
+  mastered?: boolean;
+}

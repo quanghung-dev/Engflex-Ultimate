@@ -17,3 +17,13 @@ type ListLessons struct {
 	Skill             enums.ActivityType `form:"skill" json:"skill" binding:"omitempty,oneof=reading dictation writing voice"`
 	Status            enums.LessonStatus `form:"status" json:"status" binding:"omitempty,oneof=unstarted in_progress completed"`
 }
+
+// ListActivities filters GET /lesson-activities (?lessonId= required).
+type ListActivities struct {
+	LessonID string `form:"lessonId" json:"lessonId" binding:"required,uuid"`
+}
+
+// SaveBookmark is the POST /lesson-bookmarks body.
+type SaveBookmark struct {
+	LessonID string `json:"lessonId" binding:"required,uuid"`
+}
