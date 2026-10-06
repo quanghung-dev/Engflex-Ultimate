@@ -57,6 +57,7 @@ def build_llm(
         settings=OpenAILLMService.Settings(
             model=settings.llm_model,
             extra=extra,
+            max_tokens=200,
             system_instruction=build_system_prompt(level or "B1", persona=persona, scenario=scenario),
         ),
         default_headers=headers,

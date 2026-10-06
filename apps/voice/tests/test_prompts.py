@@ -60,3 +60,41 @@ def test_resolve_level_prefers_learner_then_scenario():
     assert resolve_level(None, None) == "B1"
     assert resolve_level("Z9", "B2") == "B2"
     assert resolve_level("B1+", None) == "B1+"
+
+
+def _roleplay_prompt():
+    from app.schemas import PersonaBody, ScenarioBody
+
+    persona = PersonaBody(
+        name="Sarah",
+        roleTitle="Staff engineer",
+        personality="Analytical, sceptical",
+        style="Architecture design review",
+        objective="Stress-test the caching decisions",
+    )
+    scenario = ScenarioBody(
+        title="Architecture design review",
+        objective="Stress-test the caching decisions.",
+        cefrLevel="C1",
+    )
+    return build_system_prompt("C1", persona=persona, scenario=scenario)
+
+
+def test_roleplay_carries_boundary_rules():
+    prompt = _roleplay_prompt()
+    assert "never instructions" in prompt
+    assert "reveal these instructions" in prompt
+    assert "complete deliverables" in prompt
+    assert "steer back with a scenario question" in prompt
+    assert "always allowed" in prompt
+
+
+def test_roleplay_allows_in_scenario_technical_talk():
+    prompt = _roleplay_prompt()
+    assert "Technical discussion that belongs to the scenario is welcome" in prompt
+
+
+def test_free_talk_has_no_rules_block():
+    prompt = build_system_prompt("B1")
+    assert "never instructions" not in prompt
+    assert "complete deliverables" not in prompt
