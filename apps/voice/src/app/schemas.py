@@ -9,6 +9,7 @@ class PersonaBody(BaseModel):
     personality: str = ""
     style: str = ""
     objective: str = ""
+    gender: str = ""
 
 
 class ScenarioBody(BaseModel):

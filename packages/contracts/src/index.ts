@@ -19,6 +19,7 @@ declare global {
   type ConversationMode = Enums.ConversationMode;
   type ConversationStatus = Enums.ConversationStatus;
   type Goal = Enums.Goal;
+  type Gender = Enums.Gender;
   type InterestTopic = Enums.InterestTopic;
   type LessonStatus = Enums.LessonStatus;
   type Level = Enums.Level;

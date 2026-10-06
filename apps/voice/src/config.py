@@ -32,6 +32,10 @@ class Settings(BaseSettings):
     # Optional voice identity (Fish `reference_id`: a cloned/stored voice).
     # Empty = the provider's default voice.
     voice_id: str = ""
+    # Per-gender voice identities, selected by persona gender.
+    # Empty = fall back to `voice_id`, then the provider default.
+    male_voice_id: str = ""
+    female_voice_id: str = ""
 
     # Language model (any OpenAI-compatible endpoint)
     llm_api_key: str = Field(validation_alias=AliasChoices("LLM_API_KEY", "OPENAI_API_KEY"))

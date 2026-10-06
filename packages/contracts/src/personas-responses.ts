@@ -13,6 +13,7 @@ export interface Persona {
   personality: string;
   style: string;
   objective: string;
+  gender: Gender;
   defaultCefr?: CEFR;
 }
 

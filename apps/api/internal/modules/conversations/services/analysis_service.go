@@ -10,6 +10,7 @@ import (
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/logger"
+	"engflex-api/internal/utils"
 )
 
 // analysisContextTurns is how many prior lines the engine sees: enough for
@@ -132,10 +133,8 @@ func priorTurns(all []*models.ConversationTurn, targetID string, limit int) []Co
 	if len(prior) > limit {
 		prior = prior[len(prior)-limit:]
 	}
-	out := make([]ContextTurn, 0, len(prior))
-	for _, turn := range prior {
-		out = append(out, ContextTurn{Role: turn.Role, Text: turn.Text})
-	}
+	var out []ContextTurn
+	_ = utils.MapSlice(&out, prior)
 	return out
 }
 

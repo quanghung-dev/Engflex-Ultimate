@@ -12,6 +12,7 @@ from pipecat.services.openai.llm import OpenAILLMService
 from pipecat.services.stt_service import STTService
 from pipecat.services.tts_service import TTSService
 
+from app.schemas import PersonaBody, ScenarioBody
 from config import settings
 from observability import get_metrics
 from prompts import build_system_prompt
@@ -31,7 +32,13 @@ def build_stt() -> STTService:
     )
 
 
-def build_llm(*, conversation_id: str | None = None) -> OpenAILLMService:
+def build_llm(
+    *,
+    conversation_id: str | None = None,
+    persona: PersonaBody | None = None,
+    scenario: ScenarioBody | None = None,
+    level: str | None = None,
+) -> OpenAILLMService:
     # The LLM return type stays concrete: `LLMService` is generic over its
     # adapter and that parameter is invariant, so the base class cannot
     # describe a provider without naming one. OpenAI-compatible is the
@@ -50,22 +57,29 @@ def build_llm(*, conversation_id: str | None = None) -> OpenAILLMService:
         settings=OpenAILLMService.Settings(
             model=settings.llm_model,
             extra=extra,
-            system_instruction=build_system_prompt(),
+            system_instruction=build_system_prompt(level or "B1", persona=persona, scenario=scenario),
         ),
         default_headers=headers,
         metrics=get_metrics(),
     )
 
 
-def build_tts() -> TTSService:
-    # Hosted TTS: VOICE_MODEL is the synthesis model, VOICE_ID the optional
-    # voice identity. Both are provider-neutral names — nothing here names a
+def build_tts(persona: PersonaBody | None = None) -> TTSService:
+    # Hosted TTS: VOICE_MODEL is the synthesis model, the voice identity is
+    # selected by persona gender (MALE_VOICE_ID / FEMALE_VOICE_ID), falling
+    # back to VOICE_ID and then the provider default. Nothing here names a
     # vendor, so pointing at a different engine is a config change.
+    voice: str | None = settings.voice_id or None
+    gender = (persona.gender if persona else "").strip().lower()
+    if gender == "male" and settings.male_voice_id:
+        voice = settings.male_voice_id
+    elif gender == "female" and settings.female_voice_id:
+        voice = settings.female_voice_id
     return FishAudioTTSService(
         api_key=settings.tts_api_key,
         settings=FishAudioTTSService.Settings(
             model=settings.voice_model,
-            voice=settings.voice_id or None,
+            voice=voice,
         ),
         metrics=get_metrics(),
     )

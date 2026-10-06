@@ -57,3 +57,27 @@ def test_process_env_beats_dotenv_when_bot_is_imported(tmp_path):
     )
     assert result.returncode == 0, result.stderr
     assert "http://from-process:1234" in result.stdout, result.stdout
+
+
+def test_level_precedence_learner_over_scenario():
+    from prompts import resolve_level
+
+    assert resolve_level("B1", "C1") == "B1"
+
+
+def test_bot_forwards_persona_scenario():
+    from app.schemas import RunnerBody
+
+    body = RunnerBody.model_validate(
+        {
+            "userId": "u1",
+            "conversationId": "c1",
+            "maxDuration": 300,
+            "persona": {"name": "Amelia", "roleTitle": "Hiring director"},
+            "scenario": {"title": "T", "objective": "O.", "cefrLevel": "B2"},
+            "learner": {"level": "B1"},
+        }
+    )
+    assert body.persona is not None and body.persona.name == "Amelia"
+    assert body.scenario is not None and body.scenario.cefrLevel == "B2"
+    assert body.learner is not None and body.learner.level == "B1"

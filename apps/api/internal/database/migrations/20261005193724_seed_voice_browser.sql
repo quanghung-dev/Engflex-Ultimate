@@ -14,19 +14,19 @@ UPDATE scenario_topics SET short_name = CASE slug
 WHERE slug IN ('job-interviews','architecture-reviews','cross-functional-sync','product-pitch')
   AND short_name = '';
 
-INSERT INTO personas (id, name, role_title, personality, style, objective, default_cefr) VALUES
- ('1833728f-f95c-548b-9ba9-a9b80d91b201','Amelia','Hiring director','Warm but exacting','Structured behavioural interviews','Assess leadership stories for measurable outcomes','B2'),
- ('3c175399-77b3-57b8-bb31-e6f7d26c0038','Marcus','Senior interviewer','Direct, evidence-driven','Post-mortem questioning','Test how you handle past failure and learning','B2'),
- ('29fafa99-87f4-51d3-8a79-99bec3d2b9dc','Priya','VP of Talent','Polished negotiator','Executive compensation talks','Reach a defensible compensation agreement','C1'),
- ('3f3904e5-2e6e-5de4-8b5a-038e075cc30c','Sarah','Staff engineer','Analytical, sceptical','Architecture design review','Stress-test the caching and failover decisions','C1'),
- ('473d21cd-6a87-5e3a-b4eb-b9638b9d2bb2','Tom','Product manager','Pragmatic, deadline-driven','Roadmap negotiation','Rebalance scope against the committed timeline','B2'),
- ('5724c95c-9eda-5978-8cc6-7ce306a48102','Diego','Head of Infrastructure','Calm under pressure','Incident post-mortem','Establish preventive measures without blame','C1'),
- ('3292d7be-0dac-59ef-8c55-458d4b25dad3','Rachel','Enterprise client VP','Frustrated but fair','Escalation management','Restore trust with a credible remediation plan','B1'),
- ('e92c52ab-07c8-55ed-8d85-1fcd702abfbc','Omar','Procurement lead','Numbers-first','Commercial renegotiation','Protect margin while adjusting scope','C1'),
- ('5e8a480c-e05e-566f-b0d7-9fc7c614c07d','Yuki','Design VP','Visionary, user-obsessed','Design-engineering alignment','Find a pragmatic compromise on the roadmap','B2'),
- ('a3dc4a1f-9900-5868-8f0e-0a051f4d030b','Elena','Managing Director','Strategic, time-poor','Executive demo review','Judge narrative clarity and value framing','C1'),
- ('3d325036-1e34-59ba-8c1f-cca26503a292','Nathan','Angel Investor','Sceptical, detail-hungry','Investor Q&A','Interrogate unit economics and defensibility','B2'),
- ('585cec08-dc6b-5def-9daa-02a6a5ebd826','Charles','Board Member','Formal, governance-minded','Board strategy review','Justify headcount and infrastructure spend','C1')
+INSERT INTO personas (id, name, role_title, personality, style, objective, gender, default_cefr) VALUES
+ ('1833728f-f95c-548b-9ba9-a9b80d91b201','Amelia','Hiring director','Warm but exacting','Structured behavioural interviews','Assess leadership stories for measurable outcomes','female','B2'),
+ ('3c175399-77b3-57b8-bb31-e6f7d26c0038','Marcus','Senior interviewer','Direct, evidence-driven','Post-mortem questioning','Test how you handle past failure and learning','male','B2'),
+ ('29fafa99-87f4-51d3-8a79-99bec3d2b9dc','Priya','VP of Talent','Polished negotiator','Executive compensation talks','Reach a defensible compensation agreement','female','C1'),
+ ('3f3904e5-2e6e-5de4-8b5a-038e075cc30c','Sarah','Staff engineer','Analytical, sceptical','Architecture design review','Stress-test the caching and failover decisions','female','C1'),
+ ('473d21cd-6a87-5e3a-b4eb-b9638b9d2bb2','Tom','Product manager','Pragmatic, deadline-driven','Roadmap negotiation','Rebalance scope against the committed timeline','male','B2'),
+ ('5724c95c-9eda-5978-8cc6-7ce306a48102','Diego','Head of Infrastructure','Calm under pressure','Incident post-mortem','Establish preventive measures without blame','male','C1'),
+ ('3292d7be-0dac-59ef-8c55-458d4b25dad3','Rachel','Enterprise client VP','Frustrated but fair','Escalation management','Restore trust with a credible remediation plan','female','B1'),
+ ('e92c52ab-07c8-55ed-8d85-1fcd702abfbc','Omar','Procurement lead','Numbers-first','Commercial renegotiation','Protect margin while adjusting scope','male','C1'),
+ ('5e8a480c-e05e-566f-b0d7-9fc7c614c07d','Yuki','Design VP','Visionary, user-obsessed','Design-engineering alignment','Find a pragmatic compromise on the roadmap','female','B2'),
+ ('a3dc4a1f-9900-5868-8f0e-0a051f4d030b','Elena','Managing Director','Strategic, time-poor','Executive demo review','Judge narrative clarity and value framing','female','C1'),
+ ('3d325036-1e34-59ba-8c1f-cca26503a292','Nathan','Angel Investor','Sceptical, detail-hungry','Investor Q&A','Interrogate unit economics and defensibility','male','B2'),
+ ('585cec08-dc6b-5def-9daa-02a6a5ebd826','Charles','Board Member','Formal, governance-minded','Board strategy review','Justify headcount and infrastructure spend','male','C1')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO scenarios (id, topic_id, persona_id, title, objective, cefr_level, max_duration, details) VALUES

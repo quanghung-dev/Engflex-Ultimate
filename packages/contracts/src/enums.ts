@@ -93,6 +93,17 @@ export const FeedbackSubjectWritingResponse: FeedbackSubjectType = "writing_resp
 export const FeedbackSubjectReadingAnswer: FeedbackSubjectType = "reading_answer";
 
 //////////
+// source: gender.go
+
+/**
+ * Gender selects the TTS voice for a persona
+ * (personas.gender).
+ */
+export const GenderMale = "male";
+export const GenderFemale = "female";
+export type Gender = typeof GenderMale | typeof GenderFemale;
+
+//////////
 // source: goal.go
 
 /**

@@ -270,6 +270,18 @@ func (s *AttemptService) ListAttempts(ctx context.Context, userID string, limit,
 - No `gin.Context`, no `c.JSON`, no SQL strings here.
 - Domain rules live here: difficulty heuristic on content create, completion-status
   derivation, AI session provisioning (persona/context/token), feedback async rules.
+- Mapping via `utils.Map`/`MapSlice` (same rule as controllers — one call per
+  mapping, no loops, no manual field lines). Services map `request→model` and
+  `model→voice/internal`, never `model→response` (that stays in controllers):
+  `Create` maps `StartConversation→Conversation` then sets `UserID`/`Status`;
+  `IngestTurns` maps `[]IngestTurn→[]*ConversationTurn` then injects
+  `ConversationID`; `promptInputs` maps `Scenario→VoiceScenarioBody` and
+  `Persona→VoicePersonaBody`; `priorTurns` maps `[]*ConversationTurn→[]ContextTurn`.
+  copier matches Go field names (never json tags), handles `*string→string`
+  (nil→`""`, so no `deref` helper) and named-string→`string` (verified).
+  When the function returns `error`, check the Map error and return
+  `common.Internal()`; helpers without an error return (`promptInputs`,
+  `priorTurns`) use `_ =` like controllers.
 
 ### Controller + Router (HTTP in/out, no SQL)
 
@@ -318,9 +330,11 @@ func (h *Ctl) Create(c *gin.Context) {
   (`ScenarioDetail`, not `ScenarioDetails`) so the mirror is grep-visible.
 - **The DTO adapts to the model and repository function, never the reverse.** Do
   not reshape a model or bend a repository signature to fit a DTO.
-- One `utils.Map`/`MapSlice` call per mapping — no loops, no manual field
-  lines, no per-call options. DeepCopy is the util default and descends
-  into nested structs (proven), so a same-shaped DTO maps whole.
+- One `utils.Map`/`MapSlice` call per mapping, in controllers **and** services —
+  no loops, no manual field lines, no per-call options. DeepCopy is the util
+  default and descends into nested structs (proven), so a same-shaped DTO maps
+  whole. Service examples: `IngestTurns` (`MapSlice` + `ConversationID` inject),
+  `priorTurns` (`MapSlice`), `promptInputs` (`Map` twice, no `deref`).
 - copier matches Go field names, never json tags: names must match exactly
   across model and DTO; tags own the wire names independently
   (`MaxDuration int \`json:"maxDuration"\``).

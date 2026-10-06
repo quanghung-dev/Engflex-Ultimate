@@ -9,6 +9,7 @@ from pipecat.processors.aggregators import llm_response_universal as agg
 from pipecat.processors.aggregators.llm_context import LLMContext
 from pipecat.transports.base_transport import BaseTransport
 
+from app.schemas import PersonaBody, ScenarioBody
 from config import settings
 from pipeline.services import build_llm, build_stt, build_tts
 from transcript.capture import TurnCollector
@@ -21,14 +22,17 @@ async def create_voice_bot_worker(
     max_duration: int,
     conversation_id: str,
     collector: TurnCollector,
+    persona: PersonaBody | None = None,
+    scenario: ScenarioBody | None = None,
+    level: str | None = None,
 ) -> tuple[
     PipelineWorker,
     agg.LLMUserAggregator,
     agg.LLMAssistantAggregator,
 ]:
     stt = build_stt()
-    llm = build_llm(conversation_id=conversation_id)
-    tts = build_tts()
+    llm = build_llm(conversation_id=conversation_id, persona=persona, scenario=scenario, level=level)
+    tts = build_tts(persona)
 
     user_agg, assistant_agg = agg.LLMContextAggregatorPair(
         context,

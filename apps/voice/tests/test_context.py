@@ -41,3 +41,22 @@ def test_llm_carries_system_instruction():
     instruction = llm._settings.system_instruction or ""
     assert "CEFR" in instruction
     assert llm._settings.extra == {}
+
+
+def test_llm_uses_roleplay_prompt():
+    from app.schemas import PersonaBody, ScenarioBody
+
+    persona = PersonaBody(name="Sarah", roleTitle="Staff engineer")
+    scenario = ScenarioBody(title="RFC defense", objective="Defend partitioning.", cefrLevel="C1")
+    llm = build_llm(conversation_id="c1", persona=persona, scenario=scenario, level="C1")
+    instruction = llm._settings.system_instruction or ""
+    assert "Sarah" in instruction
+    assert "RFC defense" in instruction
+    assert "C1" in instruction
+
+
+def test_llm_free_talk_unchanged():
+    llm = build_llm(conversation_id="c1")
+    instruction = llm._settings.system_instruction or ""
+    assert "Flexi" in instruction
+    assert "B1" in instruction

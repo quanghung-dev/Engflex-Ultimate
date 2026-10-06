@@ -16,6 +16,7 @@ type_mappings:
   "enums.ConversationMode": "ConversationMode"
   "enums.ConversationStatus": "ConversationStatus"
   "enums.Goal": "Goal"
+  "enums.Gender": "Gender"
   "enums.InterestTopic": "InterestTopic"
   "enums.LessonStatus": "LessonStatus"
   "enums.Level": "Level"

@@ -25,6 +25,7 @@ from events import register_event_handlers
 from observability import bind_session, init_sentry
 from pipeline.services import build_context
 from pipeline.tasks import create_voice_bot_worker
+from prompts import resolve_level
 from transcript.capture import TurnCollector
 from transcript.sessions import SessionControl, register, unregister
 
@@ -60,12 +61,19 @@ async def bot(runner_args: RunnerArguments):
     start_time = time.time()
     context = build_context()
     collector = TurnCollector()
+    level = resolve_level(
+        body.learner.level if body.learner else None,
+        body.scenario.cefrLevel if body.scenario else None,
+    )
     worker, user_aggregator, assistant_aggregator = await create_voice_bot_worker(
         transport,
         context,
         max_duration=body.maxDuration,
         conversation_id=body.conversationId,
         collector=collector,
+        persona=body.persona,
+        scenario=body.scenario,
+        level=level,
     )
     register(
         body.conversationId,

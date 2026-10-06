@@ -30,11 +30,12 @@ type VoiceSessionBody struct {
 
 // VoicePersonaBody mirrors the engine's PersonaBody.
 type VoicePersonaBody struct {
-	Name        string `json:"name"`
-	RoleTitle   string `json:"roleTitle"`
-	Personality string `json:"personality,omitempty"`
-	Style       string `json:"style,omitempty"`
-	Objective   string `json:"objective,omitempty"`
+	Name        string       `json:"name"`
+	RoleTitle   string       `json:"roleTitle"`
+	Personality string       `json:"personality,omitempty"`
+	Style       string       `json:"style,omitempty"`
+	Objective   string       `json:"objective,omitempty"`
+	Gender      enums.Gender `json:"gender,omitempty"`
 }
 
 // VoiceScenarioBody mirrors the engine's ScenarioBody.

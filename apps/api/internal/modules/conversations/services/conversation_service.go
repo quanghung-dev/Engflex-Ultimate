@@ -16,6 +16,7 @@ import (
 	"engflex-api/internal/modules/conversations/dtos/callbacks"
 	"engflex-api/internal/modules/conversations/dtos/requests"
 	"engflex-api/internal/modules/conversations/dtos/responses"
+	"engflex-api/internal/utils"
 )
 
 var errEmptyAnswer = errors.New("voice engine returned an empty offer answer")
@@ -45,12 +46,13 @@ func (s *ConversationService) Create(ctx context.Context, userID string, req req
 		return nil, common.BadRequest("scenarioId is required for roleplay")
 	}
 
-	m := &models.Conversation{
-		UserID:     userID,
-		Mode:       req.Mode,
-		ScenarioID: req.ScenarioID,
-		Status:     enums.ConversationStatusPending,
+	m := &models.Conversation{}
+	if err := utils.Map(m, req); err != nil {
+		logger.Report(ctx, "map start conversation failed", err, "userID", userID)
+		return nil, common.Internal()
 	}
+	m.UserID = userID
+	m.Status = enums.ConversationStatusPending
 	if err := s.conversations.CreateClosingActive(ctx, m); err != nil {
 		appErr := common.FromDBError(err, "conversation")
 		logger.Report(ctx, "create conversation failed", appErr, "userID", userID)
@@ -229,15 +231,13 @@ func (s *ConversationService) IngestTurns(ctx context.Context, id string, req ca
 		return 0, appErr
 	}
 
-	turns := make([]*models.ConversationTurn, 0, len(req.Turns))
-	for _, in := range req.Turns {
-		turns = append(turns, &models.ConversationTurn{
-			ConversationID: id,
-			Position:       in.Position,
-			Role:           in.Role,
-			Text:           in.Text,
-			WasInterrupted: in.WasInterrupted,
-		})
+	var turns []*models.ConversationTurn
+	if err := utils.MapSlice(&turns, req.Turns); err != nil {
+		logger.Report(ctx, "map ingest turns failed", err, "conversationID", id)
+		return 0, common.Internal()
+	}
+	for _, turn := range turns {
+		turn.ConversationID = id
 	}
 
 	stored, err := s.turns.UpsertTurns(ctx, id, turns)
@@ -263,11 +263,9 @@ func (s *ConversationService) promptInputs(ctx context.Context, conv *models.Con
 		logger.Report(ctx, "resolve scenario failed", common.NotFound("scenario not found"), "scenarioID", *conv.ScenarioID)
 		return nil, nil
 	}
-	out := &VoiceScenarioBody{
-		Title:     scenario.Title,
-		Objective: scenario.Objective,
-		CEFRLevel: string(scenario.CEFRLevel),
-	}
+	var scenarioBody VoiceScenarioBody
+	_ = utils.Map(&scenarioBody, scenario)
+	out := &scenarioBody
 	if scenario.PersonaID == nil || *scenario.PersonaID == "" {
 		return nil, out
 	}
@@ -276,20 +274,9 @@ func (s *ConversationService) promptInputs(ctx context.Context, conv *models.Con
 		logger.Report(ctx, "resolve persona failed", common.NotFound("persona not found"), "personaID", *scenario.PersonaID)
 		return nil, out
 	}
-	return &VoicePersonaBody{
-		Name:        persona.Name,
-		RoleTitle:   persona.RoleTitle,
-		Personality: deref(persona.Personality),
-		Style:       deref(persona.Style),
-		Objective:   deref(persona.Objective),
-	}, out
-}
-
-func deref(s *string) string {
-	if s == nil {
-		return ""
-	}
-	return *s
+	var personaBody VoicePersonaBody
+	_ = utils.Map(&personaBody, persona)
+	return &personaBody, out
 }
 
 func (s *ConversationService) getOwned(ctx context.Context, userID, id string) (*models.Conversation, error) {
