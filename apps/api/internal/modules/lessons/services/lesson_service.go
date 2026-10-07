@@ -11,48 +11,33 @@ import (
 	"engflex-api/internal/modules/lessons/dtos/requests"
 )
 
-// LessonService owns lesson browsing. CategorySlug filtering resolves via
-// the category service (service→service for filter resolution, not row
-// joining — the graph itself comes from LessonRepository.GetDetail).
+// LessonService owns section-first browsing: sections with units attached,
+// in path order. The hub renders the whole path, unpaginated.
 type LessonService interface {
-	List(ctx context.Context, req requests.ListLessons, limit, offset int) ([]*models.Lesson, int64, error)
+	ListSections(ctx context.Context, req requests.ListLessons) ([]*models.LessonSection, error)
 	GetDetail(ctx context.Context, id string) (*models.Lesson, error)
 }
 
 type lessonService struct {
-	lessons    repositories.LessonRepository
-	categories LessonCategoryService
+	sections repositories.LessonSectionRepository
+	lessons  repositories.LessonRepository
 }
 
-// NewLessonService builds the service over the lesson repo and the category
-// service used for slug→id resolution. Neither may be nil.
-func NewLessonService(lessons repositories.LessonRepository, categories LessonCategoryService) LessonService {
-	return &lessonService{lessons: lessons, categories: categories}
+// NewLessonService builds the service over both repositories. Neither may
+// be nil.
+func NewLessonService(sections repositories.LessonSectionRepository, lessons repositories.LessonRepository) LessonService {
+	return &lessonService{sections: sections, lessons: lessons}
 }
 
-func (s *lessonService) List(ctx context.Context, req requests.ListLessons, limit, offset int) ([]*models.Lesson, int64, error) {
-	var categoryID *string
-	if req.CategorySlug != "" {
-		cat, err := s.categories.GetBySlug(ctx, req.CategorySlug)
-		if err != nil {
-			return nil, 0, err
-		}
-		categoryID = &cat.ID
-	}
-	items, err := s.lessons.List(ctx, categoryID, req.Level, limit, offset)
+func (s *lessonService) ListSections(ctx context.Context, req requests.ListLessons) ([]*models.LessonSection, error) {
+	secs, err := s.sections.ListWithUnits(ctx, req.Level)
 	if err != nil {
-		appErr := common.FromDBError(err, "lesson")
-		logger.Report(ctx, "list lessons failed", appErr)
-		return nil, 0, appErr
+		appErr := common.FromDBError(err, "lesson section")
+		logger.Report(ctx, "list lesson sections failed", appErr)
+		return nil, appErr
 	}
-	total, err := s.lessons.Count(ctx, categoryID, req.Level)
-	if err != nil {
-		appErr := common.FromDBError(err, "lesson")
-		logger.Report(ctx, "count lessons failed", appErr)
-		return nil, 0, appErr
-	}
-	slog.InfoContext(ctx, "lessons listed", "count", len(items), "total", total)
-	return items, total, nil
+	slog.InfoContext(ctx, "lesson sections listed", "count", len(secs))
+	return secs, nil
 }
 
 func (s *lessonService) GetDetail(ctx context.Context, id string) (*models.Lesson, error) {

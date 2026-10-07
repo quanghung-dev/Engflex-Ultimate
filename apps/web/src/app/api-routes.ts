@@ -45,4 +45,8 @@ export const API_ROUTES = {
 		TRANSCRIPT: (id: ApiId) => `/conversations/${id}/transcript`,
 		TRANSCRIBE: (id: ApiId) => `/conversations/${id}/transcribe`,
 	},
+	LESSONS: {
+		LIST: "/lessons",
+		BY_ID: (id: ApiId) => `/lessons/${id}`,
+	},
 } as const;

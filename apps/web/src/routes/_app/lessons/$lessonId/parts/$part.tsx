@@ -15,11 +15,7 @@ import { TranscriptionInput } from "#/features/dictation/components/transcriptio
 import { TranscriptionResultPanel } from "#/features/dictation/components/transcription-result-panel";
 import { PartShell } from "#/features/lessons/components/part-shell";
 import { VoiceBriefCard } from "#/features/lessons/components/voice-brief-card";
-import {
-	getLessonById,
-	getLessonDetail,
-	hasActivityForPart,
-} from "#/features/lessons/fixtures";
+import { useLessonDetail } from "#/features/lessons/queries";
 import {
 	getNextPart,
 	isLessonPart,
@@ -55,13 +51,7 @@ export const Route = createFileRoute("/_app/lessons/$lessonId/parts/$part")({
 		() => m["lessons.crumb.practice"](),
 	]),
 	beforeLoad: ({ params }) => {
-		if (!getLessonById(params.lessonId)) {
-			throw redirect({ href: APP_ROUTES.LESSONS.LIST });
-		}
-		if (
-			!isLessonPart(params.part) ||
-			!hasActivityForPart(params.lessonId, params.part)
-		) {
+		if (!isLessonPart(params.part)) {
 			throw redirect({
 				to: APP_ROUTES.LESSONS.DETAIL,
 				params: { lessonId: params.lessonId },
@@ -74,10 +64,13 @@ export const Route = createFileRoute("/_app/lessons/$lessonId/parts/$part")({
 function PracticePage() {
 	const { lessonId, part } = Route.useParams();
 	const currentPart: LessonPart = isLessonPart(part) ? part : "reading";
-	const detail = getLessonDetail(lessonId);
+	const detailQuery = useLessonDetail(lessonId);
+	const detail = detailQuery.data;
 
-	if (!detail) return null;
+	if (detailQuery.isPending) return null;
+	if (!detail) throw notFound();
 	const activity = detail.activities.find((item) => item.type === currentPart);
+	if (!activity) throw notFound();
 
 	return (
 		<PartShell lessonId={lessonId} part={currentPart}>
@@ -85,21 +78,21 @@ function PracticePage() {
 				<ReadingActivity
 					lessonId={lessonId}
 					activity={activity}
-					partCount={detail.lesson.partCount}
+					partCount={detail.activities.length}
 				/>
 			) : null}
 			{currentPart === "dictation" && activity?.dictation ? (
 				<DictationActivity
 					lessonId={lessonId}
 					activity={activity}
-					partCount={detail.lesson.partCount}
+					partCount={detail.activities.length}
 				/>
 			) : null}
 			{currentPart === "writing" && activity?.writing ? (
 				<WritingActivity
 					lessonId={lessonId}
 					activity={activity}
-					partCount={detail.lesson.partCount}
+					partCount={detail.activities.length}
 				/>
 			) : null}
 			{currentPart === "voice" && activity?.voice ? (

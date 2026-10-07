@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
 import { CefrBadge } from "#/components/common/cefr-badge";
 import { PageLayout } from "#/components/common/page-layout";
-import { getLessonDetail, LESSON_META } from "#/features/lessons/fixtures";
+import { useLessonDetail } from "#/features/lessons/queries";
 import type { LessonPart } from "#/features/lessons/parts";
 import { LessonStepNavigator } from "./lesson-step-navigator";
 
-/** Stitch practice shell: step pills + level/unit meta, no header card. */
+/** Stitch practice shell: step pills + level meta, no header card. */
 export function PartShell({
 	lessonId,
 	part,
@@ -15,9 +15,9 @@ export function PartShell({
 	part: LessonPart;
 	children: ReactNode;
 }) {
-	const detail = getLessonDetail(lessonId);
+	const detailQuery = useLessonDetail(lessonId);
+	const detail = detailQuery.data;
 	if (!detail) return null;
-	const meta = LESSON_META[lessonId];
 
 	return (
 		<PageLayout>
@@ -28,8 +28,7 @@ export function PartShell({
 					currentPart={part}
 				/>
 				<span className="chip px-3 py-1 text-xs">
-					<CefrBadge value={detail.lesson.cefrLevel} />
-					{meta ? <span>· Unit {meta.slot}</span> : null}
+					<CefrBadge value={detail.cefrLevel} />
 				</span>
 			</div>
 			{children}

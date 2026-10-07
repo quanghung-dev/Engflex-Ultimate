@@ -7,19 +7,17 @@ import { Button } from "#/components/ui/button";
 import { m } from "#/paraglide/messages";
 
 export function HubHeroCard({
-	unit,
-	unitTitle,
+	section,
 	lessons,
 	progressById,
 	resumeId,
-	resumeSlot,
+	resumeTitle,
 }: {
-	unit: number;
-	unitTitle: string;
+	section: string;
 	lessons: Lesson[];
 	progressById: Record<string, LessonProgress>;
 	resumeId: string;
-	resumeSlot: string;
+	resumeTitle: string;
 }) {
 	const totalParts = lessons.reduce(
 		(sum, lesson) => sum + (progressById[lesson.id]?.partsTotal ?? 0),
@@ -40,11 +38,11 @@ export function HubHeroCard({
 						{m["lessons.hub.inFlight"]()}
 					</span>
 					<span className="text-xs font-bold text-muted-foreground">
-						{m["lessons.unit.label"]({ n: unit })}
+						{m["lessons.unit.label"]({ n: section })}
 					</span>
 				</div>
 				<h2 className="text-xl font-bold text-foreground md:text-2xl">
-					{unitTitle}
+					{resumeTitle}
 				</h2>
 				<div className="flex flex-col gap-1">
 					<div className="flex items-center justify-between text-xs">
@@ -81,7 +79,7 @@ export function HubHeroCard({
 							to={APP_ROUTES.LESSONS.DETAIL}
 							params={{ lessonId: resumeId }}
 						>
-							{m["lessons.hub.resume"]({ unit: resumeSlot })}
+							{m["lessons.hub.resume"]({ unit: resumeTitle })}
 						</Link>
 					</Button>
 				</div>

@@ -10,13 +10,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setupLesson(t *testing.T) (services.LessonService, *mocks.MockLessonRepository, *mocks.MockLessonCategoryRepository) {
+func setupLesson(t *testing.T) (services.LessonService, *mocks.MockLessonSectionRepository, *mocks.MockLessonRepository) {
 	t.Helper()
+	secMock := mocks.NewMockLessonSectionRepository(t)
 	lessonMock := mocks.NewMockLessonRepository(t)
-	categoryMock := mocks.NewMockLessonCategoryRepository(t)
-	categorySvc := services.NewLessonCategoryService(categoryMock)
-	svc := services.NewLessonService(lessonMock, categorySvc)
-	return svc, lessonMock, categoryMock
+	svc := services.NewLessonService(secMock, lessonMock)
+	return svc, secMock, lessonMock
 }
 
 func requireAppError(t *testing.T, err error, expectedStatus int) *common.AppError {

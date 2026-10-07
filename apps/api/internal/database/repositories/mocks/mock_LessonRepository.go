@@ -6,7 +6,6 @@ package mocks
 
 import (
 	"context"
-	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories"
 
@@ -48,78 +47,6 @@ type MockLessonRepository_Expecter struct {
 
 func (_m *MockLessonRepository) EXPECT() *MockLessonRepository_Expecter {
 	return &MockLessonRepository_Expecter{mock: &_m.Mock}
-}
-
-// Count provides a mock function for the type MockLessonRepository
-func (_mock *MockLessonRepository) Count(ctx context.Context, categoryID *string, level enums.CEFR) (int64, error) {
-	ret := _mock.Called(ctx, categoryID, level)
-
-	if len(ret) == 0 {
-		panic("no return value specified for Count")
-	}
-
-	var r0 int64
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *string, enums.CEFR) (int64, error)); ok {
-		return returnFunc(ctx, categoryID, level)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *string, enums.CEFR) int64); ok {
-		r0 = returnFunc(ctx, categoryID, level)
-	} else {
-		r0 = ret.Get(0).(int64)
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *string, enums.CEFR) error); ok {
-		r1 = returnFunc(ctx, categoryID, level)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockLessonRepository_Count_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Count'
-type MockLessonRepository_Count_Call struct {
-	*mock.Call
-}
-
-// Count is a helper method to define mock.On call
-//   - ctx context.Context
-//   - categoryID *string
-//   - level enums.CEFR
-func (_e *MockLessonRepository_Expecter) Count(ctx any, categoryID any, level any) *MockLessonRepository_Count_Call {
-	return &MockLessonRepository_Count_Call{Call: _e.mock.On("Count", ctx, categoryID, level)}
-}
-
-func (_c *MockLessonRepository_Count_Call) Run(run func(ctx context.Context, categoryID *string, level enums.CEFR)) *MockLessonRepository_Count_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 *string
-		if args[1] != nil {
-			arg1 = args[1].(*string)
-		}
-		var arg2 enums.CEFR
-		if args[2] != nil {
-			arg2 = args[2].(enums.CEFR)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-		)
-	})
-	return _c
-}
-
-func (_c *MockLessonRepository_Count_Call) Return(n int64, err error) *MockLessonRepository_Count_Call {
-	_c.Call.Return(n, err)
-	return _c
-}
-
-func (_c *MockLessonRepository_Count_Call) RunAndReturn(run func(ctx context.Context, categoryID *string, level enums.CEFR) (int64, error)) *MockLessonRepository_Count_Call {
-	_c.Call.Return(run)
-	return _c
 }
 
 // GetByID provides a mock function for the type MockLessonRepository
@@ -254,92 +181,6 @@ func (_c *MockLessonRepository_GetDetail_Call) Return(lesson *models.Lesson, err
 }
 
 func (_c *MockLessonRepository_GetDetail_Call) RunAndReturn(run func(ctx context.Context, id string) (*models.Lesson, error)) *MockLessonRepository_GetDetail_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// List provides a mock function for the type MockLessonRepository
-func (_mock *MockLessonRepository) List(ctx context.Context, categoryID *string, level enums.CEFR, limit int, offset int) ([]*models.Lesson, error) {
-	ret := _mock.Called(ctx, categoryID, level, limit, offset)
-
-	if len(ret) == 0 {
-		panic("no return value specified for List")
-	}
-
-	var r0 []*models.Lesson
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *string, enums.CEFR, int, int) ([]*models.Lesson, error)); ok {
-		return returnFunc(ctx, categoryID, level, limit, offset)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *string, enums.CEFR, int, int) []*models.Lesson); ok {
-		r0 = returnFunc(ctx, categoryID, level, limit, offset)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Lesson)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *string, enums.CEFR, int, int) error); ok {
-		r1 = returnFunc(ctx, categoryID, level, limit, offset)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockLessonRepository_List_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'List'
-type MockLessonRepository_List_Call struct {
-	*mock.Call
-}
-
-// List is a helper method to define mock.On call
-//   - ctx context.Context
-//   - categoryID *string
-//   - level enums.CEFR
-//   - limit int
-//   - offset int
-func (_e *MockLessonRepository_Expecter) List(ctx any, categoryID any, level any, limit any, offset any) *MockLessonRepository_List_Call {
-	return &MockLessonRepository_List_Call{Call: _e.mock.On("List", ctx, categoryID, level, limit, offset)}
-}
-
-func (_c *MockLessonRepository_List_Call) Run(run func(ctx context.Context, categoryID *string, level enums.CEFR, limit int, offset int)) *MockLessonRepository_List_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 *string
-		if args[1] != nil {
-			arg1 = args[1].(*string)
-		}
-		var arg2 enums.CEFR
-		if args[2] != nil {
-			arg2 = args[2].(enums.CEFR)
-		}
-		var arg3 int
-		if args[3] != nil {
-			arg3 = args[3].(int)
-		}
-		var arg4 int
-		if args[4] != nil {
-			arg4 = args[4].(int)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-			arg3,
-			arg4,
-		)
-	})
-	return _c
-}
-
-func (_c *MockLessonRepository_List_Call) Return(lessons []*models.Lesson, err error) *MockLessonRepository_List_Call {
-	_c.Call.Return(lessons, err)
-	return _c
-}
-
-func (_c *MockLessonRepository_List_Call) RunAndReturn(run func(ctx context.Context, categoryID *string, level enums.CEFR, limit int, offset int) ([]*models.Lesson, error)) *MockLessonRepository_List_Call {
 	_c.Call.Return(run)
 	return _c
 }

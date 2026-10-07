@@ -2,19 +2,16 @@ import type { CEFR } from "@engflex/contracts";
 import { cn } from "cn";
 import { Search } from "lucide-react";
 import { Input } from "#/components/ui/input";
-import { type LessonTrack, TRACKS } from "#/features/lessons/fixtures";
 import { m } from "#/paraglide/messages";
 
 export interface LessonFilters {
 	search: string;
 	level: "all" | CEFR;
-	track: "all" | LessonTrack;
 }
 
 export const DEFAULT_LESSON_FILTERS: LessonFilters = {
 	search: "",
 	level: "all",
-	track: "all",
 };
 
 const LEVEL_PILLS: Array<{
@@ -64,33 +61,6 @@ export function LessonFilterBar({
 						)}
 					>
 						{pill.label()}
-					</button>
-				))}
-			</div>
-			<div className="flex flex-wrap items-center gap-2">
-				<button
-					type="button"
-					onClick={() => onChange({ ...filters, track: "all" })}
-					className={cn(
-						"chip px-3 py-1 text-xs transition",
-						filters.track === "all" ? "chip-selected" : "hover:border-primary",
-					)}
-				>
-					{m["lessons.hub.allTracks"]()}
-				</button>
-				{TRACKS.map((track) => (
-					<button
-						key={track}
-						type="button"
-						onClick={() => onChange({ ...filters, track })}
-						className={cn(
-							"chip px-3 py-1 text-xs transition",
-							filters.track === track
-								? "chip-selected"
-								: "hover:border-primary",
-						)}
-					>
-						{track}
 					</button>
 				))}
 			</div>

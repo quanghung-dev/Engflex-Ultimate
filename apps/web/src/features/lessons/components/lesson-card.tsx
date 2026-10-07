@@ -7,8 +7,8 @@ import { CefrBadge } from "#/components/common/cefr-badge";
 import { ProgressBar } from "#/components/common/progress-bar";
 import { Button } from "#/components/ui/button";
 import { getFirstIncompletePart } from "#/features/lessons/store";
+import { useLessonDetail } from "#/features/lessons/queries";
 import { m } from "#/paraglide/messages";
-import { getLessonDetail, LESSON_META } from "../fixtures";
 import { LessonStatusPill } from "./status-pill";
 
 const ACTIVITY_LABEL: Record<string, () => string> = {
@@ -22,16 +22,18 @@ export function LessonCard({
 	lesson,
 	progress,
 	locked = false,
+	unlocksAfter,
 	recommended = false,
 }: {
 	lesson: Lesson;
 	progress: LessonProgress;
 	locked?: boolean;
+	unlocksAfter?: string;
 	recommended?: boolean;
 }) {
-	const meta = LESSON_META[lesson.id];
-	const detail = getLessonDetail(lesson.id);
-	const current = getFirstIncompletePart(lesson.id);
+	const detailQuery = useLessonDetail(lesson.id);
+	const detail = detailQuery.data;
+	const current = getFirstIncompletePart(lesson.id, lesson.partCount);
 	const activities = detail?.activities ?? [];
 
 	return (
@@ -68,7 +70,7 @@ export function LessonCard({
 				</span>
 				<span className="inline-flex items-center gap-1">
 					<Layers className="size-3.5" />
-					{meta ? `${meta.slot} · ${meta.track}` : null}
+					{lesson.section?.title}
 				</span>
 			</div>
 			{activities.length > 0 ? (
@@ -101,11 +103,11 @@ export function LessonCard({
 				{locked ? (
 					<span className="inline-flex items-center gap-1 text-xs font-bold text-muted-foreground">
 						<Lock className="size-3.5" />
-						{m["lessons.status.unlocks"]({ id: meta?.slot ?? "" })}
+						{m["lessons.status.unlocks"]({ id: unlocksAfter ?? "" })}
 					</span>
 				) : progress.status === "completed" ? (
 					<span className="text-xs font-bold text-foreground">
-						{m["lessons.card.scoreLabel"]({ pct: meta?.scorePct ?? 100 })}
+						{m["lessons.status.completed"]()}
 					</span>
 				) : progress.status === "in_progress" ? (
 					<span className="text-xs font-bold text-primary">

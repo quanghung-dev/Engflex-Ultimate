@@ -10,7 +10,7 @@ import (
 	"engflex-api/internal/utils"
 )
 
-// LessonController exposes lesson browsing.
+// LessonController exposes unit browsing.
 type LessonController struct {
 	lessons services.LessonService
 }
@@ -21,14 +21,12 @@ func NewLessonController(lessons services.LessonService) *LessonController {
 }
 
 // List godoc
-// @Summary      List lessons
+// @Summary      List units grouped by CEFR section (whole path, unpaginated)
 // @Tags         lessons
 // @Security     BearerAuth
 // @Produce      json
-// @Param        page query int false "page"
-// @Param        pageSize query int false "page size"
-// @Param        categorySlug query string false "category filter"
-// @Success      200 {object} common.ApiResponse{data=[]responses.Lesson}
+// @Param        level query string false "CEFR filter"
+// @Success      200 {object} common.ApiResponse{data=[]responses.UnitSection}
 // @Router       /lessons [get]
 func (h *LessonController) List(c *gin.Context) {
 	var req requests.ListLessons
@@ -36,19 +34,20 @@ func (h *LessonController) List(c *gin.Context) {
 		common.Fail(c, common.BadRequest(err.Error()))
 		return
 	}
-	page, pageSize := utils.ParsePagination(c)
-	items, total, err := h.lessons.List(c.Request.Context(), req, pageSize, utils.Offset(page, pageSize))
+	// Section-first read: the repository returns sections with units
+	// attached, mirroring the DTO shape, so this is one MapSlice.
+	secs, err := h.lessons.ListSections(c.Request.Context(), req)
 	if err != nil {
 		common.Fail(c, err)
 		return
 	}
-	var dtos []responses.Lesson
-	_ = utils.MapSlice(&dtos, items)
-	common.Paginated(c, "lessons", dtos, page, pageSize, total)
+	var dtos []responses.UnitSection
+	_ = utils.MapSlice(&dtos, secs)
+	common.OK(c, "lessons", dtos)
 }
 
 // GetByID godoc
-// @Summary      Get one lesson with category and activities
+// @Summary      Get one unit with ordered activities
 // @Tags         lessons
 // @Security     BearerAuth
 // @Produce      json

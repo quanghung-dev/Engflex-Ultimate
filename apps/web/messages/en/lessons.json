@@ -33,9 +33,8 @@
       "title": "Executive lesson hub",
       "moBody": "15 to 25 minutes of intentional speaking, listening, and technical debate every day.",
       "inFlight": "In flight",
-      "overall": "Overall unit completion",
-      "resume": "Resume unit {unit}",
-      "allTracks": "All tracks",
+      "overall": "Overall section completion",
+      "resume": "Resume {unit}",
       "paced": "Paced",
       "levelLabel": "Level:",
       "levelAll": "All levels",
@@ -44,10 +43,9 @@
       "levelC1": "C1",
       "start": "Start lesson",
       "emptyTitle": "No lesson matches current filters",
-      "emptyBody": "Try broadening your search term or clearing level and skill filters to view more curriculum units."
+      "emptyBody": "Try broadening your search term or clearing the level filter to view more curriculum units."
     },
     "detail": {
-      "track": "Track: {track}",
       "pace": "Recommended pace: Calm",
       "sequential": "Sequential",
       "coach": "Coach Mo",
@@ -59,7 +57,6 @@
       "saveLater": "Save for later",
       "activitiesTitle": "Lesson activities",
       "activitiesSubtitle": "All steps required for completion",
-      "outcomesTitle": "What you will learn",
       "partOf": "Part {number} of {total}",
       "backToLesson": "Back to lesson"
     },
@@ -76,7 +73,6 @@
     "card": {
       "actionReview": "Review",
       "actionContinue": "Continue lesson",
-      "scoreLabel": "Score: {pct}%",
       "stepOf": "Step {done} of {total}",
       "estDuration": "Est. {minutes} mins",
       "activitiesCount": "{count} activities",
@@ -86,7 +82,7 @@
     },
     "unit": {
       "lessons": "{count} lessons",
-      "label": "Unit {n}"
+      "label": "Section {n}"
     },
     "filter": {
       "search": "Search lessons"

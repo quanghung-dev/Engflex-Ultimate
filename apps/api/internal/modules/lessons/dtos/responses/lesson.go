@@ -6,13 +6,6 @@ import (
 	"engflex-api/internal/common/enums"
 )
 
-// Category is a lesson_categories row.
-type Category struct {
-	ID   string `json:"id"`
-	Slug string `json:"slug"`
-	Name string `json:"name"`
-}
-
 // LessonDetails mirrors lessons.details (jsonb).
 type LessonDetails struct {
 	EstimatedDurationMin *int                `json:"estimatedDurationMin"`
@@ -32,12 +25,23 @@ type LessonProgress struct {
 	SavedAt        *time.Time         `json:"savedAt"`
 }
 
-// Lesson is a lesson hub card and the lesson detail header.
+// Section is a lesson_sections row: the titled, ordered path group.
+type Section struct {
+	ID          string     `json:"id"`
+	Slug        string     `json:"slug"`
+	Title       string     `json:"title"`
+	Description string     `json:"description"`
+	CEFRBand    enums.CEFR `json:"cefrBand"`
+	Position    int        `json:"position"`
+}
+
+// Lesson is a unit card and the unit detail header. Section repeats per
+// unit so a card renders without wrapper context; the hub groups on it.
 type Lesson struct {
 	ID          string          `json:"id"`
 	Slug        string          `json:"slug"`
 	Title       string          `json:"title"`
-	Category    *Category       `json:"category"`
+	Section     *Section        `json:"section"`
 	CEFRLevel   enums.CEFR      `json:"cefrLevel"`
 	Description string          `json:"description"`
 	Details     LessonDetails   `json:"details"`
@@ -45,13 +49,25 @@ type Lesson struct {
 	Progress    *LessonProgress `json:"progress"`
 }
 
-// LessonDetail is the GET /lessons/:id shape: header + category + ordered
+// UnitSection mirrors models.LessonSection field for field, with Units
+// nested the same way, so one utils.MapSlice copies the whole hub.
+type UnitSection struct {
+	ID          string     `json:"id"`
+	Slug        string     `json:"slug"`
+	Title       string     `json:"title"`
+	Description string     `json:"description"`
+	CEFRBand    enums.CEFR `json:"cefrBand"`
+	Position    int        `json:"position"`
+	Units       []Lesson   `json:"units"`
+}
+
+// LessonDetail is the GET /lessons/:id shape: header + section + ordered
 // activities. No Progress in v1 (attempts stays outside the module).
 type LessonDetail struct {
 	ID          string        `json:"id"`
 	Slug        string        `json:"slug"`
 	Title       string        `json:"title"`
-	Category    *Category     `json:"category"`
+	Section     *Section      `json:"section"`
 	CEFRLevel   enums.CEFR    `json:"cefrLevel"`
 	Description string        `json:"description"`
 	Details     LessonDetails `json:"details"`

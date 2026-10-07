@@ -1,5 +1,6 @@
-// Package lessons wires the curriculum module: lessons, their categories,
-// ordered activities, and the caller's bookmarks. Attempts stay outside.
+// Package lessons wires the curriculum module: units on the path (sections
+// derived from CEFR), ordered activities, and the caller's bookmarks.
+// Attempts stay outside.
 package lessons
 
 import (
@@ -14,10 +15,10 @@ import (
 
 // RegisterRoutes mounts the lesson endpoints under /api/v1.
 func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
-	categorySvc := services.NewLessonCategoryService(repositories.NewLessonCategoryRepository(db))
-	categoryCtl := controllers.NewLessonCategoryController(categorySvc)
-
-	lessonSvc := services.NewLessonService(repositories.NewLessonRepository(db), categorySvc)
+	lessonSvc := services.NewLessonService(
+		repositories.NewLessonSectionRepository(db),
+		repositories.NewLessonRepository(db),
+	)
 	lessonCtl := controllers.NewLessonController(lessonSvc)
 
 	activitySvc := services.NewLessonActivityService(repositories.NewLessonActivityRepository(db))
@@ -29,10 +30,6 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 	l := rg.Group("/lessons")
 	l.GET("", middleware.RequireAuth(), lessonCtl.List)
 	l.GET("/:id", middleware.RequireAuth(), lessonCtl.GetByID)
-
-	lc := rg.Group("/lesson-categories")
-	lc.GET("", middleware.RequireAuth(), categoryCtl.List)
-	lc.GET("/:id", middleware.RequireAuth(), categoryCtl.GetByID)
 
 	la := rg.Group("/lesson-activities")
 	la.GET("", middleware.RequireAuth(), activityCtl.List)

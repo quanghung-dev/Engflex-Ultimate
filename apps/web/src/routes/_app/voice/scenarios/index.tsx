@@ -13,10 +13,9 @@ import { PageLayout } from "#/components/common/page-layout";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import {
-	LESSON_META,
-	LESSONS,
-	VOICE_SCENARIO_BY_LESSON,
-} from "#/features/lessons/fixtures";
+	useLessonDetail,
+	useLessonSections,
+} from "#/features/lessons/queries";
 import { lessonsStore } from "#/features/lessons/store";
 import { ScenarioCard } from "#/features/voice/components/scenarios/scenario-card";
 import { useTopicsWithPreview } from "#/features/voice/queries";
@@ -67,20 +66,23 @@ function ScenariosPage() {
 		}
 	}, [topicsFailed]);
 	const lessonState = useStore(lessonsStore);
-	const activeSlot = (() => {
-		for (const [lessonId, meta] of Object.entries(LESSON_META)) {
-			const completed = lessonState.completedParts[lessonId] ?? [];
-			const total =
-				LESSONS.find((lesson) => lesson.id === lessonId)?.partCount ?? 0;
-			if (completed.length > 0 && completed.length < total) {
-				return {
-					slot: meta.slot,
-					scenarioId: VOICE_SCENARIO_BY_LESSON[lessonId],
-				};
-			}
-		}
-		return null;
-	})();
+	const sectionsQuery = useLessonSections();
+	const liveUnits =
+		sectionsQuery.data?.flatMap((section) => section.units) ?? [];
+	const activeLesson = liveUnits.find((lesson) => {
+		const completed = lessonState.completedParts[lesson.id] ?? [];
+		return completed.length > 0 && completed.length < lesson.partCount;
+	});
+	const activeDetailQuery = useLessonDetail(
+		activeLesson ? activeLesson.id : undefined,
+	);
+	const activeVoice = activeDetailQuery.data?.activities.find(
+		(activity) => activity.type === "voice",
+	);
+	const activeSlot =
+		activeLesson && activeVoice?.voice
+			? { slot: activeLesson.title, scenarioId: activeVoice.voice.scenarioId }
+			: null;
 	// Server data only: fixture ids are not UUIDs and cannot start a
 	// session, so there is no fixture fallback. The hero hides while the
 	// catalog loads.

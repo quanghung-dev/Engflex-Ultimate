@@ -1,5 +1,5 @@
 import type { APP_ROUTES } from "#/app/app-route";
-import { getLessonDetail } from "#/features/lessons/fixtures";
+import { lessonTitleCache } from "#/features/lessons/queries";
 import { getVocabularyItem } from "#/features/vocabulary/store";
 import { m } from "#/paraglide/messages";
 
@@ -52,7 +52,7 @@ export function readBreadcrumb(
 }
 
 export const lessonCrumbLabel = (params: RouteParams) =>
-	getLessonDetail(params.lessonId)?.lesson.title ??
+	lessonTitleCache.get(params.lessonId) ??
 	m["lessons.crumb.detailFallback"]();
 
 export const vocabularyCrumbLabel = (params: RouteParams) =>

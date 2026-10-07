@@ -4,15 +4,13 @@
 // source: lesson.go
 
 /**
- * ListLessons filters the lesson hub (level, category, skill tab,
- * completion status). Pagination/search come from the embedded
- * common.ListParams (tstype:",extends" -> `interface ListLessons extends
- * ListParams`); json tags mirror the query keys so the generated TS field
- * names match the wire.
+ * ListLessons filters the unit hub (level, skill tab, completion status).
+ * Pagination/search come from the embedded common.ListParams
+ * (tstype:",extends" -> `interface ListLessons extends ListParams`); json tags
+ * mirror the query keys so the generated TS field names match the wire.
  */
 export interface ListLessons extends ListParams {
   level: CEFR;
-  categorySlug: string;
   skill: ActivityType;
   status: LessonStatus;
 }

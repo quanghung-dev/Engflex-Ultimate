@@ -7,17 +7,18 @@ import (
 	"engflex-api/internal/common/enums"
 )
 
-// Lesson is one curriculum unit ("Unit 4.2" folded into slug/title).
+// Lesson is one curriculum unit on the path (membership via SectionID;
+// the section's CEFR band is the grouping key, not a level on the lesson).
 // Per-part content lives in lesson_activities.config.
 type Lesson struct {
 	ID          string            `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
 	Slug        string            `gorm:"not null" json:"slug"`
 	Title       string            `gorm:"not null" json:"title"`
-	CategoryID  string            `gorm:"type:uuid;not null" json:"categoryId"`
+	SectionID   string            `gorm:"type:uuid;not null" json:"sectionId"`
 	CEFRLevel   enums.CEFR        `gorm:"column:cefr_level;not null" json:"cefrLevel"`
 	Description string            `gorm:"not null;default:''" json:"description"`
 	Details     LessonDetails     `gorm:"type:jsonb;not null;default:'{}'" json:"details"`
-	Category    *LessonCategory   `gorm:"->;foreignKey:CategoryID;references:ID" json:"category,omitempty"`
+	Section     *LessonSection    `gorm:"->;foreignKey:SectionID;references:ID" json:"section,omitempty"`
 	Activities  []*LessonActivity `gorm:"->;foreignKey:LessonID;references:ID" json:"activities,omitempty"`
 	CreatedAt   time.Time         `gorm:"autoCreateTime" json:"createdAt"`
 	UpdatedAt   time.Time         `gorm:"autoUpdateTime" json:"updatedAt"`

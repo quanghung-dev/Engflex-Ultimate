@@ -78,14 +78,6 @@ export interface Activity {
 // source: lesson.go
 
 /**
- * Category is a lesson_categories row.
- */
-export interface Category {
-  id: string;
-  slug: string;
-  name: string;
-}
-/**
  * LessonDetails mirrors lessons.details (jsonb).
  */
 export interface LessonDetails {
@@ -107,13 +99,25 @@ export interface LessonProgress {
   savedAt?: string /* RFC3339 */;
 }
 /**
- * Lesson is a lesson hub card and the lesson detail header.
+ * Section is a lesson_sections row: the titled, ordered path group.
+ */
+export interface Section {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  cefrBand: CEFR;
+  position: number /* int */;
+}
+/**
+ * Lesson is a unit card and the unit detail header. Section repeats per
+ * unit so a card renders without wrapper context; the hub groups on it.
  */
 export interface Lesson {
   id: string;
   slug: string;
   title: string;
-  category?: Category;
+  section?: Section;
   cefrLevel: CEFR;
   description: string;
   details: LessonDetails;
@@ -121,14 +125,27 @@ export interface Lesson {
   progress?: LessonProgress;
 }
 /**
- * LessonDetail is the GET /lessons/:id shape: header + category + ordered
+ * UnitSection mirrors models.LessonSection field for field, with Units
+ * nested the same way, so one utils.MapSlice copies the whole hub.
+ */
+export interface UnitSection {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  cefrBand: CEFR;
+  position: number /* int */;
+  units: Lesson[];
+}
+/**
+ * LessonDetail is the GET /lessons/:id shape: header + section + ordered
  * activities. No Progress in v1 (attempts stays outside the module).
  */
 export interface LessonDetail {
   id: string;
   slug: string;
   title: string;
-  category?: Category;
+  section?: Section;
   cefrLevel: CEFR;
   description: string;
   details: LessonDetails;

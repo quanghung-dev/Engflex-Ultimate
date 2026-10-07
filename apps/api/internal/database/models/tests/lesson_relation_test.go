@@ -14,8 +14,7 @@ import (
 func TestLessonRelationsAreReadOnly(t *testing.T) {
 	s, err := schema.Parse(&models.Lesson{}, &sync.Map{}, schema.NamingStrategy{})
 	require.NoError(t, err)
-
-	for _, name := range []string{"Category", "Activities"} {
+	for _, name := range []string{"Section", "Activities"} {
 		field, ok := s.FieldsByName[name]
 		require.True(t, ok, "%s must remain a parsed field", name)
 		assert.True(t, field.Readable)
@@ -28,13 +27,13 @@ func TestLessonRelationsAreRegistered(t *testing.T) {
 	s, err := schema.Parse(&models.Lesson{}, &sync.Map{}, schema.NamingStrategy{})
 	require.NoError(t, err)
 
-	t.Run("Category resolves to lesson_categories.id", func(t *testing.T) {
-		rel, ok := s.Relationships.Relations["Category"]
+	t.Run("Section resolves to lesson_sections.id", func(t *testing.T) {
+		rel, ok := s.Relationships.Relations["Section"]
 		require.True(t, ok)
 		require.Len(t, rel.References, 1)
 		assert.False(t, rel.References[0].OwnPrimaryKey)
 		assert.Equal(t, "id", rel.References[0].PrimaryKey.DBName)
-		assert.Equal(t, "category_id", rel.References[0].ForeignKey.DBName)
+		assert.Equal(t, "section_id", rel.References[0].ForeignKey.DBName)
 	})
 
 	t.Run("Activities resolves to lesson_activities.lesson_id", func(t *testing.T) {

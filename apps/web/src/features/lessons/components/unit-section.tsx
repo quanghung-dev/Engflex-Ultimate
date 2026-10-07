@@ -3,20 +3,16 @@ import { m } from "#/paraglide/messages";
 import { LessonCard } from "./lesson-card";
 
 export function UnitSection({
-	n,
-	title,
-	description,
-	lessons,
+	section,
+	units,
 	progressById,
-	lockedById,
+	unlocksAfterById,
 	recommendedId,
 }: {
-	n: number;
-	title: string;
-	description: string;
-	lessons: Lesson[];
+	section: { id: string; title: string; cefrBand: string };
+	units: Lesson[];
 	progressById: Record<string, LessonProgress>;
-	lockedById: Record<string, boolean>;
+	unlocksAfterById: Record<string, string | undefined>;
 	recommendedId?: string;
 }) {
 	return (
@@ -24,26 +20,23 @@ export function UnitSection({
 			<div className="flex items-start justify-between gap-3">
 				<div className="flex min-w-0 items-start gap-3">
 					<span
-						className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[12px] bg-primary text-lg font-bold text-primary-foreground"
+						className="inline-flex h-8 shrink-0 items-center justify-center rounded-[12px] bg-primary px-2 text-sm font-bold text-primary-foreground"
 						style={{ boxShadow: "0 2px 0 #433095" }}
 					>
-						{n}
+						{section.cefrBand}
 					</span>
 					<div className="min-w-0">
 						<h2 className="text-lg font-bold text-foreground">
-							{m["lessons.unit.label"]({ n })}: {title}
+							{section.title}
 						</h2>
-						<p className="text-[15px] font-medium text-muted-foreground">
-							{description}
-						</p>
 					</div>
 				</div>
 				<span className="shrink-0 text-xs font-bold text-muted-foreground">
-					{m["lessons.unit.lessons"]({ count: lessons.length })}
+					{m["lessons.unit.lessons"]({ count: units.length })}
 				</span>
 			</div>
 			<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-				{lessons.map((lesson) => (
+				{units.map((lesson) => (
 					<LessonCard
 						key={lesson.id}
 						lesson={lesson}
@@ -56,7 +49,8 @@ export function UnitSection({
 								bookmarked: false,
 							}
 						}
-						locked={lockedById[lesson.id] ?? false}
+						locked={unlocksAfterById[lesson.id] !== undefined}
+						unlocksAfter={unlocksAfterById[lesson.id]}
 						recommended={recommendedId === lesson.id}
 					/>
 				))}

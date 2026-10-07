@@ -1,4 +1,4 @@
-import type { Lesson, LessonProgress } from "@engflex/contracts";
+import type { LessonDetail, LessonProgress } from "@engflex/contracts";
 import { Link } from "@tanstack/react-router";
 import { BookmarkCheck, BookmarkPlus, Clock3, Layers } from "lucide-react";
 import { APP_ROUTES } from "#/app/app-route";
@@ -13,16 +13,15 @@ export function LessonHeader({
 	progress,
 	startPart,
 	startPartNumber,
-	outcomes,
 	onToggleBookmark,
 }: {
-	lesson: Lesson;
+	lesson: LessonDetail;
 	progress: LessonProgress;
 	startPart: LessonPart;
 	startPartNumber: number;
-	outcomes: string[];
 	onToggleBookmark: () => void;
 }) {
+	const partCount = lesson.activities.length;
 	return (
 		<section className="surface-hero flex flex-col gap-5 p-5 md:flex-row md:p-6">
 			<div className="flex min-w-0 flex-1 flex-col gap-4">
@@ -36,7 +35,7 @@ export function LessonHeader({
 					</span>
 					<span className="chip px-2 py-0.5 text-xs">
 						<Layers className="size-3.5" />
-						{m["lessons.card.activitiesCount"]({ count: lesson.partCount })}
+						{m["lessons.card.activitiesCount"]({ count: partCount })}
 					</span>
 				</div>
 				<div>
@@ -74,25 +73,6 @@ export function LessonHeader({
 							? m["lessons.detail.saved"]()
 							: m["lessons.detail.saveLater"]()}
 					</Button>
-				</div>
-				<div className="border-t-2 border-border pt-4">
-					<h2 className="text-sm font-bold text-foreground">
-						{m["lessons.detail.outcomesTitle"]()}
-					</h2>
-					<ul className="mt-2 flex flex-col gap-2">
-						{outcomes.map((outcome) => (
-							<li
-								key={outcome}
-								className="flex gap-2 text-[15px] font-medium text-muted-foreground"
-							>
-								<span
-									aria-hidden="true"
-									className="mt-[9px] size-1.5 shrink-0 rounded-full bg-primary"
-								/>
-								<span>{outcome}</span>
-							</li>
-						))}
-					</ul>
 				</div>
 			</div>
 			<div className="flex shrink-0 items-start justify-center">

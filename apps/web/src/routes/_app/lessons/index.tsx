@@ -12,7 +12,7 @@ import {
 	type LessonFilters,
 } from "#/features/lessons/components/lesson-filter-bar";
 import { UnitSection } from "#/features/lessons/components/unit-section";
-import { LESSON_META, LESSONS, UNITS } from "#/features/lessons/fixtures";
+import { useLessonSections } from "#/features/lessons/queries";
 import { lessonsStore, progressFrom } from "#/features/lessons/store";
 import { m } from "#/paraglide/messages";
 
@@ -24,85 +24,75 @@ export const Route = createFileRoute("/_app/lessons/")({
 function LessonsPage() {
 	const [filters, setFilters] = useState<LessonFilters>(DEFAULT_LESSON_FILTERS);
 	const storeState = useStore(lessonsStore);
+	const sectionsQuery = useLessonSections();
+	const sections = sectionsQuery.data ?? [];
+
+	const units = useMemo(
+		() => sections.flatMap((section) => section.units),
+		[sections],
+	);
 
 	const progressById = useMemo(() => {
 		return Object.fromEntries(
-			LESSONS.map((lesson) => [lesson.id, progressFrom(storeState, lesson.id)]),
+			units.map((lesson) => [
+				lesson.id,
+				progressFrom(storeState, lesson.id, lesson.partCount),
+			]),
 		);
-	}, [storeState]);
+	}, [storeState, units]);
 
 	const visible = useMemo(() => {
 		const search = filters.search.trim().toLowerCase();
-		return LESSONS.filter((lesson) => {
-			if (search) {
-				const haystack = `${lesson.title} ${lesson.description}`.toLowerCase();
-				if (!haystack.includes(search)) return false;
-			}
-			if (filters.level !== "all" && lesson.cefrLevel !== filters.level)
-				return false;
-			if (
-				filters.track !== "all" &&
-				LESSON_META[lesson.id]?.track !== filters.track
-			)
-				return false;
-			return true;
-		});
-	}, [filters]);
+		return sections
+			.map((section) => ({
+				...section,
+				units: section.units.filter((lesson) => {
+					if (search) {
+						const haystack =
+							`${lesson.title} ${lesson.description}`.toLowerCase();
+						if (!haystack.includes(search)) return false;
+					}
+					if (filters.level !== "all" && lesson.cefrLevel !== filters.level)
+						return false;
+					return true;
+				}),
+			}))
+			.filter((section) => section.units.length > 0);
+	}, [sections, filters]);
 
 	const hero = useMemo(() => {
-		for (const unit of UNITS) {
-			const unitLessons = LESSONS.filter(
-				(lesson) => LESSON_META[lesson.id]?.unit === unit.n,
-			);
-			const resume = unitLessons.find(
+		for (const section of sections) {
+			const resume = section.units.find(
 				(lesson) => progressById[lesson.id]?.status === "in_progress",
 			);
 			if (resume) {
-				const recommended = unitLessons.find(
+				const recommended = section.units.find(
 					(lesson) => progressById[lesson.id]?.status === "unstarted",
 				);
-				return {
-					unit,
-					lessons: unitLessons,
-					resume,
-					recommendedId: recommended?.id,
-				};
+				return { section, resume, recommendedId: recommended?.id };
 			}
 		}
-		const first = UNITS[0];
-		const unitLessons = LESSONS.filter(
-			(lesson) => LESSON_META[lesson.id]?.unit === first?.n,
-		);
+		const first = sections[0];
 		return {
-			unit: first,
-			lessons: unitLessons,
-			resume: unitLessons[0],
-			recommendedId: unitLessons[0]?.id,
+			section: first,
+			resume: first?.units[0],
+			recommendedId: first?.units[0]?.id,
 		};
-	}, [progressById]);
+	}, [sections, progressById]);
 
-	const lockedById = useMemo(() => {
-		const locked: Record<string, boolean> = {};
-		for (const unit of UNITS) {
-			const unitLessons = LESSONS.filter(
-				(lesson) => LESSON_META[lesson.id]?.unit === unit.n,
-			);
-			let blocked = false;
-			for (const lesson of unitLessons) {
-				const status = progressById[lesson.id]?.status;
-				if (status === "unstarted" && blocked) locked[lesson.id] = true;
-				if (status === "unstarted") blocked = true;
+	const unlocksAfterById = useMemo(() => {
+		const unlocks: Record<string, string | undefined> = {};
+		for (const section of sections) {
+			let gate: string | undefined;
+			for (const lesson of section.units) {
+				if (progressById[lesson.id]?.status === "unstarted") {
+					if (gate !== undefined) unlocks[lesson.id] = gate;
+					gate ??= lesson.title;
+				}
 			}
 		}
-		return locked;
-	}, [progressById]);
-
-	const sections = UNITS.map((unit) => ({
-		unit,
-		lessons: visible.filter(
-			(lesson) => LESSON_META[lesson.id]?.unit === unit.n,
-		),
-	})).filter((section) => section.lessons.length > 0);
+		return unlocks;
+	}, [sections, progressById]);
 
 	return (
 		<PageLayout
@@ -113,34 +103,31 @@ function LessonsPage() {
 			}}
 		>
 			<LessonFilterBar filters={filters} onChange={setFilters} />
-			{hero.unit && hero.resume ? (
+			{hero.section && hero.resume ? (
 				<HubHeroCard
-					unit={hero.unit.n}
-					unitTitle={hero.unit.title}
-					lessons={hero.lessons}
+					section={hero.section.title}
+					lessons={hero.section.units}
 					progressById={progressById}
 					resumeId={hero.resume.id}
-					resumeSlot={LESSON_META[hero.resume.id]?.slot ?? ""}
+					resumeTitle={hero.resume.title}
 				/>
 			) : null}
-			{sections.length === 0 ? (
+			{sectionsQuery.isPending ? null : visible.length === 0 ? (
 				<EmptyList
 					title={m["lessons.hub.emptyTitle"]()}
 					description={m["lessons.hub.emptyBody"]()}
 					onReset={() => setFilters(DEFAULT_LESSON_FILTERS)}
 				/>
 			) : (
-				sections.map((section) => (
+				visible.map((section) => (
 					<UnitSection
-						key={section.unit.n}
-						n={section.unit.n}
-						title={section.unit.title}
-						description={section.unit.description}
-						lessons={section.lessons}
+						key={section.id}
+						section={section}
+						units={section.units}
 						progressById={progressById}
-						lockedById={lockedById}
+						unlocksAfterById={unlocksAfterById}
 						recommendedId={
-							section.unit.n === hero.unit?.n ? hero.recommendedId : undefined
+							section.id === hero.section?.id ? hero.recommendedId : undefined
 						}
 					/>
 				))

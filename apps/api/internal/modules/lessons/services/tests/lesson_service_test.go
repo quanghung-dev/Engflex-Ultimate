@@ -18,8 +18,7 @@ func TestLessonService_GetDetail(t *testing.T) {
 	lessonID := "11111111-1111-1111-1111-111111111111"
 	graph := &models.Lesson{
 		ID: lessonID, Slug: "unit-1", Title: "Unit 1",
-		CategoryID: "22222222-2222-2222-2222-222222222222",
-		Category:   &models.LessonCategory{ID: "22222222-2222-2222-2222-222222222222", Slug: "general", Name: "General"},
+		CEFRLevel: "B1",
 		Activities: []*models.LessonActivity{
 			{ID: "33333333-3333-3333-3333-333333333333", LessonID: lessonID, PartNumber: 1, Title: "Part 1"},
 		},
@@ -31,7 +30,7 @@ func TestLessonService_GetDetail(t *testing.T) {
 		wantErr   bool
 	}{
 		{
-			name: "success: returns lesson with category and activities",
+			name: "success: returns unit with activities",
 			setupMock: func(m *mocks.MockLessonRepository) {
 				m.On("GetDetail", mock.Anything, lessonID).Return(graph, nil)
 			},
@@ -48,7 +47,7 @@ func TestLessonService_GetDetail(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc, lessonMock, _ := setupLesson(t)
+			svc, _, lessonMock := setupLesson(t)
 			tt.setupMock(lessonMock)
 
 			id := lessonID
@@ -63,8 +62,6 @@ func TestLessonService_GetDetail(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 				require.NotNil(t, res)
-				require.NotNil(t, res.Category)
-				assert.Equal(t, "general", res.Category.Slug)
 				require.Len(t, res.Activities, 1)
 			}
 		})

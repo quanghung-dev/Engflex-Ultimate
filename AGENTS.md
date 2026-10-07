@@ -16,6 +16,8 @@ Pipecat, uv-managed, independent).
 
 ## Standing preferences (human decisions — do not override without asking)
 
+- **References over flat regrouping — HIGH NOTE.** See dedicated subsection
+  below: nest relations instead of flattening, assemble in the repo, one Map.
 - **No commits.** Leave all work uncommitted in the working tree unless the human
   explicitly asks for a commit. `docs/` is gitignored by intent — specs, plans
   and ledgers are never committed.
@@ -362,6 +364,25 @@ type Feedback struct { Payload TurnFeedback `json:"payload"` } // no UserID/Subj
 
 The identity columns are relationship facts the join already proved; they do not
 cross the wire. `turn.feedback.tip` (flattened) is the shape to avoid.
+
+#### References over flat regrouping (HIGH NOTE)
+
+When a view needs a parent with children, carry the **reference** through
+every layer — never a flat list regrouped by hand:
+
+- Model carries the relation (`Units []*Lesson` with `->`, read-only).
+- Repository fills it (belongs-to via `Joins`; has-many via a second query
+  grouped in Go from constant queries — never a has-many `Joins`).
+- DTO nests the same way (`UnitSection{ Section, Units }`).
+- Controller does one `utils.Map`/`MapSlice`, no loops.
+
+The two shapes this forbids are the same mistake from opposite ends:
+flattening child fields onto the parent DTO (copier fails silently — see
+above), and returning a flat child list plus a grouping loop in a
+controller or service (an in-memory join by another name — same cost as the
+`attachFeedback` loop this codebase already paid for). Worked example: the
+sections hub reads section-first (`LessonSection` with `Units` attached),
+not flat lessons regrouped by a `groupSections` helper.
 
 ### Response format (fixed envelope)
 
