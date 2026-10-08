@@ -2,7 +2,8 @@
 
 Stateless realtime voice pipeline (STT → LLM → TTS over WebRTC). It owns the
 conversation prompts and audio path; Go only provisions sessions and ingests
-results afterwards. **Always run via `uv run`** (`pyproject.toml` + `uv.lock`).
+results afterwards. Pronunciation scoring lives in the upstream OpenPronounce
+container (called directly by Go), not here. **Always run via `uv run`** (`pyproject.toml` + `uv.lock`).
 
 ## Layout
 
@@ -10,7 +11,7 @@ results afterwards. **Always run via `uv run`** (`pyproject.toml` + `uv.lock`).
 src/
   app/            # Runner routes + session schemas (PersonaBody, ScenarioBody, LearnerBody)
   pipeline/       # STT/LLM/TTS factories, bot tasks, handlers
-  transcript/     # Capture + analyze (feedback spans/relevance/tip, pronunciation)
+  transcript/     # Capture + analyze (LLM feedback spans/relevance/tip)
   clients/        # Go callbacks (turn batch ingest, at-most-once)
   prompts.py      # Free-talk + roleplay templates — the engine owns them
   bot.py          # Pipeline entry point

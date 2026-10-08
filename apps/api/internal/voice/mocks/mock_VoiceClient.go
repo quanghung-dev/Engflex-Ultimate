@@ -7,7 +7,7 @@ package mocks
 import (
 	"context"
 	"engflex-api/internal/modules/conversations/dtos/responses"
-	"engflex-api/internal/modules/conversations/services"
+	"engflex-api/internal/voice"
 
 	mock "github.com/stretchr/testify/mock"
 )
@@ -49,26 +49,26 @@ func (_m *MockVoiceClient) EXPECT() *MockVoiceClient_Expecter {
 }
 
 // AnalyzeTurn provides a mock function for the type MockVoiceClient
-func (_mock *MockVoiceClient) AnalyzeTurn(ctx context.Context, req services.AnalyzeTurnRequest) (*services.AnalyzeTurnResponse, error) {
+func (_mock *MockVoiceClient) AnalyzeTurn(ctx context.Context, req voice.AnalyzeTurnRequest) (*voice.AnalyzeTurnResponse, error) {
 	ret := _mock.Called(ctx, req)
 
 	if len(ret) == 0 {
 		panic("no return value specified for AnalyzeTurn")
 	}
 
-	var r0 *services.AnalyzeTurnResponse
+	var r0 *voice.AnalyzeTurnResponse
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, services.AnalyzeTurnRequest) (*services.AnalyzeTurnResponse, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, voice.AnalyzeTurnRequest) (*voice.AnalyzeTurnResponse, error)); ok {
 		return returnFunc(ctx, req)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, services.AnalyzeTurnRequest) *services.AnalyzeTurnResponse); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, voice.AnalyzeTurnRequest) *voice.AnalyzeTurnResponse); ok {
 		r0 = returnFunc(ctx, req)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*services.AnalyzeTurnResponse)
+			r0 = ret.Get(0).(*voice.AnalyzeTurnResponse)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, services.AnalyzeTurnRequest) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, voice.AnalyzeTurnRequest) error); ok {
 		r1 = returnFunc(ctx, req)
 	} else {
 		r1 = ret.Error(1)
@@ -83,20 +83,20 @@ type MockVoiceClient_AnalyzeTurn_Call struct {
 
 // AnalyzeTurn is a helper method to define mock.On call
 //   - ctx context.Context
-//   - req services.AnalyzeTurnRequest
+//   - req voice.AnalyzeTurnRequest
 func (_e *MockVoiceClient_Expecter) AnalyzeTurn(ctx any, req any) *MockVoiceClient_AnalyzeTurn_Call {
 	return &MockVoiceClient_AnalyzeTurn_Call{Call: _e.mock.On("AnalyzeTurn", ctx, req)}
 }
 
-func (_c *MockVoiceClient_AnalyzeTurn_Call) Run(run func(ctx context.Context, req services.AnalyzeTurnRequest)) *MockVoiceClient_AnalyzeTurn_Call {
+func (_c *MockVoiceClient_AnalyzeTurn_Call) Run(run func(ctx context.Context, req voice.AnalyzeTurnRequest)) *MockVoiceClient_AnalyzeTurn_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 services.AnalyzeTurnRequest
+		var arg1 voice.AnalyzeTurnRequest
 		if args[1] != nil {
-			arg1 = args[1].(services.AnalyzeTurnRequest)
+			arg1 = args[1].(voice.AnalyzeTurnRequest)
 		}
 		run(
 			arg0,
@@ -106,12 +106,12 @@ func (_c *MockVoiceClient_AnalyzeTurn_Call) Run(run func(ctx context.Context, re
 	return _c
 }
 
-func (_c *MockVoiceClient_AnalyzeTurn_Call) Return(analyzeTurnResponse *services.AnalyzeTurnResponse, err error) *MockVoiceClient_AnalyzeTurn_Call {
+func (_c *MockVoiceClient_AnalyzeTurn_Call) Return(analyzeTurnResponse *voice.AnalyzeTurnResponse, err error) *MockVoiceClient_AnalyzeTurn_Call {
 	_c.Call.Return(analyzeTurnResponse, err)
 	return _c
 }
 
-func (_c *MockVoiceClient_AnalyzeTurn_Call) RunAndReturn(run func(ctx context.Context, req services.AnalyzeTurnRequest) (*services.AnalyzeTurnResponse, error)) *MockVoiceClient_AnalyzeTurn_Call {
+func (_c *MockVoiceClient_AnalyzeTurn_Call) RunAndReturn(run func(ctx context.Context, req voice.AnalyzeTurnRequest) (*voice.AnalyzeTurnResponse, error)) *MockVoiceClient_AnalyzeTurn_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -202,113 +202,27 @@ func (_c *MockVoiceClient_Offer_Call) RunAndReturn(run func(ctx context.Context,
 	return _c
 }
 
-// Pronounce provides a mock function for the type MockVoiceClient
-func (_mock *MockVoiceClient) Pronounce(ctx context.Context, expectedText string, lang string, audio []byte, mime string) (*responses.PronounceResult, error) {
-	ret := _mock.Called(ctx, expectedText, lang, audio, mime)
-
-	if len(ret) == 0 {
-		panic("no return value specified for Pronounce")
-	}
-
-	var r0 *responses.PronounceResult
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, []byte, string) (*responses.PronounceResult, error)); ok {
-		return returnFunc(ctx, expectedText, lang, audio, mime)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, []byte, string) *responses.PronounceResult); ok {
-		r0 = returnFunc(ctx, expectedText, lang, audio, mime)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*responses.PronounceResult)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string, []byte, string) error); ok {
-		r1 = returnFunc(ctx, expectedText, lang, audio, mime)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockVoiceClient_Pronounce_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Pronounce'
-type MockVoiceClient_Pronounce_Call struct {
-	*mock.Call
-}
-
-// Pronounce is a helper method to define mock.On call
-//   - ctx context.Context
-//   - expectedText string
-//   - lang string
-//   - audio []byte
-//   - mime string
-func (_e *MockVoiceClient_Expecter) Pronounce(ctx any, expectedText any, lang any, audio any, mime any) *MockVoiceClient_Pronounce_Call {
-	return &MockVoiceClient_Pronounce_Call{Call: _e.mock.On("Pronounce", ctx, expectedText, lang, audio, mime)}
-}
-
-func (_c *MockVoiceClient_Pronounce_Call) Run(run func(ctx context.Context, expectedText string, lang string, audio []byte, mime string)) *MockVoiceClient_Pronounce_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 string
-		if args[1] != nil {
-			arg1 = args[1].(string)
-		}
-		var arg2 string
-		if args[2] != nil {
-			arg2 = args[2].(string)
-		}
-		var arg3 []byte
-		if args[3] != nil {
-			arg3 = args[3].([]byte)
-		}
-		var arg4 string
-		if args[4] != nil {
-			arg4 = args[4].(string)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-			arg3,
-			arg4,
-		)
-	})
-	return _c
-}
-
-func (_c *MockVoiceClient_Pronounce_Call) Return(pronounceResult *responses.PronounceResult, err error) *MockVoiceClient_Pronounce_Call {
-	_c.Call.Return(pronounceResult, err)
-	return _c
-}
-
-func (_c *MockVoiceClient_Pronounce_Call) RunAndReturn(run func(ctx context.Context, expectedText string, lang string, audio []byte, mime string) (*responses.PronounceResult, error)) *MockVoiceClient_Pronounce_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // Start provides a mock function for the type MockVoiceClient
-func (_mock *MockVoiceClient) Start(ctx context.Context, req services.StartRequest) (*services.StartResponse, error) {
+func (_mock *MockVoiceClient) Start(ctx context.Context, req voice.StartRequest) (*voice.StartResponse, error) {
 	ret := _mock.Called(ctx, req)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Start")
 	}
 
-	var r0 *services.StartResponse
+	var r0 *voice.StartResponse
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, services.StartRequest) (*services.StartResponse, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, voice.StartRequest) (*voice.StartResponse, error)); ok {
 		return returnFunc(ctx, req)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, services.StartRequest) *services.StartResponse); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, voice.StartRequest) *voice.StartResponse); ok {
 		r0 = returnFunc(ctx, req)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*services.StartResponse)
+			r0 = ret.Get(0).(*voice.StartResponse)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, services.StartRequest) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, voice.StartRequest) error); ok {
 		r1 = returnFunc(ctx, req)
 	} else {
 		r1 = ret.Error(1)
@@ -323,20 +237,20 @@ type MockVoiceClient_Start_Call struct {
 
 // Start is a helper method to define mock.On call
 //   - ctx context.Context
-//   - req services.StartRequest
+//   - req voice.StartRequest
 func (_e *MockVoiceClient_Expecter) Start(ctx any, req any) *MockVoiceClient_Start_Call {
 	return &MockVoiceClient_Start_Call{Call: _e.mock.On("Start", ctx, req)}
 }
 
-func (_c *MockVoiceClient_Start_Call) Run(run func(ctx context.Context, req services.StartRequest)) *MockVoiceClient_Start_Call {
+func (_c *MockVoiceClient_Start_Call) Run(run func(ctx context.Context, req voice.StartRequest)) *MockVoiceClient_Start_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 services.StartRequest
+		var arg1 voice.StartRequest
 		if args[1] != nil {
-			arg1 = args[1].(services.StartRequest)
+			arg1 = args[1].(voice.StartRequest)
 		}
 		run(
 			arg0,
@@ -346,12 +260,12 @@ func (_c *MockVoiceClient_Start_Call) Run(run func(ctx context.Context, req serv
 	return _c
 }
 
-func (_c *MockVoiceClient_Start_Call) Return(startResponse *services.StartResponse, err error) *MockVoiceClient_Start_Call {
+func (_c *MockVoiceClient_Start_Call) Return(startResponse *voice.StartResponse, err error) *MockVoiceClient_Start_Call {
 	_c.Call.Return(startResponse, err)
 	return _c
 }
 
-func (_c *MockVoiceClient_Start_Call) RunAndReturn(run func(ctx context.Context, req services.StartRequest) (*services.StartResponse, error)) *MockVoiceClient_Start_Call {
+func (_c *MockVoiceClient_Start_Call) RunAndReturn(run func(ctx context.Context, req voice.StartRequest) (*voice.StartResponse, error)) *MockVoiceClient_Start_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -12,6 +12,7 @@ import (
 	"engflex-api/internal/modules/conversations/controllers"
 	"engflex-api/internal/modules/conversations/services"
 	"engflex-api/internal/server/middleware"
+	"engflex-api/internal/voice"
 )
 
 // RegisterRoutes mounts the conversation endpoints under /api/v1.
@@ -22,8 +23,9 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.VoiceConfig, se
 	repo := repositories.NewConversationRepository(db)
 	turns := repositories.NewConversationTurnRepository(db)
 	feedbacks := repositories.NewFeedbackRepository(db)
-	voice := services.NewHTTPVoiceClient(cfg)
-	svc := services.NewConversationService(repo, turns, voice, cfg.MaxDurationSec, feedbacks,
+	engine := voice.NewHTTPVoiceClient(cfg)
+	pronounce := voice.NewHTTPPronounceEngine(cfg.PronounceURL, cfg.PronounceTimeout)
+	svc := services.NewConversationService(repo, turns, engine, pronounce, cfg.MaxDurationSec, feedbacks,
 		repositories.NewScenarioRepository(db), repositories.NewPersonaRepository(db))
 	ctl := controllers.NewConversationController(svc, cfg.MaxDurationSec)
 

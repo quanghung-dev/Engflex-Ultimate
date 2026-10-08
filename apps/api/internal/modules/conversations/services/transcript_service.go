@@ -9,28 +9,13 @@ import (
 	"engflex-api/internal/common"
 	"engflex-api/internal/logger"
 	"engflex-api/internal/modules/conversations/dtos/responses"
+	"engflex-api/internal/voice"
 )
-
-// TranscriptStatusError carries a non-2xx engine reply. The engine owns the
-// window and the live transcript, so its refusals are meaningful to the
-// learner: "no live session" (close the modal), "illegal for the current state",
-// and "unusable text" are all answers, not outages. Collapsing them into one
-// 503 would leave the web unable to tell a finished session from a broken
-// engine.
-type TranscriptStatusError struct {
-	Path   string
-	Status int
-	Body   []byte
-}
-
-func (e *TranscriptStatusError) Error() string {
-	return "voice transcript " + e.Path + " failed: " + http.StatusText(e.Status)
-}
 
 // transcriptError maps an engine failure onto the API's error vocabulary,
 // preserving the refusals and treating everything else as unavailable.
 func transcriptError(ctx context.Context, action, conversationID string, err error) error {
-	var status *TranscriptStatusError
+	var status *voice.TranscriptStatusError
 	if errors.As(err, &status) {
 		switch status.Status {
 		case http.StatusNotFound:
@@ -101,7 +86,7 @@ func (s *ConversationService) Pronounce(ctx context.Context, userID, conversatio
 	if len(audio) > MaxPronounceBytes {
 		return nil, common.New(http.StatusRequestEntityTooLarge, "audio too large")
 	}
-	res, err := s.voice.Pronounce(ctx, expectedText, lang, audio, mime)
+	res, err := s.pronounce.Pronounce(ctx, expectedText, lang, audio, mime)
 	if err != nil || res == nil {
 		return nil, transcriptError(ctx, "pronounce", conversationID, err)
 	}

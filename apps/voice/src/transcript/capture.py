@@ -6,7 +6,7 @@ finals that never triggered a bot reply) collapse into one turn so the
 transcript reads like a conversation, not like STT chunks.
 
 Deliberately absent: audio and word-metadata fields. Turn records stay
-text-only; acoustic alignment belongs to the scoring path (/pronounce),
+text-only; acoustic alignment belongs to the OpenPronounce scoring container,
 not the transcript.
 """
 

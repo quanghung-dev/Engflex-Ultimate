@@ -25,21 +25,52 @@ type TranscribeResult struct {
 	Text string `json:"text"`
 }
 
-// MispronouncedWord is one engine-flagged word: expected vs heard IPA.
-type MispronouncedWord struct {
-	Word       string  `json:"word"`
+// PhoneDetail is one mispronounced phone: expected vs heard IPA with confidence.
+type PhoneDetail struct {
 	Expected   string  `json:"expected"`
 	Heard      string  `json:"heard"`
 	Confidence float64 `json:"confidence"`
 }
 
-// PronounceResult is the engine's reply to an exercise attempt: the score
-// plus per-word errors. The engine owns scoring; Go forwards verbatim.
+// ReferencePhone is one reference word with its expected IPA, in sentence
+// order — the panel renders it under every word chip, flagged or not.
+type ReferencePhone struct {
+	Word   string `json:"word"`
+	Phones string `json:"phones"`
+}
+
+// MispronouncedWord is one engine-flagged word: expected vs heard IPA.
+type MispronouncedWord struct {
+	Word       string        `json:"word"`
+	Expected   string        `json:"expected"`
+	Heard      string        `json:"heard"`
+	Confidence float64       `json:"confidence"`
+	Phones     []PhoneDetail `json:"phones"`
+}
+
+// Prosody carries the learner's pitch and energy contours, downsampled by
+// the engine to at most 120 points each.
+type Prosody struct {
+	F0     []float64 `json:"f0"`
+	Energy []float64 `json:"energy"`
+}
+
+// PronounceResult is the container's assessment of one exercise attempt: the
+// score plus per-word errors. It is constructed by the pronounce engine
+// client, not parsed from the voice service.
+//
+// The container speaks snake_case, so the metric and curve keys match it
+// exactly — encoding/json drops silently on a tag mismatch, which is how the
+// error rates used to parse as zero.
 type PronounceResult struct {
 	Score            float64             `json:"score"`
 	Transcription    string              `json:"transcription"`
-	PhonemeErrorRate float64             `json:"phonemeErrorRate"`
-	WordErrorRate    float64             `json:"wordErrorRate"`
-	AcousticDistance float64             `json:"acousticDistance"`
+	PhonemeErrorRate float64             `json:"phoneme_error_rate"`
+	WordErrorRate    float64             `json:"word_error_rate"`
+	AcousticDistance float64             `json:"acoustic_distance"`
 	Errors           []MispronouncedWord `json:"errors"`
+	Prosody          Prosody             `json:"prosody"`
+	ModelCurve       []float64           `json:"model_curve"`
+	LearnerCurve     []float64           `json:"learner_curve"`
+	ReferencePhones  []ReferencePhone    `json:"reference_phones"`
 }

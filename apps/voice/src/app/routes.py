@@ -14,12 +14,7 @@ from pipecat.runner.run import app as runner_app
 from pydantic import ValidationError
 
 from app.schemas import TranscriptCommandBody
-from transcript.analyze import (
-    AnalysisRefused,
-    AnalyzeRequest,
-    analyze_turn,
-    assess_audio_bytes_async,
-)
+from transcript.analyze import AnalysisRefused, AnalyzeRequest, analyze_turn
 
 
 @runner_app.post("/analyze")
@@ -72,36 +67,6 @@ async def transcribe(
     except prerecorded.TranscribeUnavailableError as exc:
         raise HTTPException(status_code=502, detail="transcription unavailable") from exc
     return {"text": text}
-
-
-@runner_app.post("/pronounce")
-async def pronounce(
-    expected_text: str = Form(...),
-    lang: str = Form("en"),
-    audio: UploadFile = File(...),  # noqa: B008 - standard FastAPI idiom
-):
-    """Score one exercise attempt against its reference sentence.
-
-    Session-independent like /analyze: exercises live in Go, so no live
-    voice session is required. Refusals mirror /transcribe: 413 over the
-    cap, 422 empty reference or unscorable audio.
-    """
-    from transcript import prerecorded
-    from transcript.analyze.pronunciation import EmptyReferenceError, UnscorableAudioError
-
-    raw = await audio.read()
-    if len(raw) > prerecorded.MAX_AUDIO_BYTES:
-        raise HTTPException(status_code=413, detail="audio too large")
-    try:
-        assessment = await assess_audio_bytes_async(
-            raw, expected_text, audio.content_type or "", lang
-        )
-    except (EmptyReferenceError, UnscorableAudioError) as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
-    except Exception as exc:
-        logger.exception("pronunciation assessment failed")
-        raise HTTPException(status_code=500, detail="pronunciation assessment failed") from exc
-    return {"assessment": assessment.model_dump()}
 
 
 @runner_app.post("/transcript")

@@ -1,4 +1,4 @@
-package services
+package voice
 
 import (
 	"bytes"
@@ -99,9 +99,22 @@ type VoiceClient interface {
 	// Transcribe sends one recorded re-speak for isolated transcription. The
 	// engine owns Deepgram, so Go only checks ownership and forwards.
 	Transcribe(ctx context.Context, conversationID string, audio []byte, mime string) (*responses.TranscribeResult, error)
-	// Pronounce scores one exercise attempt against its reference sentence.
-	// The engine owns scoring, so Go only checks ownership and forwards.
-	Pronounce(ctx context.Context, expectedText, lang string, audio []byte, mime string) (*responses.PronounceResult, error)
+}
+
+// TranscriptStatusError carries a non-2xx engine reply. The engine owns the
+// window and the live transcript, so its refusals are meaningful to the
+// learner: "no live session" (close the modal), "illegal for the current state",
+// and "unusable text" are all answers, not outages. Collapsing them into one
+// 503 would leave the web unable to tell a finished session from a broken
+// engine.
+type TranscriptStatusError struct {
+	Path   string
+	Status int
+	Body   []byte
+}
+
+func (e *TranscriptStatusError) Error() string {
+	return "voice transcript " + e.Path + " failed: " + http.StatusText(e.Status)
 }
 
 type httpVoiceClient struct {
@@ -302,56 +315,4 @@ func (c *httpVoiceClient) Transcribe(ctx context.Context, conversationID string,
 		return nil, err
 	}
 	return &out, nil
-}
-
-func (c *httpVoiceClient) Pronounce(ctx context.Context, expectedText, lang string, audio []byte, mime string) (*responses.PronounceResult, error) {
-	var body bytes.Buffer
-	w := multipart.NewWriter(&body)
-	// CreatePart, not CreateFormFile: the latter labels every part
-	// application/octet-stream, and the engine gates on the real container.
-	partHeader := textproto.MIMEHeader{}
-	partHeader.Set("Content-Disposition", `form-data; name="audio"; filename="attempt"`)
-	partHeader.Set("Content-Type", mime)
-	fw, err := w.CreatePart(partHeader)
-	if err != nil {
-		return nil, err
-	}
-	if _, err := fw.Write(audio); err != nil {
-		return nil, err
-	}
-	if err := w.WriteField("expected_text", expectedText); err != nil {
-		return nil, err
-	}
-	if err := w.WriteField("lang", lang); err != nil {
-		return nil, err
-	}
-	if err := w.Close(); err != nil {
-		return nil, err
-	}
-	ctx, cancel := context.WithTimeout(ctx, c.analyzeTimeout)
-	defer cancel()
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/pronounce", &body)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", w.FormDataContentType())
-	resp, err := c.http.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	raw, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, &TranscriptStatusError{Path: "/pronounce", Status: resp.StatusCode, Body: raw}
-	}
-	var envelope struct {
-		Assessment responses.PronounceResult `json:"assessment"`
-	}
-	if err := json.Unmarshal(raw, &envelope); err != nil {
-		return nil, err
-	}
-	return &envelope.Assessment, nil
 }

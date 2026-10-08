@@ -158,6 +158,22 @@ export interface TranscribeResult {
   text: string;
 }
 /**
+ * PhoneDetail is one mispronounced phone: expected vs heard IPA with confidence.
+ */
+export interface PhoneDetail {
+  expected: string;
+  heard: string;
+  confidence: number /* float64 */;
+}
+/**
+ * ReferencePhone is one reference word with its expected IPA, in sentence
+ * order — the panel renders it under every word chip, flagged or not.
+ */
+export interface ReferencePhone {
+  word: string;
+  phones: string;
+}
+/**
  * MispronouncedWord is one engine-flagged word: expected vs heard IPA.
  */
 export interface MispronouncedWord {
@@ -165,16 +181,33 @@ export interface MispronouncedWord {
   expected: string;
   heard: string;
   confidence: number /* float64 */;
+  phones: PhoneDetail[];
 }
 /**
- * PronounceResult is the engine's reply to an exercise attempt: the score
- * plus per-word errors. The engine owns scoring; Go forwards verbatim.
+ * Prosody carries the learner's pitch and energy contours, downsampled by
+ * the engine to at most 120 points each.
+ */
+export interface Prosody {
+  f0: number /* float64 */[];
+  energy: number /* float64 */[];
+}
+/**
+ * PronounceResult is the container's assessment of one exercise attempt: the
+ * score plus per-word errors. It is constructed by the pronounce engine
+ * client, not parsed from the voice service.
+ * The container speaks snake_case, so the metric and curve keys match it
+ * exactly — encoding/json drops silently on a tag mismatch, which is how the
+ * error rates used to parse as zero.
  */
 export interface PronounceResult {
   score: number /* float64 */;
   transcription: string;
-  phonemeErrorRate: number /* float64 */;
-  wordErrorRate: number /* float64 */;
-  acousticDistance: number /* float64 */;
+  phoneme_error_rate: number /* float64 */;
+  word_error_rate: number /* float64 */;
+  acoustic_distance: number /* float64 */;
   errors: MispronouncedWord[];
+  prosody: Prosody;
+  model_curve: number /* float64 */[];
+  learner_curve: number /* float64 */[];
+  reference_phones: ReferencePhone[];
 }

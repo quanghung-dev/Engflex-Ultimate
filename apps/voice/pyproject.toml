@@ -18,8 +18,6 @@ dependencies = [
   # Imported at module level by src/transcript/prerecorded.py; transitive-only
   # today via the pipecat-ai deepgram extra, so pinned directly the same way.
   "deepgram-sdk>=7.10.0",
-  "torch>=2.14.0",
-  "openpronounce>=0.3.0",
 ]
 
 [dependency-groups]
@@ -34,14 +32,6 @@ target-version = "py312"
 # extra). Constrain below 1.9 until upstream publishes Linux wheels again.
 [tool.uv]
 constraint-dependencies = ["google-crc32c<1.9"]
-
-[[tool.uv.index]]
-name = "pytorch"
-url = "https://download.pytorch.org/whl/cpu"
-explicit = true
-
-[tool.uv.sources]
-torch = { index = "pytorch" }
 
 # pytest runs from apps/voice; src/ holds the package so top-level imports
 # (config, prompts, …) resolve from tests/ without __init__.py tricks.

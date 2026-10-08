@@ -12,14 +12,14 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"engflex-api/config"
-	"engflex-api/internal/modules/conversations/services"
+	"engflex-api/internal/voice"
 )
 
-func testVoiceClient(t *testing.T, handler http.HandlerFunc) services.VoiceClient {
+func testVoiceClient(t *testing.T, handler http.HandlerFunc) voice.VoiceClient {
 	t.Helper()
 	srv := httptest.NewServer(handler)
 	t.Cleanup(srv.Close)
-	return services.NewHTTPVoiceClient(config.VoiceConfig{
+	return voice.NewHTTPVoiceClient(config.VoiceConfig{
 		ServiceURL:     srv.URL,
 		StartTimeout:   2 * time.Second,
 		OfferTimeout:   2 * time.Second,
@@ -48,10 +48,10 @@ func TestVoiceClientStart(t *testing.T) {
 				_, _ = w.Write([]byte(tt.body))
 			})
 
-			res, err := client.Start(context.Background(), services.StartRequest{
+			res, err := client.Start(context.Background(), voice.StartRequest{
 				Transport:               "webrtc",
 				EnableDefaultICEServers: true,
-				Body: services.VoiceSessionBody{
+				Body: voice.VoiceSessionBody{
 					UserID: "u1", ConversationID: "c1", MaxDuration: 300,
 				},
 			})
@@ -100,42 +100,4 @@ func TestVoiceClientTranscribeForwardsTheRealContainer(t *testing.T) {
 	res, err := client.Transcribe(context.Background(), "c1", []byte("fake-wav"), "audio/wav")
 	require.NoError(t, err)
 	assert.Equal(t, "Well, I went.", res.Text)
-}
-
-func TestVoiceClientPronounce(t *testing.T) {
-	tests := []struct {
-		name      string
-		status    int
-		body      string
-		wantErr   bool
-		wantScore float64
-	}{
-		{name: "ok", status: http.StatusOK, body: `{"assessment":{"score":91.11,"transcription":"I WENT YESTERDAY","phonemeErrorRate":0.0,"wordErrorRate":0.0,"acousticDistance":7.289,"errors":[]}}`, wantScore: 91.11},
-		{name: "engine 422", status: http.StatusUnprocessableEntity, body: `{"message":"no speech decoded"}`, wantErr: true},
-		{name: "malformed json", status: http.StatusOK, body: `{`, wantErr: true},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			client := testVoiceClient(t, func(w http.ResponseWriter, r *http.Request) {
-				assert.Equal(t, "/pronounce", r.URL.Path)
-				require.NoError(t, r.ParseMultipartForm(1<<20))
-				_, header, err := r.FormFile("audio")
-				require.NoError(t, err)
-				assert.Equal(t, "audio/webm", header.Header.Get("Content-Type"))
-				assert.Equal(t, "I went yesterday.", r.FormValue("expected_text"))
-				assert.Equal(t, "en", r.FormValue("lang"))
-				w.WriteHeader(tt.status)
-				_, _ = w.Write([]byte(tt.body))
-			})
-
-			res, err := client.Pronounce(context.Background(), "I went yesterday.", "en", []byte("fake-webm"), "audio/webm")
-			if tt.wantErr {
-				require.Error(t, err)
-				return
-			}
-			require.NoError(t, err)
-			assert.Equal(t, tt.wantScore, res.Score)
-		})
-	}
 }

@@ -73,10 +73,6 @@ class Settings(BaseSettings):
     # Turn off to force the extraction path without a code change.
     analysis_structured_output: bool = True
 
-    # Pronunciation assessment (acoustic scores for the analyze path).
-    # Empty = library auto (cuda when available, else cpu).
-    speech_device: str = ""
-
     # Observability (optional)
     sentry_dsn: str = ""
 

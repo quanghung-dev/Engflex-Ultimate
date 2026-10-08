@@ -11,6 +11,7 @@ import (
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/logger"
 	"engflex-api/internal/utils"
+	"engflex-api/internal/voice"
 )
 
 // analysisContextTurns is how many prior lines the engine sees: enough for
@@ -52,23 +53,23 @@ func NormalizeLanguageFeedback(raw json.RawMessage) (models.TurnFeedback, error)
 // plus the preceding turns. No level, no objective: the conversation context
 // already expresses the topic, and "is this correct English" does not vary
 // by level.
-func (s *ConversationService) BuildAnalyzeRequest(ctx context.Context, conversationID string, position int) (AnalyzeTurnRequest, error) {
+func (s *ConversationService) BuildAnalyzeRequest(ctx context.Context, conversationID string, position int) (voice.AnalyzeTurnRequest, error) {
 	turn, err := s.turns.GetTurnByPosition(ctx, conversationID, position)
 	if err != nil {
 		appErr := common.FromDBError(err, "conversation turn")
 		logger.Report(ctx, "analyze turn lookup failed", appErr, "conversationID", conversationID, "position", position)
-		return AnalyzeTurnRequest{}, appErr
+		return voice.AnalyzeTurnRequest{}, appErr
 	}
 	if turn.Role != enums.TurnRoleUser {
-		return AnalyzeTurnRequest{}, common.BadRequest("only learner turns can be analyzed")
+		return voice.AnalyzeTurnRequest{}, common.BadRequest("only learner turns can be analyzed")
 	}
 	all, err := s.turns.ListTurns(ctx, conversationID)
 	if err != nil {
 		appErr := common.FromDBError(err, "conversation turn")
 		logger.Report(ctx, "analyze turn context failed", appErr, "conversationID", conversationID)
-		return AnalyzeTurnRequest{}, appErr
+		return voice.AnalyzeTurnRequest{}, appErr
 	}
-	return AnalyzeTurnRequest{
+	return voice.AnalyzeTurnRequest{
 		ConversationID: conversationID,
 		TurnID:         turn.ID,
 		Text:           turn.Text,
@@ -121,7 +122,7 @@ func (s *ConversationService) AnalyzeTurn(ctx context.Context, userID, conversat
 }
 
 // priorTurns returns the turns preceding target, oldest first, capped at limit.
-func priorTurns(all []*models.ConversationTurn, targetID string, limit int) []ContextTurn {
+func priorTurns(all []*models.ConversationTurn, targetID string, limit int) []voice.ContextTurn {
 	cut := len(all)
 	for i, turn := range all {
 		if turn.ID == targetID {
@@ -133,7 +134,7 @@ func priorTurns(all []*models.ConversationTurn, targetID string, limit int) []Co
 	if len(prior) > limit {
 		prior = prior[len(prior)-limit:]
 	}
-	var out []ContextTurn
+	var out []voice.ContextTurn
 	_ = utils.MapSlice(&out, prior)
 	return out
 }

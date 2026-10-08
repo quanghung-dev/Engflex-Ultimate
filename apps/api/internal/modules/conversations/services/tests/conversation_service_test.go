@@ -18,7 +18,8 @@ import (
 	"engflex-api/internal/modules/conversations/dtos/requests"
 	"engflex-api/internal/modules/conversations/dtos/responses"
 	"engflex-api/internal/modules/conversations/services"
-	svcmocks "engflex-api/internal/modules/conversations/services/mocks"
+	"engflex-api/internal/voice"
+	voicemocks "engflex-api/internal/voice/mocks"
 )
 
 const (
@@ -33,13 +34,14 @@ func requireAppError(t *testing.T, err error, status int) {
 	require.Equal(t, status, appErr.Status)
 }
 
-func newService(t *testing.T) (*services.ConversationService, *repomocks.MockConversationRepository, *repomocks.MockConversationTurnRepository, *svcmocks.MockVoiceClient, *repomocks.MockScenarioRepository) {
+func newService(t *testing.T) (*services.ConversationService, *repomocks.MockConversationRepository, *repomocks.MockConversationTurnRepository, *voicemocks.MockVoiceClient, *repomocks.MockScenarioRepository) {
 	t.Helper()
 	repo := repomocks.NewMockConversationRepository(t)
 	turns := repomocks.NewMockConversationTurnRepository(t)
-	voice := svcmocks.NewMockVoiceClient(t)
+	engine := voicemocks.NewMockVoiceClient(t)
+	pronounce := voicemocks.NewMockPronounceEngine(t)
 	scenarios := repomocks.NewMockScenarioRepository(t)
-	return services.NewConversationService(repo, turns, voice, 300, repomocks.NewMockFeedbackRepository(t), scenarios, repomocks.NewMockPersonaRepository(t)), repo, turns, voice, scenarios
+	return services.NewConversationService(repo, turns, engine, pronounce, 300, repomocks.NewMockFeedbackRepository(t), scenarios, repomocks.NewMockPersonaRepository(t)), repo, turns, engine, scenarios
 }
 
 func pendingConv() *models.Conversation {
@@ -130,13 +132,13 @@ func TestGetOwnership(t *testing.T) {
 func TestStart(t *testing.T) {
 	tests := []struct {
 		name       string
-		setup      func(*repomocks.MockConversationRepository, *svcmocks.MockVoiceClient, *repomocks.MockScenarioRepository)
+		setup      func(*repomocks.MockConversationRepository, *voicemocks.MockVoiceClient, *repomocks.MockScenarioRepository)
 		wantStatus int
 	}{
 		{
 			name: "cached response skips the engine",
-			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient, _ *repomocks.MockScenarioRepository) {
-				raw, _ := json.Marshal(services.StartResponse{
+			setup: func(repo *repomocks.MockConversationRepository, engine *voicemocks.MockVoiceClient, _ *repomocks.MockScenarioRepository) {
+				raw, _ := json.Marshal(voice.StartResponse{
 					SessionID: "eng-1",
 					ICEConfig: &responses.IceConfig{IceServers: []responses.IceServer{{URLs: []string{"stun:x"}}}},
 				})
@@ -148,40 +150,40 @@ func TestStart(t *testing.T) {
 		},
 		{
 			name: "fresh start caches the engine response",
-			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient, _ *repomocks.MockScenarioRepository) {
+			setup: func(repo *repomocks.MockConversationRepository, engine *voicemocks.MockVoiceClient, _ *repomocks.MockScenarioRepository) {
 				repo.On("GetByID", mock.Anything, convID).Return(pendingConv(), nil).Once()
-				voice.On("Start", mock.Anything, mock.AnythingOfType("services.StartRequest")).
-					Return(&services.StartResponse{SessionID: "eng-2"}, nil).Once()
+				engine.On("Start", mock.Anything, mock.AnythingOfType("voice.StartRequest")).
+					Return(&voice.StartResponse{SessionID: "eng-2"}, nil).Once()
 				repo.On("SetSpeechStart", mock.Anything, convID, "eng-2", mock.Anything).Return(int64(1), nil).Once()
 			},
 		},
 		{
 			name: "missing scenario still starts on the generic prompt",
-			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient, scenarios *repomocks.MockScenarioRepository) {
+			setup: func(repo *repomocks.MockConversationRepository, engine *voicemocks.MockVoiceClient, scenarios *repomocks.MockScenarioRepository) {
 				scenarioID := "22222222-2222-2222-2222-222222222222"
 				repo.On("GetByID", mock.Anything, convID).Return(&models.Conversation{
 					ID: convID, UserID: userID, Status: enums.ConversationStatusPending,
 					ScenarioID: &scenarioID,
 				}, nil).Once()
 				scenarios.On("GetByID", mock.Anything, scenarioID).Return(nil, gorm.ErrRecordNotFound).Once()
-				voice.On("Start", mock.Anything, mock.MatchedBy(func(req services.StartRequest) bool {
+				engine.On("Start", mock.Anything, mock.MatchedBy(func(req voice.StartRequest) bool {
 					return req.Body.Persona == nil && req.Body.Scenario == nil
-				})).Return(&services.StartResponse{SessionID: "eng-3"}, nil).Once()
+				})).Return(&voice.StartResponse{SessionID: "eng-3"}, nil).Once()
 				repo.On("SetSpeechStart", mock.Anything, convID, "eng-3", mock.Anything).Return(int64(1), nil).Once()
 			},
 		},
 		{
 			name: "engine failure is not cached and surfaces 503",
-			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient, _ *repomocks.MockScenarioRepository) {
+			setup: func(repo *repomocks.MockConversationRepository, engine *voicemocks.MockVoiceClient, _ *repomocks.MockScenarioRepository) {
 				repo.On("GetByID", mock.Anything, convID).Return(pendingConv(), nil).Once()
-				voice.On("Start", mock.Anything, mock.AnythingOfType("services.StartRequest")).
+				engine.On("Start", mock.Anything, mock.AnythingOfType("voice.StartRequest")).
 					Return(nil, errBoom()).Once()
 			},
 			wantStatus: http.StatusServiceUnavailable,
 		},
 		{
 			name: "live conversation conflicts",
-			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient, _ *repomocks.MockScenarioRepository) {
+			setup: func(repo *repomocks.MockConversationRepository, engine *voicemocks.MockVoiceClient, _ *repomocks.MockScenarioRepository) {
 				repo.On("GetByID", mock.Anything, convID).Return(&models.Conversation{
 					ID: convID, UserID: userID, Status: enums.ConversationStatusLive,
 				}, nil).Once()
@@ -190,13 +192,13 @@ func TestStart(t *testing.T) {
 		},
 		{
 			name: "corrupt cache falls through to the engine",
-			setup: func(repo *repomocks.MockConversationRepository, voice *svcmocks.MockVoiceClient, _ *repomocks.MockScenarioRepository) {
+			setup: func(repo *repomocks.MockConversationRepository, engine *voicemocks.MockVoiceClient, _ *repomocks.MockScenarioRepository) {
 				repo.On("GetByID", mock.Anything, convID).Return(&models.Conversation{
 					ID: convID, UserID: userID, Status: enums.ConversationStatusPending,
 					SpeechSessionID: "eng-9", SpeechStartResponse: []byte(`{}`),
 				}, nil).Once()
-				voice.On("Start", mock.Anything, mock.AnythingOfType("services.StartRequest")).
-					Return(&services.StartResponse{SessionID: "eng-9"}, nil).Once()
+				engine.On("Start", mock.Anything, mock.AnythingOfType("voice.StartRequest")).
+					Return(&voice.StartResponse{SessionID: "eng-9"}, nil).Once()
 				repo.On("SetSpeechStart", mock.Anything, convID, "eng-9", mock.Anything).Return(int64(1), nil).Once()
 			},
 		},
@@ -204,8 +206,8 @@ func TestStart(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc, repo, _, voice, scenarios := newService(t)
-			tt.setup(repo, voice, scenarios)
+			svc, repo, _, engine, scenarios := newService(t)
+			tt.setup(repo, engine, scenarios)
 
 			_, _, err := svc.Start(context.Background(), userID, convID)
 			if tt.wantStatus != 0 {
@@ -270,12 +272,12 @@ func TestOfferTransitions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc, repo, _, voice, _ := newService(t)
+			svc, repo, _, engine, _ := newService(t)
 			repo.On("GetByID", mock.Anything, convID).Return(&models.Conversation{
 				ID: convID, UserID: userID, Status: enums.ConversationStatusPending, SpeechSessionID: "eng-1",
 			}, nil).Once()
 			tt.setupRepo(repo)
-			voice.On("Offer", mock.Anything, "eng-1", tt.method, mock.Anything).
+			engine.On("Offer", mock.Anything, "eng-1", tt.method, mock.Anything).
 				Return(tt.engineBody, tt.engineCode, tt.engineErr).Once()
 
 			body, status, err := svc.Offer(context.Background(), userID, convID, tt.method, []byte(`{}`))

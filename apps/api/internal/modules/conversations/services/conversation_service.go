@@ -17,6 +17,7 @@ import (
 	"engflex-api/internal/modules/conversations/dtos/requests"
 	"engflex-api/internal/modules/conversations/dtos/responses"
 	"engflex-api/internal/utils"
+	"engflex-api/internal/voice"
 )
 
 var errEmptyAnswer = errors.New("voice engine returned an empty offer answer")
@@ -25,7 +26,8 @@ var errEmptyAnswer = errors.New("voice engine returned an empty offer answer")
 type ConversationService struct {
 	conversations repositories.ConversationRepository
 	turns         repositories.ConversationTurnRepository
-	voice         VoiceClient
+	voice         voice.VoiceClient
+	pronounce     voice.PronounceEngine
 	maxDuration   int
 	feedbacks     repositories.FeedbackRepository
 	scenarios     repositories.ScenarioRepository
@@ -33,8 +35,8 @@ type ConversationService struct {
 }
 
 // NewConversationService builds the service over repository + engine interfaces.
-func NewConversationService(conversations repositories.ConversationRepository, turns repositories.ConversationTurnRepository, voice VoiceClient, maxDuration int, feedbacks repositories.FeedbackRepository, scenarios repositories.ScenarioRepository, personas repositories.PersonaRepository) *ConversationService {
-	return &ConversationService{conversations: conversations, turns: turns, voice: voice, maxDuration: maxDuration, feedbacks: feedbacks, scenarios: scenarios, personas: personas}
+func NewConversationService(conversations repositories.ConversationRepository, turns repositories.ConversationTurnRepository, voice voice.VoiceClient, pronounce voice.PronounceEngine, maxDuration int, feedbacks repositories.FeedbackRepository, scenarios repositories.ScenarioRepository, personas repositories.PersonaRepository) *ConversationService {
+	return &ConversationService{conversations: conversations, turns: turns, voice: voice, pronounce: pronounce, maxDuration: maxDuration, feedbacks: feedbacks, scenarios: scenarios, personas: personas}
 }
 
 // Create provisions a pending conversation. The close of the caller's other
@@ -83,10 +85,10 @@ func (s *ConversationService) Start(ctx context.Context, userID, id string) (*mo
 	}
 
 	persona, scenario := s.promptInputs(ctx, conv)
-	res, err := s.voice.Start(ctx, StartRequest{
+	res, err := s.voice.Start(ctx, voice.StartRequest{
 		Transport:               "webrtc",
 		EnableDefaultICEServers: true,
-		Body: VoiceSessionBody{
+		Body: voice.VoiceSessionBody{
 			UserID:         userID,
 			ConversationID: conv.ID,
 			MaxDuration:    s.maxDuration,
@@ -254,7 +256,7 @@ func (s *ConversationService) IngestTurns(ctx context.Context, id string, req ca
 // the session prompt. A missing scenario or persona is not fatal: log a
 // warning and fall back to the engine's generic free-talk prompt, because a
 // learner who clicked through should still be able to talk.
-func (s *ConversationService) promptInputs(ctx context.Context, conv *models.Conversation) (*VoicePersonaBody, *VoiceScenarioBody) {
+func (s *ConversationService) promptInputs(ctx context.Context, conv *models.Conversation) (*voice.VoicePersonaBody, *voice.VoiceScenarioBody) {
 	if conv.ScenarioID == nil || *conv.ScenarioID == "" {
 		return nil, nil
 	}
@@ -263,7 +265,7 @@ func (s *ConversationService) promptInputs(ctx context.Context, conv *models.Con
 		logger.Report(ctx, "resolve scenario failed", common.NotFound("scenario not found"), "scenarioID", *conv.ScenarioID)
 		return nil, nil
 	}
-	var scenarioBody VoiceScenarioBody
+	var scenarioBody voice.VoiceScenarioBody
 	_ = utils.Map(&scenarioBody, scenario)
 	out := &scenarioBody
 	if scenario.PersonaID == nil || *scenario.PersonaID == "" {
@@ -274,7 +276,7 @@ func (s *ConversationService) promptInputs(ctx context.Context, conv *models.Con
 		logger.Report(ctx, "resolve persona failed", common.NotFound("persona not found"), "personaID", *scenario.PersonaID)
 		return nil, out
 	}
-	var personaBody VoicePersonaBody
+	var personaBody voice.VoicePersonaBody
 	_ = utils.Map(&personaBody, persona)
 	return &personaBody, out
 }
@@ -294,8 +296,8 @@ func (s *ConversationService) getOwned(ctx context.Context, userID, id string) (
 	return m, nil
 }
 
-func decodeStartResponse(raw []byte) (*StartResponse, bool) {
-	var out StartResponse
+func decodeStartResponse(raw []byte) (*voice.StartResponse, bool) {
+	var out voice.StartResponse
 	if err := json.Unmarshal(raw, &out); err != nil {
 		return nil, false
 	}
