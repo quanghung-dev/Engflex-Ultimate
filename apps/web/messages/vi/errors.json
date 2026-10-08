@@ -3,11 +3,17 @@
   "errors": {
     "notFound": {
       "title": "Không tìm thấy trang",
-      "body": "Trang này không tồn tại hoặc mục đã bị xóa."
+      "body": "Trang này không tồn tại hoặc mục đã bị xóa.",
+      "badge": "Không tìm thấy trang · Lỗi 404",
+      "caption": "Đi đường vòng",
+      "primary": "Về trang tổng quan"
     },
     "server": {
       "title": "Đã xảy ra lỗi",
-      "body": "Một lỗi bất ngờ đã làm gián đoạn trang này. Hãy thử lại hoặc quay về trang chủ."
-    }
+      "body": "Một lỗi bất ngờ đã làm gián đoạn trang này. Hãy thử lại hoặc quay về trang chủ.",
+      "badge": "Đã xảy ra lỗi · Lỗi 500",
+      "caption": "Mo đang xử lý"
+    },
+    "quote": "Tiến bộ đều đặn mỗi ngày đáng giá hơn tốc độ."
   }
 }

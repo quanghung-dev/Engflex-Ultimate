@@ -11,10 +11,19 @@ import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
 import { Input } from "#/components/ui/input";
 import { ScenarioCard } from "#/features/voice/components/scenarios/scenario-card";
-import { useTopicsWithPreview } from "#/features/voice/queries";
+import {
+	topicsWithPreviewQueryOptions,
+	useTopicsWithPreview,
+} from "#/features/voice/queries";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/voice/scenarios/")({
+	// Preload the default (unfiltered) catalog so first paint reads the warm
+	// cache. Filtered keystrokes keep fetching in the component; failures
+	// stay on the toast below by design (filters remain usable), so this
+	// loader intentionally maps nothing to notFound().
+	loader: ({ context: { queryClient } }) =>
+		queryClient.query(topicsWithPreviewQueryOptions()).catch(() => []),
 	component: ScenariosPage,
 });
 

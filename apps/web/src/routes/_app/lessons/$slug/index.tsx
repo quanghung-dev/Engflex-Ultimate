@@ -8,16 +8,31 @@ import { Button } from "#/components/ui/button";
 import { ActivityRow } from "#/features/lessons/components/activity-row";
 import { LessonHeader } from "#/features/lessons/components/lesson-header";
 import { TipBar } from "#/features/lessons/components/tip-bar";
-import { useLessonDetailBySlug } from "#/features/lessons/queries";
+import {
+	lessonDetailBySlugQueryOptions,
+	useLessonDetailBySlug,
+} from "#/features/lessons/queries";
 import {
 	getFirstIncompleteActivity,
 	lessonsStore,
 	progressFrom,
 	toggleBookmark,
 } from "#/features/lessons/store";
+import { loadOr404 } from "#/lib/route-loader";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/lessons/$slug/")({
+	// Preload here (not in the component): loader notFound() renders the
+	// route's notFoundComponent; the same throw during render escapes down
+	// the error-boundary path. Non-empty activities are enforced here too,
+	// so the component never throws for missing data.
+	loader: async ({ context: { queryClient }, params: { slug } }) => {
+		const detail = await loadOr404(
+			queryClient,
+			lessonDetailBySlugQueryOptions(slug),
+		);
+		if (detail.activities.length === 0) throw notFound();
+	},
 	component: LessonDetailPage,
 });
 
@@ -36,7 +51,10 @@ function LessonDetailPage() {
 	);
 
 	if (detailQuery.isPending) return null;
-	if (!detail) throw notFound();
+	// A failed fetch is an error, not a missing lesson (see loader above:
+	// genuine 404s and empty lessons never reach the component).
+	if (detailQuery.isError) throw detailQuery.error;
+	if (!detail) return null;
 
 	const progress = progressFrom(
 		storeState,
@@ -47,7 +65,9 @@ function LessonDetailPage() {
 		detail.id,
 		detail.activities,
 	);
-	if (!startActivity) throw notFound();
+	// Unreachable: the loader enforces non-empty activities, and the lookup
+	// falls back to the first activity. Kept for type narrowing only.
+	if (!startActivity) return null;
 
 	return (
 		<PageLayout>

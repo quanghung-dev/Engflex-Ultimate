@@ -12,11 +12,18 @@ import {
 	type LessonFilters,
 } from "#/features/lessons/components/lesson-filter-bar";
 import { UnitSection } from "#/features/lessons/components/unit-section";
-import { useLessonSections } from "#/features/lessons/queries";
+import {
+	lessonSectionsQueryOptions,
+	useLessonSections,
+} from "#/features/lessons/queries";
 import { lessonsStore, progressFrom } from "#/features/lessons/store";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/lessons/")({
+	// Preload so a failed fetch reaches errorComponent instead of rendering
+	// the empty state below (which currently masquerades outages as "no lessons").
+	loader: ({ context: { queryClient } }) =>
+		queryClient.query(lessonSectionsQueryOptions()),
 	component: LessonsPage,
 });
 
@@ -90,6 +97,11 @@ function LessonsPage() {
 		}
 		return unlocks;
 	}, [sections, progressById]);
+
+	// A failed fetch is an error: without this the empty state below
+	// masquerades every outage as "no lessons". Thrown after all hooks so
+	// hook order stays stable across renders.
+	if (sectionsQuery.isError) throw sectionsQuery.error;
 
 	return (
 		<PageLayout

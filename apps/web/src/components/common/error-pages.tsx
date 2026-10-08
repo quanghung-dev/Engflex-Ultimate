@@ -1,5 +1,3 @@
-import { Link } from "@tanstack/react-router";
-import { APP_ROUTES } from "#/app/app-route";
 import { ErrorPage } from "#/components/common/error-page";
 import { Button } from "#/components/ui/button";
 import { m } from "#/paraglide/messages";
@@ -8,8 +6,12 @@ import { m } from "#/paraglide/messages";
 export function RouteNotFound() {
 	return (
 		<ErrorPage
+			badge={m["errors.notFound.badge"]()}
+			mascot="confused"
+			caption={m["errors.notFound.caption"]()}
 			title={m["errors.notFound.title"]()}
 			body={m["errors.notFound.body"]()}
+			primaryLabel={m["errors.notFound.primary"]()}
 		/>
 	);
 }
@@ -23,17 +25,16 @@ export function RouteErrorFallback({
 }) {
 	return (
 		<ErrorPage
+			badge={m["errors.server.badge"]()}
+			mascot="cry"
+			caption={m["errors.server.caption"]()}
 			title={m["errors.server.title"]()}
 			body={m["errors.server.body"]()}
-			action={
-				<div className="flex flex-wrap justify-center gap-2">
-					<Button type="button" onClick={() => reset()}>
-						{m["common.actions.retry"]()}
-					</Button>
-					<Button type="button" variant="outline" asChild>
-						<Link to={APP_ROUTES.HOME}>{m["common.actions.backHome"]()}</Link>
-					</Button>
-				</div>
+			primaryLabel={m["common.actions.backHome"]()}
+			extraAction={
+				<Button type="button" variant="outline" onClick={() => reset()}>
+					{m["common.actions.retry"]()}
+				</Button>
 			}
 		/>
 	);

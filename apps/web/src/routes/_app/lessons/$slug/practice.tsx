@@ -20,6 +20,7 @@ import { WritingEditorCard } from "#/features/lessons/components/writing/writing
 import { WritingPromptBanner } from "#/features/lessons/components/writing/writing-prompt-banner";
 import { PART_META } from "#/features/lessons/parts";
 import {
+	lessonDetailBySlugQueryOptions,
 	useCheckAnswer,
 	useLessonDetailBySlug,
 } from "#/features/lessons/queries";
@@ -27,20 +28,30 @@ import {
 	completePart,
 	getFirstIncompleteActivity,
 } from "#/features/lessons/store";
+import { loadOr404 } from "#/lib/route-loader";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/lessons/$slug/practice")({
+	loader: async ({ context: { queryClient }, params: { slug } }) => {
+		const detail = await loadOr404(
+			queryClient,
+			lessonDetailBySlugQueryOptions(slug),
+		);
+		if (detail.activities.length === 0) throw notFound();
+	},
 	component: PracticePage,
 });
 
 function PracticePage() {
 	const { slug } = Route.useParams();
 	const detailQuery = useLessonDetailBySlug(slug);
-	const detail = detailQuery.data;
 
 	if (detailQuery.isPending) return null;
-	if (!detail) throw notFound();
-	if (detail.activities.length === 0) throw notFound();
+	// A failed fetch is an error, not a missing lesson (see loader above:
+	// genuine 404s and empty lessons never reach the component).
+	if (detailQuery.isError) throw detailQuery.error;
+	const detail = detailQuery.data;
+	if (!detail) return null;
 
 	return <PracticeInner key={detail.id} slug={slug} detail={detail} />;
 }
@@ -59,7 +70,7 @@ function PracticeInner({
 		{ label: detail.title },
 	]);
 	const fallback = detail.activities[0];
-	if (!fallback) throw notFound();
+	if (!fallback) throw new Error("practice: lesson has no activities");
 	const start =
 		getFirstIncompleteActivity(lessonId, detail.activities) ?? fallback;
 	const [activePart, setActivePart] = useState<ActivityType>(start.type);
@@ -76,7 +87,8 @@ function PracticeInner({
 	}, []);
 
 	const activity = detail.activities.find((item) => item.type === activePart);
-	if (!activity) throw notFound();
+	if (!activity)
+		throw new Error(`practice: no activity for part ${activePart}`);
 	const currentPart: ActivityType = activity.type;
 
 	return (
@@ -205,9 +217,10 @@ function ReadingActivity({
 		onAdvance,
 	);
 
-	if (!payload) throw notFound();
+	if (!payload) throw new Error("practice: activity payload missing");
 	const question = payload.questions[checked.index];
-	if (!question) throw notFound();
+	if (!question)
+		throw new Error(`practice: question index ${checked.index} out of range`);
 	const isLast = checked.index === payload.questions.length - 1;
 
 	return (
@@ -271,9 +284,10 @@ function ListeningActivity({
 		onAdvance,
 	);
 
-	if (!payload) throw notFound();
+	if (!payload) throw new Error("practice: activity payload missing");
 	const question = payload.questions[checked.index];
-	if (!question) throw notFound();
+	if (!question)
+		throw new Error(`practice: question index ${checked.index} out of range`);
 	const isLast = checked.index === payload.questions.length - 1;
 
 	return (
@@ -341,7 +355,7 @@ function WritingActivity({
 	);
 	const partCount = activities.length;
 
-	if (!payload) throw notFound();
+	if (!payload) throw new Error("practice: writing payload missing");
 
 	return (
 		<PageSplit

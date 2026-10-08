@@ -12,6 +12,12 @@ import {
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/voice/preview")({
+	// DEV-only page: guard in beforeLoad so production renders the 404 page
+	// instead of escaping down the error-boundary path (render throws of
+	// notFound() are not intercepted as not-found navigations).
+	beforeLoad: () => {
+		if (!import.meta.env.DEV) throw notFound();
+	},
 	component: VoicePreviewPage,
 });
 
@@ -176,11 +182,10 @@ type Phase = "live" | "ended" | "loading" | "failed";
 /**
  * Preview injector: mock session state in, the SAME VoiceRoom out. No
  * conversation, no engine, no network, no mic permission — the idle base
- * inside VoiceRoom only provides provider context. Throws 404 in production.
+ * inside VoiceRoom only provides provider context. 404s in production via
+ * beforeLoad above.
  */
 function VoicePreviewPage() {
-	if (!import.meta.env.DEV) throw notFound();
-
 	return <PreviewRoom />;
 }
 

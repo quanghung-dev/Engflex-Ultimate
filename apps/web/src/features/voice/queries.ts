@@ -74,22 +74,35 @@ export function useScenarios(params?: { topicId?: string }) {
 	});
 }
 
-export function useTopicsWithPreview(params?: {
+export function topicsWithPreviewQueryOptions(params?: {
 	difficulty?: string;
 	search?: string;
 }) {
 	const difficulty = params?.difficulty;
 	const search = params?.search;
-	return useQuery({
-		queryKey: ["scenario-topics", difficulty ?? "all", search ?? ""],
+	return {
+		queryKey: ["scenario-topics", difficulty ?? "all", search ?? ""] as const,
 		queryFn: () => listTopicsWithPreview({ previewK: 3, difficulty, search }),
-	});
+	};
+}
+
+export function useTopicsWithPreview(params?: {
+	difficulty?: string;
+	search?: string;
+}) {
+	return useQuery(topicsWithPreviewQueryOptions(params));
+}
+
+export function scenarioQueryOptions(id: string) {
+	return {
+		queryKey: ["scenario", id] as const,
+		queryFn: () => getScenarioById(id),
+	};
 }
 
 export function useScenario(id: string | undefined) {
 	return useQuery({
-		queryKey: ["scenario", id ?? "none"],
-		queryFn: () => getScenarioById(id as string),
+		...scenarioQueryOptions(id ?? "none"),
 		enabled: !!id,
 	});
 }

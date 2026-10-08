@@ -6,7 +6,10 @@ import {
 	Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { RouteNotFound } from "#/components/common/error-pages";
+import {
+	RouteErrorFallback,
+	RouteNotFound,
+} from "#/components/common/error-pages";
 import { Toaster } from "#/components/ui/sonner";
 import { TooltipProvider } from "#/components/ui/tooltip";
 import { m } from "#/paraglide/messages";
@@ -56,6 +59,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 		],
 	}),
 	notFoundComponent: RouteNotFound,
+	errorComponent: RouteErrorFallback,
 	shellComponent: RootDocument,
 });
 

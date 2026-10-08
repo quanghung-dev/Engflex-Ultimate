@@ -3,11 +3,17 @@
   "errors": {
     "notFound": {
       "title": "Page not found",
-      "body": "This page doesn't exist or the item was removed."
+      "body": "This page doesn't exist or the item was removed.",
+      "badge": "Page not found · Error 404",
+      "caption": "Slow detour",
+      "primary": "Back to dashboard"
     },
     "server": {
       "title": "Something went wrong",
-      "body": "An unexpected error interrupted this page. Try again or head back home."
-    }
+      "body": "An unexpected error interrupted this page. Try again or head back home.",
+      "badge": "Something went wrong · Error 500",
+      "caption": "Mo is on it"
+    },
+    "quote": "Steady progress beats speed every single day."
   }
 }

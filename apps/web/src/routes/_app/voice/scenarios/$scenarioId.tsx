@@ -1,9 +1,4 @@
-import {
-	createFileRoute,
-	Link,
-	Navigate,
-	useNavigate,
-} from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { APP_ROUTES } from "#/app/app-route";
@@ -14,11 +9,19 @@ import { Button } from "#/components/ui/button";
 import { ScenarioDetailBody } from "#/features/voice/components/scenario-detail/scenario-detail-body";
 import { ScenarioDetailHero } from "#/features/voice/components/scenario-detail/scenario-detail-hero";
 import { ScenarioDetailSide } from "#/features/voice/components/scenario-detail/scenario-detail-side";
-import { useCreateConversation, useScenario } from "#/features/voice/queries";
-import { ApiError } from "#/lib/api";
+import {
+	scenarioQueryOptions,
+	useCreateConversation,
+	useScenario,
+} from "#/features/voice/queries";
+import { loadOr404 } from "#/lib/route-loader";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/voice/scenarios/$scenarioId")({
+	// Preload here: loader notFound() renders the 404 page; the component no
+	// longer special-cases 404s (see below).
+	loader: ({ context: { queryClient }, params: { scenarioId } }) =>
+		loadOr404(queryClient, scenarioQueryOptions(scenarioId)),
 	component: ScenarioDetailPage,
 });
 
@@ -64,17 +67,11 @@ function ScenarioDetailPage() {
 		);
 	}
 
-	if (scenarioQuery.isError) {
-		if (
-			scenarioQuery.error instanceof ApiError &&
-			scenarioQuery.error.status === 404
-		) {
-			return <Navigate to={APP_ROUTES.VOICE.SCENARIOS} />;
-		}
-		throw scenarioQuery.error;
-	}
-
+	// A failed fetch is an error, not a missing scenario (see loader above:
+	// genuine 404s never reach the component).
+	if (scenarioQuery.isError) throw scenarioQuery.error;
 	const scenario = scenarioQuery.data;
+	if (!scenario) return null;
 	return (
 		<PageLayout>
 			<Button asChild variant="ghost" className="w-fit">

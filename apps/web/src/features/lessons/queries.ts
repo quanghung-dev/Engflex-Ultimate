@@ -14,10 +14,7 @@ export const lessonKeys = {
 };
 
 export function useLessonSections() {
-	return useQuery({
-		queryKey: lessonKeys.sections,
-		queryFn: () => listSections(),
-	});
+	return useQuery(lessonSectionsQueryOptions());
 }
 
 /** Shared config so hub-level aggregates can `useQueries` the same objects
@@ -26,6 +23,20 @@ export function lessonDetailQueryOptions(id: string) {
 	return {
 		queryKey: lessonKeys.detail(id),
 		queryFn: () => getLessonDetail(id),
+	};
+}
+
+export function lessonDetailBySlugQueryOptions(slug: string) {
+	return {
+		queryKey: lessonKeys.detailBySlug(slug),
+		queryFn: () => getLessonDetailBySlug(slug),
+	};
+}
+
+export function lessonSectionsQueryOptions() {
+	return {
+		queryKey: lessonKeys.sections,
+		queryFn: () => listSections(),
 	};
 }
 
@@ -38,8 +49,7 @@ export function useLessonDetail(id: string | undefined) {
 
 export function useLessonDetailBySlug(slug: string | undefined) {
 	return useQuery({
-		queryKey: lessonKeys.detailBySlug(slug ?? "none"),
-		queryFn: () => getLessonDetailBySlug(slug ?? "none"),
+		...lessonDetailBySlugQueryOptions(slug ?? "none"),
 		enabled: !!slug,
 	});
 }

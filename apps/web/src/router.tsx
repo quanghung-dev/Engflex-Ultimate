@@ -1,5 +1,6 @@
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
+import { RouteErrorFallback } from "#/components/common/error-pages";
 import { getContext } from "./integrations/tanstack-query/root-provider";
 import { routeTree } from "./routeTree.gen";
 
@@ -12,6 +13,10 @@ export function getRouter() {
 		scrollRestoration: true,
 		defaultPreload: "intent",
 		defaultPreloadStaleTime: 0,
+		// Router-wide backstop: without this, any match the per-route chain
+		// doesn't cover renders the framework's default "Something went
+		// wrong!" UI. Every boundary now shows the app error page.
+		defaultErrorComponent: RouteErrorFallback,
 	});
 
 	setupRouterSsrQueryIntegration({ router, queryClient: context.queryClient });

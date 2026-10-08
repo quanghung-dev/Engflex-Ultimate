@@ -1,14 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { APP_ROUTES } from "#/app/app-route";
+import { MoMascot, type MoVariant } from "#/components/common/mo-mascot";
 import { Button } from "#/components/ui/button";
-import {
-	Empty,
-	EmptyContent,
-	EmptyDescription,
-	EmptyHeader,
-	EmptyTitle,
-} from "#/components/ui/empty";
 import { m } from "#/paraglide/messages";
 
 /**
@@ -16,31 +10,62 @@ import { m } from "#/paraglide/messages";
  * status-specific string is baked in here. Rendered bare — deliberately
  * outside AppShell — because /not-found and /error must also render for
  * signed-out visitors, who never get an AppShell.
+ *
+ * Mascots are existing Mo variants (no per-status artwork): 404 uses
+ * "confused" (its "?" hook matches the lost-way story), 500 uses "cry".
  */
 export function ErrorPage({
+	badge,
+	mascot,
+	caption,
 	title,
 	body,
-	action,
+	primaryLabel,
+	extraAction,
 }: {
+	badge: string;
+	mascot: MoVariant;
+	caption: string;
 	title: string;
 	body: string;
-	action?: ReactNode;
+	primaryLabel: string;
+	/** Rendered beside the primary button (e.g. Retry on 500). */
+	extraAction?: ReactNode;
 }) {
 	return (
-		<div className="flex min-h-[60vh] flex-col items-center justify-center p-8">
-			<Empty className="rounded-xl border bg-card">
-				<EmptyHeader>
-					<EmptyTitle>{title}</EmptyTitle>
-					<EmptyDescription>{body}</EmptyDescription>
-				</EmptyHeader>
-				<EmptyContent>
-					{action ?? (
-						<Button asChild>
-							<Link to={APP_ROUTES.HOME}>{m["common.actions.backHome"]()}</Link>
-						</Button>
-					)}
-				</EmptyContent>
-			</Empty>
+		<div className="bg-dot-pattern flex min-h-svh flex-col items-center justify-center px-4 py-10">
+			<div className="surface-card flex w-full max-w-xl flex-col items-center rounded-2xl p-6 text-center md:p-10">
+				<p className="chip mb-6 px-3 py-1 text-xs">
+					<span
+						aria-hidden="true"
+						className="inline-block size-2.5 rounded-full bg-secondary"
+					/>{" "}
+					{badge}
+				</p>
+				<div className="relative mb-6 flex items-center justify-center">
+					<span
+						aria-hidden="true"
+						className="absolute inset-0 rounded-full bg-secondary opacity-60"
+					/>
+					<MoMascot variant={mascot} size={144} className="relative z-10" />
+				</div>
+				<p className="chip mb-6 px-3 py-1 text-xs">{caption}</p>
+				<h1 className="mb-2 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+					{title}
+				</h1>
+				<p className="mb-8 max-w-md text-[15px] font-medium text-muted-foreground">
+					{body}
+				</p>
+				<div className="flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
+					{extraAction}
+					<Button asChild size="lg">
+						<Link to={APP_ROUTES.HOME}>{primaryLabel}</Link>
+					</Button>
+				</div>
+			</div>
+			<p className="chip mt-6 px-3 py-1 text-xs text-muted-foreground">
+				{m["errors.quote"]()}
+			</p>
 		</div>
 	);
 }

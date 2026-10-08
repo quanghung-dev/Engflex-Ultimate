@@ -269,6 +269,15 @@ pre code {
   box-shadow: 0 5px 0 var(--border) !important;
 }
 
+@utility bg-dot-pattern {
+  background-color: var(--background);
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--primary) 16%, transparent) 1.5px,
+    transparent 1.6px
+  );
+  background-size: 22px 22px;
+}
+
 @utility surface-hero {
   background: var(--card);
   color: var(--card-foreground);
