@@ -12,7 +12,9 @@ type Config struct {
 	Cors      CorsConfig
 	Log       LogConfig
 	Voice     VoiceConfig
+	Redis     RedisConfig
 	RateLimit RateLimitConfig
+	Media     MediaConfig
 }
 
 // Load reads .env files (if present) and then resolves every config section
@@ -33,6 +35,8 @@ func Load(dotEnvPaths ...string) (Config, error) {
 		Cors:      LoadCorsConfig(),
 		Log:       LoadLogConfig(server.Env),
 		Voice:     LoadVoiceConfig(),
+		Redis:     LoadRedisConfig(),
 		RateLimit: LoadRateLimitConfig(),
+		Media:     LoadMediaConfig(),
 	}, nil
 }

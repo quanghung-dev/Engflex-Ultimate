@@ -8,10 +8,10 @@ packages:
   engflex-api/internal/database/repositories:
     config:
       all: true
-  engflex-api/internal/modules/conversations/services:
+  engflex-api/internal/voice:
     config:
       all: true
-      dir: "internal/modules/conversations/services/mocks"
+      dir: "internal/voice/mocks"
       filename: "mock_{{.InterfaceName}}.go"
       pkgname: "mocks"
       template: testify

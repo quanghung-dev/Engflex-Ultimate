@@ -9,7 +9,7 @@ ifneq (,$(wildcard .env))
 	DATABASE_URL ?= $(shell sed -n 's/^DATABASE_URL=//p' .env | head -1)
 endif
 
-.PHONY: migration-create migration-up migration-down migration-status migration-reset mocks contracts swagger
+.PHONY: migration-create migration-up migration-down migration-status migration-reset mocks contracts swagger seed-audio pronounce-image pronounce-warm
 
 # usage: make migration-create name=your_migration_name
 migration-create:
@@ -38,3 +38,18 @@ contracts:
 # regenerate swagger docs in docs/ (served at /swagger/*any)
 swagger:
 	@swag init -g cmd/server/main.go
+
+# Generate + upload lesson audio (needs db migrated and minio up).
+seed-audio:
+	@uv run --with edge-tts --with minio --with "psycopg[binary]" --with python-dotenv scripts/seed_audio.py
+
+# Build the OpenPronounce model-host image from the pinned upstream tag
+# (bundles the two Wav2Vec2 checkpoints; ~5 GB / a few minutes, network needed).
+# `docker compose up -d openpronounce` builds it automatically on first run;
+# this target prebuilds it without starting.
+pronounce-image:
+	docker compose build openpronounce
+
+# Load the container's models now (~20 s once) instead of on the first attempt.
+pronounce-warm:
+	@python3 scripts/warm_pronounce.py

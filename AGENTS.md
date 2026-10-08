@@ -534,6 +534,12 @@ Assert with `require.ErrorAs(err, &appErr)` + check `.Status`.
 - Mocks mandatory via `repositories/mocks`. Never pass `nil` into constructors.
 - GORM: mock via repo interface (preferred) or `sqlmock`; assert
   `ErrRecordNotFound→404`, duplicate→409. Never hit a real DB in unit tests.
+- No mirror tests ("hiển nhiên"): do not test env→struct passthrough in
+  config loaders, literal echoes (`TableName`, enum strings), or mock-graph
+  echoes (service returns the fixture the mock returned). Test branches,
+  error mapping, key namespacing, and cross-package drift guards instead.
+  The only config tests worth keeping assert real behavior:
+  parsing/conversions, fail-closed branches, validation.
 
 ## Commands (`<api-dir>`)
 
@@ -544,7 +550,8 @@ Assert with `require.ErrorAs(err, &appErr)` + check `.Status`.
 | Vet/fmt | `go vet ./...`, `gofmt -l internal/` (must be empty) |
 | Mocks | `make mocks` |
 | Contracts | `make contracts` |
-| Migrations | goose SQL is the **only** schema mechanism — never auto-apply from models. **One migration per table**, named `create_<table>` and ordered so parents precede children (goose orders by version; the creation order IS the apply order). New: `make migration-create name=...`; apply/rollback: `make migration-up` / `migration-down` (`DATABASE_URL`). New tables do not get repositories until a module reads them: the interface arrives with the caller, not before. **This project is pre-deploy: edit the existing migration in place and re-run it (`make migration-down` then `make migration-up`) rather than adding a corrective one.** A `goose_db_version` row only means "applied to some local database", not "released" — there is no environment whose schema you may not rewrite. Do not gate a schema fix on a "frozen"/"deployed" distinction, and do not offer a new migration as the safer option: the databases here are disposable dev copies, the seed data is re-derivable, and splitting one logical change across two files leaves the history lying about the shape of the schema |
+| Migrations | goose SQL is the **only** schema mechanism — never auto-apply from models. **One migration per table**, named `create_<table>` and ordered so parents precede children (goose orders by version; the creation order IS the apply order). New: `make migration-create name=...`; apply/rollback: `make migration-up` / `migration-down` (`DATABASE_URL`). New tables do not get repositories until a module reads them: the interface arrives with the caller, not before. **This project is pre-deploy: edit the existing migration in place and re-run it (`make migration-down` then `make migration-up`) rather than adding a corrective one.** A `goose_db_version` row only means "applied to some local database", not "released" — there is no environment whose schema you may not rewrite. Do not gate a schema fix on a "frozen"/"deployed" distinction, and do not offer a new migration as the safer option: the databases here are disposable dev copies, the seed data is re-derivable, and splitting one logical change across two files leaves the history lying about the shape of the schema. After re-running an edited chain (`make migration-down && make migration-up`), re-run `make seed-audio` to regenerate lesson audio |
+| Seed audio | `make seed-audio` — TTS-seed lesson audio into MinIO; requires migrated DB + `docker compose up -d minio minio-init` |
 | Swagger | `make swagger` (`swag init -g cmd/server/main.go`) |
 
 <!-- gitnexus:start -->

@@ -100,7 +100,7 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 		if !cfg.RateLimit.Enabled {
 			return nil
 		}
-		if cfg.RateLimit.RedisURL == "" {
+		if cfg.Redis.URL == "" {
 			h, err := middleware.NewInMemoryRateLimitMiddleware(rate)
 			if err != nil {
 				slog.Error("rate limiting disabled: invalid rate", "kind", kind, "rate", rate, "error", err)
@@ -117,7 +117,7 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 			}
 			return h
 		}
-		opt, err := redis.ParseURL(cfg.RateLimit.RedisURL)
+		opt, err := redis.ParseURL(cfg.Redis.URL)
 		if err != nil {
 			return memoryFallback("bad REDIS_URL", err)
 		}
@@ -128,7 +128,7 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 			return memoryFallback("redis unreachable", err)
 		}
 		h, err := middleware.NewRedisRateLimitMiddleware(
-			client, cfg.RateLimit.RedisKeyPrefix+":rl:"+prefix, rate)
+			client, cfg.Redis.KeyPrefix+":rl:"+prefix, rate)
 		if err != nil {
 			slog.Error("rate limiting disabled", "kind", kind, "error", err)
 			return nil

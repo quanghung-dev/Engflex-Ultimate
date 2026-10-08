@@ -1,3 +1,8 @@
+# Project name is load-bearing: another stack on this host (training-ml) also
+# lives in a directory named `api`, so the default project name `api` collides
+# and `compose up` would adopt/recreate its containers. Pin a unique name.
+name: engflex
+
 services:
   postgres:
     container_name: engflex_postgres
@@ -19,6 +24,95 @@ services:
     volumes:
       - engflex_redis_data:/data
 
+  minio:
+    container_name: engflex_minio
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "${MINIO_PORT:-9000}:9000"
+      # Console is on 9010, not 9001: the host already runs another MinIO
+      # (training-ml-minio console on :9001). API :9000 is unchanged, so
+      # MINIO_ENDPOINT/MEDIA_BASE_URL are unaffected.
+      - "${MINIO_CONSOLE_PORT:-9010}:9001"
+    volumes:
+      - engflex_minio_data:/data
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD; do sleep 1; done;
+      mc mb -p local/lesson-audio;
+      mc anonymous set download local/lesson-audio;
+      "
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+
+  # Pronunciation scoring model host (OpenPronounce). Long-lived by design: the
+  # Wav2Vec2 weights are bundled into the image and load once per container
+  # start, so `restart: unless-stopped` keeps them warm across API/voice
+  # restarts — no service pays the ~20 s load on its own boot.
+  # Compose builds the image from the pinned upstream tag on first `up`
+  # (one-time, ~5 GB, network needed); `make pronounce-warm` loads the weights.
+  openpronounce:
+    container_name: engflex_openpronounce
+    image: openpronounce:v0.3.0
+    build:
+      context: https://github.com/Halleck45/OpenPronounce.git#v0.3.0
+      # Upstream v0.3.0's Dockerfile `pip install ".[app]"` cannot resolve
+      # against current PyPI — pip backtracks through every uvicorn release
+      # and fails (uvicorn>=0.23 unpinned; verified 2026-10-08). This mirrors
+      # upstream's Dockerfile exactly except for the uvicorn constraint.
+      dockerfile_inline: |
+        FROM python:3.12-slim
+
+        ENV PYTHONDONTWRITEBYTECODE=1 \
+            PYTHONUNBUFFERED=1 \
+            PIP_NO_CACHE_DIR=1 \
+            HF_HOME=/models \
+            PORT=8000
+
+        RUN apt-get update \
+            && apt-get install -y --no-install-recommends ffmpeg espeak-ng libsndfile1 \
+            && rm -rf /var/lib/apt/lists/*
+
+        WORKDIR /app
+
+        # CPU wheels of torch are much smaller than the default CUDA ones.
+        RUN pip install torch --index-url https://download.pytorch.org/whl/cpu
+
+        COPY pyproject.toml README.md ./
+        COPY openpronounce ./openpronounce
+        RUN pip install ".[app]" "uvicorn[standard]<0.31"
+
+        RUN python -c "from openpronounce.speech import _load_models; _load_models()" \
+            && python -c "from openpronounce.phones import _load_model; _load_model()"
+
+        COPY server.py ./
+        COPY templates ./templates
+        COPY static ./static
+
+        EXPOSE 8000
+        CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "${PRONOUNCE_PORT:-8001}:8000"
+    environment:
+      OPENPRONOUNCE_DEVICE: ${OPENPRONOUNCE_DEVICE:-cpu}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
 volumes:
   engflex_postgres_data:
   engflex_redis_data:
+  engflex_minio_data:
