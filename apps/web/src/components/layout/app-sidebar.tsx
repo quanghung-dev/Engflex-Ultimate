@@ -1,4 +1,4 @@
-import { UserButton, useUser } from "@clerk/tanstack-react-start";
+import { UserButton, useAuth, useUser } from "@clerk/tanstack-react-start";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
 import { cn } from "cn";
@@ -8,6 +8,7 @@ import {
 	BookOpen,
 	House,
 	Info,
+	ShieldCheck,
 } from "lucide-react";
 import { APP_ROUTES } from "#/app/app-route";
 import { Logo } from "#/components/common/logo";
@@ -26,6 +27,7 @@ import {
 } from "#/components/ui/sidebar";
 import { PROGRESS_SUMMARY } from "#/features/attempts/fixtures";
 import { profileStore } from "#/features/profiles/store";
+import { isAdminClaims } from "#/lib/roles";
 import { m } from "#/paraglide/messages";
 
 /**
@@ -81,6 +83,7 @@ export function AppSidebar() {
 	const pathname = useRouterState({
 		select: (state) => state.location.pathname,
 	});
+	const { sessionClaims } = useAuth();
 
 	return (
 		<Sidebar collapsible="icon">
@@ -151,6 +154,17 @@ export function AppSidebar() {
 			</SidebarContent>
 			<SidebarFooter>
 				<SidebarMenu>
+					{/* Discoverability only: the admin layout re-checks the claim server-side. */}
+					{isAdminClaims(sessionClaims) ? (
+						<SidebarMenuItem>
+							<SidebarMenuButton asChild tooltip={m["nav.item.admin"]()}>
+								<Link to={APP_ROUTES.ADMIN.OVERVIEW} className="font-medium">
+									<ShieldCheck data-icon="inline-start" />
+									<span>{m["nav.item.admin"]()}</span>
+								</Link>
+							</SidebarMenuButton>
+						</SidebarMenuItem>
+					) : null}
 					<SidebarMenuItem>
 						<SidebarMenuButton asChild tooltip={m["about.crumb"]()}>
 							<Link to={APP_ROUTES.ABOUT} className="font-medium">

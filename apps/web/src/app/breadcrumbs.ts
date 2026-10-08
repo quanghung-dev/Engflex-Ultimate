@@ -15,7 +15,8 @@ export type CrumbPath =
 	| typeof APP_ROUTES.LESSONS.LIST
 	| typeof APP_ROUTES.VOCABULARY.LIST
 	| typeof APP_ROUTES.VOICE.LIST
-	| typeof APP_ROUTES.VOICE.SCENARIOS;
+	| typeof APP_ROUTES.VOICE.SCENARIOS
+	| typeof APP_ROUTES.ADMIN.OVERVIEW;
 
 /** Explicit link target for a crumb that is not the current page. */
 export type CrumbTarget =

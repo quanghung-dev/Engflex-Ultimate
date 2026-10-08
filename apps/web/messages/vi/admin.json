@@ -1,0 +1,224 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "admin": {
+    "actions": {
+      "add": "Thêm {noun}",
+      "delete": "Xóa",
+      "edit": "Sửa"
+    },
+    "confirm": {
+      "description": "Thao tác này không thể hoàn tác.",
+      "title": "Xóa {name}?"
+    },
+    "fields": {
+      "category": "Danh mục",
+      "cefr": "CEFR",
+      "content": "Câu thoại",
+      "defaultCefr": "CEFR mặc định",
+      "definition": "Định nghĩa",
+      "description": "Mô tả",
+      "domain": "Lĩnh vực",
+      "duration": "Thời lượng",
+      "durationMinutes": "Thời lượng (phút)",
+      "durationSeconds": "Thời lượng (giây)",
+      "endSeconds": "Kết thúc (giây)",
+      "gender": "Giới tính",
+      "ipa": "Phiên âm IPA",
+      "isDefault": "Bộ thẻ mặc định",
+      "joined": "Ngày tham gia",
+      "lastActive": "Hoạt động gần nhất",
+      "level": "Trình độ",
+      "name": "Tên",
+      "objective": "Mục tiêu",
+      "partOfSpeech": "Từ loại",
+      "parts": "Số phần",
+      "persona": "Nhân vật",
+      "personality": "Tính cách",
+      "phonetic": "Phiên âm",
+      "role": "Vai trò",
+      "roleTitle": "Chức danh",
+      "segments": "Đoạn",
+      "sequence": "#",
+      "slug": "Slug",
+      "startSeconds": "Bắt đầu (giây)",
+      "status": "Trạng thái",
+      "style": "Phong cách",
+      "term": "Thuật ngữ",
+      "thumbnailUrl": "URL ảnh thu nhỏ",
+      "timing": "Thời điểm",
+      "title": "Tiêu đề",
+      "topic": "Chủ đề",
+      "updated": "Cập nhật",
+      "videoUrl": "URL video",
+      "vietnamese": "Tiếng Việt"
+    },
+    "form": {
+      "create": "Tạo",
+      "createTitle": "Tạo {noun} mới",
+      "editTitle": "Sửa {noun}",
+      "invalidNumber": "{field} phải là số không âm",
+      "none": "Không có",
+      "required": "Vui lòng nhập {field}",
+      "save": "Lưu thay đổi"
+    },
+    "lessons": {
+      "categories": {
+        "noun": "danh mục"
+      },
+      "lessons": {
+        "noun": "bài học"
+      },
+      "subtitle": "Danh mục bài học người học duyệt xem, cùng các nhóm phân loại.",
+      "tabs": {
+        "categories": "Danh mục",
+        "lessons": "Bài học"
+      },
+      "title": "Bài học"
+    },
+    "nav": {
+      "group": {
+        "content": "Nội dung",
+        "people": "Người dùng"
+      },
+      "lessons": "Bài học",
+      "overview": "Tổng quan",
+      "scenarios": "Tình huống",
+      "users": "Người dùng",
+      "videos": "Video",
+      "vocabulary": "Từ vựng"
+    },
+    "overview": {
+      "mock": {
+        "body": "Thay đổi chỉ lưu trong tab trình duyệt này và sẽ mất khi tải lại — chưa có gì được gửi tới API.",
+        "title": "Dữ liệu mẫu"
+      },
+      "recent": {
+        "joined": "Tham gia {date}",
+        "title": "Người dùng mới nhất"
+      },
+      "sections": {
+        "lessons": "Danh mục bài học và nhóm bài học.",
+        "scenarios": "Tình huống nhập vai và nhân vật AI.",
+        "title": "Quản lý",
+        "users": "Vai trò, trạng thái tài khoản và trình độ người học.",
+        "videos": "Bài tập video, phụ đề và danh mục.",
+        "vocabulary": "Mục từ điển, bộ thẻ ghi nhớ và danh mục."
+      },
+      "stats": {
+        "lessons": "Bài học",
+        "lessonsFooter": "{scenarios} tình huống luyện nói",
+        "users": "Người dùng",
+        "usersFooter": "{active} đang hoạt động · {admins} quản trị viên",
+        "videos": "Video",
+        "videosFooter": "{segments} đoạn phụ đề",
+        "vocabulary": "Mục từ điển",
+        "vocabularyFooter": "{decks} bộ thẻ"
+      },
+      "subtitle": "Quản lý người học và toàn bộ nội dung học tập ở cùng một nơi.",
+      "title": "Bảng quản trị"
+    },
+    "scenarios": {
+      "personas": {
+        "gender": {
+          "female": "Nữ",
+          "male": "Nam"
+        },
+        "noun": "nhân vật"
+      },
+      "scenarios": {
+        "noun": "tình huống"
+      },
+      "subtitle": "Tình huống nhập vai luyện nói và các nhân vật AI mà người học trò chuyện cùng.",
+      "tabs": {
+        "personas": "Nhân vật",
+        "scenarios": "Tình huống"
+      },
+      "title": "Tình huống"
+    },
+    "shell": {
+      "backToApp": "Quay lại ứng dụng",
+      "badge": "Quản trị",
+      "crumb": "Quản trị",
+      "signedInAs": "Quản trị viên"
+    },
+    "table": {
+      "actions": "Thao tác",
+      "empty": "Không có bản ghi phù hợp",
+      "next": "Sau",
+      "previous": "Trước",
+      "search": "Tìm kiếm",
+      "summary": "Hiển thị {shown} / {total}"
+    },
+    "toast": {
+      "created": "Đã tạo",
+      "deleted": "Đã xóa {name}",
+      "saved": "Đã lưu thay đổi"
+    },
+    "users": {
+      "allRoles": "Tất cả vai trò",
+      "level": {
+        "advanced": "Nâng cao",
+        "beginner": "Mới bắt đầu",
+        "intermediate": "Trung cấp"
+      },
+      "noun": "người dùng",
+      "role": {
+        "admin": "Quản trị viên",
+        "user": "Người học"
+      },
+      "roleFilter": "Lọc theo vai trò",
+      "status": {
+        "active": "Đang hoạt động",
+        "suspended": "Đã tạm khóa"
+      },
+      "subtitle": "Tài khoản được tạo khi đăng ký qua Clerk. Tại đây bạn có thể đổi vai trò, tạm khóa hoặc điều chỉnh trình độ.",
+      "title": "Người dùng"
+    },
+    "videos": {
+      "categories": {
+        "noun": "danh mục"
+      },
+      "exercises": {
+        "noun": "video"
+      },
+      "subtitle": "Bài tập video, phụ đề theo thời gian và danh mục.",
+      "tabs": {
+        "categories": "Danh mục",
+        "exercises": "Bài tập",
+        "transcripts": "Phụ đề"
+      },
+      "title": "Video",
+      "transcripts": {
+        "noVideos": "Hãy thêm bài tập video trước — phụ đề thuộc về một video.",
+        "noun": "đoạn phụ đề",
+        "videoFilter": "Video"
+      }
+    },
+    "vocabulary": {
+      "categories": {
+        "noun": "danh mục"
+      },
+      "decks": {
+        "defaultBadge": "Mặc định",
+        "noun": "bộ thẻ"
+      },
+      "items": {
+        "domain": {
+          "aiMl": "AI & Học máy",
+          "backendDb": "Backend & CSDL",
+          "devopsCloud": "DevOps & Cloud",
+          "distributedSystems": "Hệ phân tán",
+          "frontendUi": "Frontend & UI"
+        },
+        "noun": "mục từ"
+      },
+      "subtitle": "Từ điển dùng chung, bộ thẻ ghi nhớ và các danh mục nhóm chúng.",
+      "tabs": {
+        "categories": "Danh mục",
+        "decks": "Bộ thẻ",
+        "items": "Từ điển"
+      },
+      "title": "Từ vựng"
+    }
+  }
+}

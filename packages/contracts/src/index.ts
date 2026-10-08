@@ -47,3 +47,5 @@ export * from './vocabulary-requests.ts';
 export * from './vocabulary-responses.ts';
 export * from './attempts-requests.ts';
 export * from './attempts-responses.ts';
+export * from './videos-requests.ts';
+export * from './videos-responses.ts';

@@ -9,7 +9,8 @@
       "home": "Home",
       "lessons": "Lessons",
       "voice": "Voice",
-      "vocabulary": "Vocabulary"
+      "vocabulary": "Vocabulary",
+      "admin": "Admin console"
     },
     "user": {
       "learner": "Learner",

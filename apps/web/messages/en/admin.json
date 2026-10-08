@@ -1,0 +1,224 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "admin": {
+    "actions": {
+      "add": "Add {noun}",
+      "delete": "Delete",
+      "edit": "Edit"
+    },
+    "confirm": {
+      "description": "This can't be undone.",
+      "title": "Delete {name}?"
+    },
+    "fields": {
+      "category": "Category",
+      "cefr": "CEFR",
+      "content": "Line",
+      "defaultCefr": "Default CEFR",
+      "definition": "Definition",
+      "description": "Description",
+      "domain": "Domain",
+      "duration": "Duration",
+      "durationMinutes": "Duration (min)",
+      "durationSeconds": "Duration (seconds)",
+      "endSeconds": "End (seconds)",
+      "gender": "Gender",
+      "ipa": "IPA",
+      "isDefault": "Default deck",
+      "joined": "Joined",
+      "lastActive": "Last active",
+      "level": "Level",
+      "name": "Name",
+      "objective": "Objective",
+      "partOfSpeech": "Part of speech",
+      "parts": "Parts",
+      "persona": "Persona",
+      "personality": "Personality",
+      "phonetic": "Phonetic",
+      "role": "Role",
+      "roleTitle": "Job title",
+      "segments": "Segments",
+      "sequence": "#",
+      "slug": "Slug",
+      "startSeconds": "Start (seconds)",
+      "status": "Status",
+      "style": "Style",
+      "term": "Term",
+      "thumbnailUrl": "Thumbnail URL",
+      "timing": "Timing",
+      "title": "Title",
+      "topic": "Topic",
+      "updated": "Updated",
+      "videoUrl": "Video URL",
+      "vietnamese": "Vietnamese"
+    },
+    "form": {
+      "create": "Create",
+      "createTitle": "New {noun}",
+      "editTitle": "Edit {noun}",
+      "invalidNumber": "{field} must be a number of 0 or more",
+      "none": "None",
+      "required": "{field} is required",
+      "save": "Save changes"
+    },
+    "lessons": {
+      "categories": {
+        "noun": "category"
+      },
+      "lessons": {
+        "noun": "lesson"
+      },
+      "subtitle": "The lesson catalogue learners browse, and the categories it's grouped by.",
+      "tabs": {
+        "categories": "Categories",
+        "lessons": "Lessons"
+      },
+      "title": "Lessons"
+    },
+    "nav": {
+      "group": {
+        "content": "Content",
+        "people": "People"
+      },
+      "lessons": "Lessons",
+      "overview": "Overview",
+      "scenarios": "Scenarios",
+      "users": "Users",
+      "videos": "Videos",
+      "vocabulary": "Vocabulary"
+    },
+    "overview": {
+      "mock": {
+        "body": "Changes stay in this browser tab and reset on reload — nothing is sent to the API yet.",
+        "title": "Mock data"
+      },
+      "recent": {
+        "joined": "Joined {date}",
+        "title": "Newest users"
+      },
+      "sections": {
+        "lessons": "Lesson catalogue and lesson categories.",
+        "scenarios": "Roleplay scenarios and AI personas.",
+        "title": "Manage",
+        "users": "Roles, account status and learner levels.",
+        "videos": "Video exercises, transcripts and categories.",
+        "vocabulary": "Dictionary entries, flashcard decks and categories."
+      },
+      "stats": {
+        "lessons": "Lessons",
+        "lessonsFooter": "{scenarios} voice scenarios",
+        "users": "Users",
+        "usersFooter": "{active} active · {admins} admins",
+        "videos": "Videos",
+        "videosFooter": "{segments} transcript segments",
+        "vocabulary": "Dictionary entries",
+        "vocabularyFooter": "{decks} decks"
+      },
+      "subtitle": "Manage learners and every piece of learning content in one place.",
+      "title": "Admin console"
+    },
+    "scenarios": {
+      "personas": {
+        "gender": {
+          "female": "Female",
+          "male": "Male"
+        },
+        "noun": "persona"
+      },
+      "scenarios": {
+        "noun": "scenario"
+      },
+      "subtitle": "Voice roleplay scenarios and the AI personas learners talk to.",
+      "tabs": {
+        "personas": "Personas",
+        "scenarios": "Scenarios"
+      },
+      "title": "Scenarios"
+    },
+    "shell": {
+      "backToApp": "Back to app",
+      "badge": "Admin",
+      "crumb": "Admin",
+      "signedInAs": "Administrator"
+    },
+    "table": {
+      "actions": "Row actions",
+      "empty": "No matching records",
+      "next": "Next",
+      "previous": "Previous",
+      "search": "Search",
+      "summary": "Showing {shown} of {total}"
+    },
+    "toast": {
+      "created": "Created",
+      "deleted": "Deleted {name}",
+      "saved": "Changes saved"
+    },
+    "users": {
+      "allRoles": "All roles",
+      "level": {
+        "advanced": "Advanced",
+        "beginner": "Beginner",
+        "intermediate": "Intermediate"
+      },
+      "noun": "user",
+      "role": {
+        "admin": "Admin",
+        "user": "Learner"
+      },
+      "roleFilter": "Filter by role",
+      "status": {
+        "active": "Active",
+        "suspended": "Suspended"
+      },
+      "subtitle": "Accounts come from Clerk sign-up. Change roles, suspend access or adjust learner level here.",
+      "title": "Users"
+    },
+    "videos": {
+      "categories": {
+        "noun": "category"
+      },
+      "exercises": {
+        "noun": "video"
+      },
+      "subtitle": "Video exercises, their timed transcripts and categories.",
+      "tabs": {
+        "categories": "Categories",
+        "exercises": "Exercises",
+        "transcripts": "Transcripts"
+      },
+      "title": "Videos",
+      "transcripts": {
+        "noVideos": "Add a video exercise first — transcripts belong to a video.",
+        "noun": "segment",
+        "videoFilter": "Video"
+      }
+    },
+    "vocabulary": {
+      "categories": {
+        "noun": "category"
+      },
+      "decks": {
+        "defaultBadge": "Default",
+        "noun": "deck"
+      },
+      "items": {
+        "domain": {
+          "aiMl": "AI & Machine learning",
+          "backendDb": "Backend & DB",
+          "devopsCloud": "DevOps & Cloud",
+          "distributedSystems": "Distributed systems",
+          "frontendUi": "Frontend & UI"
+        },
+        "noun": "entry"
+      },
+      "subtitle": "The shared dictionary, flashcard decks and the categories that group them.",
+      "tabs": {
+        "categories": "Categories",
+        "decks": "Decks",
+        "items": "Dictionary"
+      },
+      "title": "Vocabulary"
+    }
+  }
+}

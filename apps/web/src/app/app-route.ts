@@ -19,6 +19,18 @@ export const APP_ROUTES = {
 		ROOM: "/voice/room/$conversationId",
 	},
 	/**
+	 * Back office. Guarded by `routes/admin/route.tsx` on the Clerk `role`
+	 * claim — the same claim Go's `RequireAdmin` reads.
+	 */
+	ADMIN: {
+		OVERVIEW: "/admin",
+		USERS: { LIST: "/admin/users" },
+		VOCABULARY: { LIST: "/admin/vocabulary" },
+		VIDEOS: { LIST: "/admin/videos" },
+		LESSONS: { LIST: "/admin/lessons" },
+		SCENARIOS: { LIST: "/admin/scenarios" },
+	},
+	/**
 	 * Clerk's catch-all pages. The file routes are `/sign-in/$` splats, so a
 	 * typed `to` needs the splat id — but `redirect({ href })` bypasses route
 	 * resolution entirely and must carry a plain URL, or the browser navigates
