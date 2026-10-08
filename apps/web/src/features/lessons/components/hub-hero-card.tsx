@@ -1,26 +1,34 @@
-import type { Lesson, LessonProgress } from "@engflex/contracts";
+import type { Lesson } from "@engflex/contracts";
+import { useQueries } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { APP_ROUTES } from "#/app/app-route";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { ProgressBar } from "#/components/common/progress-bar";
 import { Button } from "#/components/ui/button";
+import { lessonDetailQueryOptions } from "#/features/lessons/queries";
+import type { LessonProgress } from "#/features/lessons/store";
 import { m } from "#/paraglide/messages";
 
 export function HubHeroCard({
 	section,
 	lessons,
 	progressById,
-	resumeId,
+	resumeSlug,
 	resumeTitle,
 }: {
 	section: string;
 	lessons: Lesson[];
 	progressById: Record<string, LessonProgress>;
-	resumeId: string;
+	resumeSlug: string;
 	resumeTitle: string;
 }) {
-	const totalParts = lessons.reduce(
-		(sum, lesson) => sum + (progressById[lesson.id]?.partsTotal ?? 0),
+	// Totals come from the same detail queries the cards below already run
+	// (identical keys dedupe), so untouched lessons still count their parts.
+	const detailQueries = useQueries({
+		queries: lessons.map((lesson) => lessonDetailQueryOptions(lesson.id)),
+	});
+	const totalParts = detailQueries.reduce(
+		(sum, query) => sum + (query.data?.activities.length ?? 0),
 		0,
 	);
 	const doneParts = lessons.reduce(
@@ -75,10 +83,7 @@ export function HubHeroCard({
 				</div>
 				<div>
 					<Button asChild className="btn btn-primary w-fit">
-						<Link
-							to={APP_ROUTES.LESSONS.DETAIL}
-							params={{ lessonId: resumeId }}
-						>
+						<Link to={APP_ROUTES.LESSONS.DETAIL} params={{ slug: resumeSlug }}>
 							{m["lessons.hub.resume"]({ unit: resumeTitle })}
 						</Link>
 					</Button>

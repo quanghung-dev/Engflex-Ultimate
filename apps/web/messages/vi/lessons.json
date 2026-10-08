@@ -1,33 +1,11 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "lessons": {
-    "dictation": {
-      "nextSentence": "Câu tiếp theo →",
-      "context": "Bối cảnh hội thoại",
-      "speakerB": "Người nói B:",
-      "yourTranscription": "Bản chép của bạn",
-      "placeholder": "Gõ những gì bạn nghe được…",
-      "characters": "{count} ký tự",
-      "check": "Kiểm tra bản chép",
-      "sentenceCompleted": "Đã hoàn thành câu",
-      "typedLabel": "Bạn đã gõ:",
-      "referenceLabel": "Văn bản chuẩn:",
-      "remaining": "Còn {count} câu trong phiên này",
-      "hint": "Cần gợi ý? Chạm để xem vài từ đầu",
-      "coach": {
-        "title": "Mo · Huấn luyện viên nghe",
-        "body": "Chậm mà chắc. Trong các buổi họp nhanh, nguyên âm thường bị nuốt — hãy chú ý những từ nối nhỏ."
-      }
-    },
     "reading": {
       "previousQuestion": "Câu trước",
       "readTime": "Đọc ~2 phút",
       "questionOf": "Câu {number}/{total}",
       "nextQuestion": "Câu tiếp theo"
-    },
-    "crumb": {
-      "practice": "Luyện tập",
-      "detailFallback": "Chi tiết bài học"
     },
     "hub": {
       "title": "Bài học điều hành",
@@ -77,7 +55,7 @@
       "estDuration": "Khoảng {minutes} phút",
       "activitiesCount": "{count} hoạt động",
       "start": "Bắt đầu",
-      "meta": "{minutes} phút • {parts} phần",
+      "meta": "{minutes} phút",
       "activityDuration": "{minutes} phút"
     },
     "unit": {
@@ -89,15 +67,15 @@
     },
     "skill": {
       "reading": "Đọc",
-      "dictation": "Nghe chép",
       "writing": "Viết",
-      "voice": "Nói"
+      "listening": "Nghe",
+      "speaking": "Nói"
     },
     "part": {
       "reading": "Đọc hiểu",
-      "dictation": "Nghe chép",
       "writing": "Viết có hướng dẫn",
-      "voice": "Đối thoại tự do"
+      "listening": "Nghe hiểu",
+      "speaking": "Đọc to"
     },
     "step": {
       "done": "Xong",
@@ -113,18 +91,49 @@
       "placeholder": "Viết câu trả lời của bạn…",
       "wordsCount": "{count} / {max} từ",
       "submit": "Gửi để nhận phản hồi",
-      "feedback": {
-        "title": "Phản hồi ngôn ngữ tức thì",
-        "kind": {
-          "grammar": "Ngữ pháp",
-          "vocabulary": "Từ vựng",
-          "naturalness": "Tính tự nhiên"
-        },
-        "cefr": "Đã kiểm tra {level}"
+      "model": {
+        "title": "Bài viết mẫu",
+        "checklist": "Danh sách tự kiểm tra"
       },
-      "assessment": "Đánh giá trực tiếp của Mo",
-      "assessmentBody": "Cách diễn đạt rất tốt! Nêu rõ khoảng thời gian giúp người đọc yên tâm ngay, còn việc chốt các thuật ngữ chính giúp tránh mọi hiểu lầm.",
       "responseTitle": "Bài viết của bạn"
+    },
+    "speaking": {
+      "title": "Đọc to",
+      "instruction": "Nghe bản mẫu, sau đó ghi âm bạn đọc câu.",
+      "listenModel": "Nghe bản mẫu",
+      "record": "Ghi âm",
+      "stop": "Dừng",
+      "retry": "Thử lại",
+      "next": "Tiếp theo →",
+      "scoreLabel": "Điểm phát âm",
+      "scoreEmpty": "Ghi âm câu đọc — điểm và nhận xét từng từ sẽ hiện tại đây.",
+      "coachPrefix": "Sửa cách bạn phát âm",
+      "coachCorrect": "Làm tốt lắm — không có gì cần sửa.",
+      "coachNone": "Không có từ nào bị gắn cờ — hãy luyện nhịp điệu câu.",
+      "heardShort": "nghe được:",
+      "bandNearModel": "Gần chuẩn",
+      "bandGettingThere": "Đang tiến bộ",
+      "bandKeepPracticing": "Tiếp tục luyện tập",
+      "bandHardToRecognize": "Khó nhận diện",
+      "soundsLabel": "Âm",
+      "wordsLabel": "Từ",
+      "listenSelf": "Nghe lại bạn đọc",
+      "micDenied": "Không dùng được micro. Hãy cấp quyền micro rồi thử lại.",
+      "uploadFailed": "Tải lên thất bại. Hãy ghi âm lại."
+    },
+    "listening": {
+      "title": "Luyện nghe",
+      "context": "Bối cảnh hội thoại",
+      "audioFailed": "Không tải được âm thanh. Hãy thử lại sau.",
+      "transcript": "Bản ghi",
+      "restart": "Nghe lại từ đầu"
+    },
+    "check": {
+      "correct": "Chính xác!",
+      "incorrect": "Chưa đúng — đáp án là {key}",
+      "explanation": "Giải thích",
+      "submit": "Kiểm tra",
+      "failed": "Không kiểm tra được câu trả lời. Hãy thử lại."
     }
   }
 }

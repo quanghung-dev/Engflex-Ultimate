@@ -307,7 +307,11 @@ pre code {
 
 @utility btn-primary {
   background: var(--primary);
-  color: var(--primary-foreground);
+  /* !important matches the btn contract: these utilities must beat the
+     shadcn cva variant colors (text-primary-foreground etc.), which sort
+     later in the cascade than @utility rules. Without it a default-variant
+     button on a card renders white-on-white. */
+  color: var(--primary-foreground) !important;
   box-shadow: 0 5px 0 #433095 !important;
 
   &:active {
@@ -317,7 +321,7 @@ pre code {
 
 @utility btn-outline {
   background: var(--card) !important;
-  color: var(--foreground);
+  color: var(--foreground) !important;
   border-width: 2px !important;
   border-style: solid;
   border-color: var(--border);
@@ -330,7 +334,7 @@ pre code {
 
 @utility btn-accent {
   background: var(--secondary) !important;
-  color: var(--secondary-foreground);
+  color: var(--secondary-foreground) !important;
   border-color: var(--secondary);
   box-shadow: 0 5px 0 rgba(0, 0, 0, 0.12) !important;
 
@@ -341,7 +345,7 @@ pre code {
 
 @utility btn-danger {
   background: var(--destructive);
-  color: var(--destructive-foreground);
+  color: var(--destructive-foreground) !important;
   box-shadow: 0 5px 0 rgba(0, 0, 0, 0.18);
 }
 

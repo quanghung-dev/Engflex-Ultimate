@@ -12,7 +12,7 @@ import (
 type ListLessons struct {
 	common.ListParams `tstype:",extends"`
 	Level             enums.CEFR         `form:"level" json:"level" binding:"omitempty,oneof=A1 A2 B1 B2 C1 C2"`
-	Skill             enums.ActivityType `form:"skill" json:"skill" binding:"omitempty,oneof=reading dictation writing voice"`
+	Skill             enums.ActivityType `form:"skill" json:"skill" binding:"omitempty,oneof=reading listening writing speaking"`
 	Status            enums.LessonStatus `form:"status" json:"status" binding:"omitempty,oneof=unstarted in_progress completed"`
 }
 
@@ -24,4 +24,11 @@ type ListActivities struct {
 // SaveBookmark is the POST /lesson-bookmarks body.
 type SaveBookmark struct {
 	LessonID string `json:"lessonId" binding:"required,uuid"`
+}
+
+// CheckAnswer grades one reading/listening question. min=0, not required:
+// `required` rejects the zero value, and question 0 is valid.
+type CheckAnswer struct {
+	QuestionIndex int    `json:"questionIndex" binding:"min=0"`
+	Key           string `json:"key" binding:"required"`
 }

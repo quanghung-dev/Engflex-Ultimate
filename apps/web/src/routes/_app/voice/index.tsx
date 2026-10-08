@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { APP_ROUTES } from "#/app/app-route";
-import { breadcrumb } from "#/app/breadcrumbs";
+import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
 import { AudioCalibrationBanner } from "#/features/voice/components/mode/audio-calibration-banner";
@@ -11,11 +11,11 @@ import { useCreateConversation } from "#/features/voice/queries";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/voice/")({
-	staticData: breadcrumb(() => m["nav.item.voice"]()),
 	component: VoiceModesPage,
 });
 
 function VoiceModesPage() {
+	useBreadcrumbs([{ label: m["nav.item.voice"]() }]);
 	const navigate = useNavigate();
 	const createConversation = useCreateConversation();
 

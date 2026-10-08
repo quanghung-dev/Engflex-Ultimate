@@ -48,5 +48,9 @@ export const API_ROUTES = {
 	LESSONS: {
 		LIST: "/lessons",
 		BY_ID: (id: ApiId) => `/lessons/${id}`,
+		BY_SLUG: (slug: string) => `/lessons/by-slug/${slug}`,
+		CHECK: (activityId: ApiId) => `/lesson-activities/${activityId}/check`,
+		PRONOUNCE: (activityId: ApiId) =>
+			`/lesson-activities/${activityId}/pronounce`,
 	},
 } as const;

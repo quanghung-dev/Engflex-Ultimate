@@ -6,7 +6,7 @@ type ActivityType string
 
 const (
 	ActivityTypeReading   ActivityType = "reading"
-	ActivityTypeDictation ActivityType = "dictation"
+	ActivityTypeListening ActivityType = "listening"
 	ActivityTypeWriting   ActivityType = "writing"
-	ActivityTypeVoice     ActivityType = "voice"
+	ActivityTypeSpeaking  ActivityType = "speaking"
 )

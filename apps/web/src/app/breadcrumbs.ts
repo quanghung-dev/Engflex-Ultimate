@@ -1,79 +1,31 @@
-import type { APP_ROUTES } from "#/app/app-route";
-import { lessonTitleCache } from "#/features/lessons/queries";
-import { getVocabularyItem } from "#/features/vocabulary/store";
-import { m } from "#/paraglide/messages";
+import { useStore } from "@tanstack/react-store";
+import { Store } from "@tanstack/store";
+import { useEffect } from "react";
 
-export type RouteParams = Record<string, string>;
-
-/** A crumb label: static text, or a function for param routes (fixture titles). */
-export type CrumbLabel = string | ((params: RouteParams) => string);
-
-/** Section paths a crumb may link to, sourced from the central route constants. */
-export type CrumbPath =
-	| typeof APP_ROUTES.HOME
-	| typeof APP_ROUTES.ABOUT
-	| typeof APP_ROUTES.LESSONS.LIST
-	| typeof APP_ROUTES.VOCABULARY.LIST
-	| typeof APP_ROUTES.VOICE.LIST
-	| typeof APP_ROUTES.VOICE.SCENARIOS;
-
-/** Explicit link target for a crumb that is not the current page. */
-export type CrumbTarget =
-	| { to: CrumbPath }
-	| {
-			to: typeof APP_ROUTES.LESSONS.DETAIL;
-			params: (params: RouteParams) => { lessonId: string };
-	  };
-
-/** Either a bare label (current page, or auto-linked via the match chain) or a labeled link. */
-export type CrumbSpec = CrumbLabel | { label: CrumbLabel; target: CrumbTarget };
-
-export interface BreadcrumbStaticData {
-	breadcrumb: CrumbSpec | CrumbSpec[];
+/** One crumb: label always; a link only when it is not the current page.
+ *  Targets come from `APP_ROUTES` at call sites — never URL literals. */
+export interface CrumbItem {
+	label: string;
+	to?: string;
+	params?: Record<string, string>;
 }
+
+const breadcrumbStore = new Store<{ items: CrumbItem[] }>({ items: [] });
 
 /**
- * Declares breadcrumbs on a route — `staticData: breadcrumb(["Lessons", lessonCrumbLabel])`.
- * No route ids are hardcoded; targets come from `APP_ROUTES`, labels may resolve fixtures.
- * Multiple labels let one route contribute several crumbs (Home → Daily practice);
- * the last crumb of the whole trail renders as the current page.
+ * Publish this page's trail to the sticky header slot. Call unconditionally —
+ * pass `[]` (or static labels) while data loads. Re-setting identical content
+ * only re-renders the tiny trail and nothing feeds back, so call sites need
+ * no memo. Unmount clears the slot so no trail leaks across pages.
  */
-export function breadcrumb(
-	labels: CrumbSpec | CrumbSpec[],
-): BreadcrumbStaticData {
-	return { breadcrumb: labels };
+export function useBreadcrumbs(items: CrumbItem[]) {
+	useEffect(() => {
+		breadcrumbStore.setState(() => ({ items }));
+		return () => breadcrumbStore.setState(() => ({ items: [] }));
+	}, [items]);
 }
 
-/** `staticData` is an open map on the router side, so narrow it in one place. */
-export function readBreadcrumb(
-	staticData: unknown,
-): CrumbSpec | CrumbSpec[] | undefined {
-	return (staticData as BreadcrumbStaticData | undefined)?.breadcrumb;
-}
-
-export const lessonCrumbLabel = (params: RouteParams) =>
-	lessonTitleCache.get(params.lessonId) ??
-	m["lessons.crumb.detailFallback"]();
-
-export const vocabularyCrumbLabel = (params: RouteParams) =>
-	getVocabularyItem(params.itemId)?.term ??
-	m["vocabulary.crumb.detailFallback"]();
-
-export function crumbLabel(label: CrumbLabel, params: RouteParams): string {
-	return typeof label === "function" ? label(params) : label;
-}
-
-/** A crumb target with its params already resolved for rendering. */
-export type ResolvedTarget =
-	| { to: CrumbPath }
-	| { to: typeof APP_ROUTES.LESSONS.DETAIL; params: { lessonId: string } };
-
-export function resolveTarget(
-	target: CrumbTarget | undefined,
-	params: RouteParams,
-): ResolvedTarget | undefined {
-	if (!target) return undefined;
-	if ("params" in target)
-		return { to: target.to, params: target.params(params) };
-	return { to: target.to };
+/** Trail for the header slot. Empty until the first page publishes. */
+export function useBreadcrumbItems(): CrumbItem[] {
+	return useStore(breadcrumbStore, (state) => state.items);
 }

@@ -32,10 +32,6 @@
         "analyzeFailed": "Phân tích thất bại. Hãy thử lại.",
         "reanalyze": "Phân tích lại"
       },
-      "brief": {
-        "tip1": "· Nói tự nhiên — đối tác thích ứng với cách diễn đạt của bạn.",
-        "tip2": "· Phân tích một lượt nói sau phiên để xem chẩn đoán."
-      },
       "guide": {
         "eyebrow": "Trước khi bắt đầu",
         "title": "Cách luyện voice sparring hoạt động",
@@ -154,8 +150,6 @@
         "search": "Tìm tình huống"
       },
       "emptyTitle": "Không có tình huống nào khớp bộ lọc",
-      "suggestLine": "Mo gợi ý, vì bạn đang học Unit {slot}",
-      "startOne": "Bắt đầu bài này",
       "topic": {
         "all": "Mọi chủ đề",
         "label": "Chủ đề:"
@@ -192,7 +186,6 @@
       }
     },
     "card": {
-      "partner": "Đối tác: {role}",
       "maxSession": "Tối đa {max} phút",
       "start": "Bắt đầu luyện"
     },

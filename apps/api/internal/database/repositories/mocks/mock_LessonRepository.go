@@ -185,6 +185,74 @@ func (_c *MockLessonRepository_GetDetail_Call) RunAndReturn(run func(ctx context
 	return _c
 }
 
+// GetDetailBySlug provides a mock function for the type MockLessonRepository
+func (_mock *MockLessonRepository) GetDetailBySlug(ctx context.Context, slug string) (*models.Lesson, error) {
+	ret := _mock.Called(ctx, slug)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetDetailBySlug")
+	}
+
+	var r0 *models.Lesson
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*models.Lesson, error)); ok {
+		return returnFunc(ctx, slug)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *models.Lesson); ok {
+		r0 = returnFunc(ctx, slug)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Lesson)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, slug)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockLessonRepository_GetDetailBySlug_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetDetailBySlug'
+type MockLessonRepository_GetDetailBySlug_Call struct {
+	*mock.Call
+}
+
+// GetDetailBySlug is a helper method to define mock.On call
+//   - ctx context.Context
+//   - slug string
+func (_e *MockLessonRepository_Expecter) GetDetailBySlug(ctx any, slug any) *MockLessonRepository_GetDetailBySlug_Call {
+	return &MockLessonRepository_GetDetailBySlug_Call{Call: _e.mock.On("GetDetailBySlug", ctx, slug)}
+}
+
+func (_c *MockLessonRepository_GetDetailBySlug_Call) Run(run func(ctx context.Context, slug string)) *MockLessonRepository_GetDetailBySlug_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockLessonRepository_GetDetailBySlug_Call) Return(lesson *models.Lesson, err error) *MockLessonRepository_GetDetailBySlug_Call {
+	_c.Call.Return(lesson, err)
+	return _c
+}
+
+func (_c *MockLessonRepository_GetDetailBySlug_Call) RunAndReturn(run func(ctx context.Context, slug string) (*models.Lesson, error)) *MockLessonRepository_GetDetailBySlug_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // WithTx provides a mock function for the type MockLessonRepository
 func (_mock *MockLessonRepository) WithTx(tx *gorm.DB) repositories.LessonRepository {
 	ret := _mock.Called(tx)

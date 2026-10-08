@@ -14,17 +14,6 @@ type LessonDetails struct {
 	Skill                *enums.ActivityType `json:"skill"`
 }
 
-// LessonProgress is the user-specific state derived from attempts and
-// bookmarks (nil when the user has no interaction with the lesson).
-type LessonProgress struct {
-	Status         enums.LessonStatus `json:"status"`
-	Percent        int                `json:"percent"`
-	PartsCompleted int                `json:"partsCompleted"`
-	PartsTotal     int                `json:"partsTotal"`
-	Bookmarked     bool               `json:"bookmarked"`
-	SavedAt        *time.Time         `json:"savedAt"`
-}
-
 // Section is a lesson_sections row: the titled, ordered path group.
 type Section struct {
 	ID          string     `json:"id"`
@@ -37,16 +26,17 @@ type Section struct {
 
 // Lesson is a unit card and the unit detail header. Section repeats per
 // unit so a card renders without wrapper context; the hub groups on it.
+// Part totals are not stored here: the web derives them from the activity
+// list it already fetches per card (a server-side count field is a cache
+// that lies the moment the activities change).
 type Lesson struct {
-	ID          string          `json:"id"`
-	Slug        string          `json:"slug"`
-	Title       string          `json:"title"`
-	Section     *Section        `json:"section"`
-	CEFRLevel   enums.CEFR      `json:"cefrLevel"`
-	Description string          `json:"description"`
-	Details     LessonDetails   `json:"details"`
-	PartCount   int             `json:"partCount"`
-	Progress    *LessonProgress `json:"progress"`
+	ID          string        `json:"id"`
+	Slug        string        `json:"slug"`
+	Title       string        `json:"title"`
+	Section     *Section      `json:"section"`
+	CEFRLevel   enums.CEFR    `json:"cefrLevel"`
+	Description string        `json:"description"`
+	Details     LessonDetails `json:"details"`
 }
 
 // UnitSection mirrors models.LessonSection field for field, with Units

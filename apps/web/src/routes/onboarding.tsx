@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { APP_ROUTES } from "#/app/app-route";
-import { breadcrumb } from "#/app/breadcrumbs";
+import { PageCrumbs } from "#/components/common/page-crumbs";
 import { Button } from "#/components/ui/button";
 import { FieldError } from "#/components/ui/field";
 import { RadioGroup } from "#/components/ui/radio-group";
@@ -40,7 +40,6 @@ import { getAuthState } from "#/lib/auth-guard";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/onboarding")({
-	staticData: breadcrumb(() => m["onboarding.crumb"]()),
 	beforeLoad: async () => {
 		const { isAuthenticated } = await getAuthState();
 		if (!isAuthenticated) {
@@ -306,6 +305,10 @@ function OnboardingPage() {
 			<Show when="signed-in">
 				<div className="app-canvas flex min-h-svh items-center justify-center p-4 sm:p-6">
 					<div className="surface-card w-full max-w-2xl">
+						<PageCrumbs
+							items={[{ label: m["onboarding.crumb"]() }]}
+							className="px-5 pt-5"
+						/>
 						<FlowHeader />
 						<SlideTrack index={slide} slides={slides} />
 						<div className="flex items-center justify-between border-t p-4">

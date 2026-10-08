@@ -4,61 +4,106 @@
 // source: activity.go
 
 /**
- * QuestionOption is one multiple-choice option. Correctness is intentionally
- * not exposed: answer checking becomes a server endpoint (see spec).
+ * QuestionOption is one multiple-choice option; correctness never crosses.
  */
 export interface QuestionOption {
   key: string;
   text: string;
 }
 /**
- * Question is one comprehension question of a reading activity.
+ * Question is one checkable reading/listening item (answers stay server-side).
  */
 export interface Question {
   stem: string;
   instruction: string;
   options: QuestionOption[];
 }
-/**
- * ReadingPayload is lesson_activities.config for type=reading.
- */
 export interface ReadingPayload {
-  passage: string;
+  text: string;
   questions: Question[];
 }
-/**
- * DictationSentence is one dictation queue item.
- */
-export interface DictationSentence {
-  prompt: string;
-  reference: string;
+export interface ListeningPayload {
   audioUrl: string;
-  durationMs: number /* int */;
+  transcript: string;
+  questions: Question[];
 }
-/**
- * DictationPayload is lesson_activities.config for type=dictation.
- */
-export interface DictationPayload {
-  sentences: DictationSentence[];
-}
-/**
- * WritingPayload is lesson_activities.config for type=writing.
- */
 export interface WritingPayload {
-  title: string;
+  task: string;
+  instructions: string;
+  stimulus: string;
   minWords: number /* int */;
   maxWords: number /* int */;
-  contextQuestions: string[];
+  modelAnswer: string;
+  checklist: string[];
+}
+export interface SpeakingItem {
+  text: string;
+  modelAudioUrl: string;
+}
+export interface SpeakingPayload {
+  items: SpeakingItem[];
 }
 /**
- * VoicePayload is lesson_activities.config for type=voice.
+ * CheckResult is the grading outcome for one question. The explanation is
+ * revealed only after the learner commits an answer.
  */
-export interface VoicePayload {
-  scenarioId: string;
+export interface CheckResult {
+  correct: boolean;
+  correctKey: string;
+  explanation: string;
 }
 /**
- * Activity is one ordered lesson part. Exactly one of Reading, Dictation,
- * Writing, or Voice is set, matching Type.
+ * PhoneDetail is one mispronounced phone: expected vs heard IPA with confidence.
+ */
+export interface PhoneDetail {
+  expected: string;
+  heard: string;
+  confidence: number /* float64 */;
+}
+/**
+ * ReferencePhone is one reference word's expected IPA, in sentence order.
+ * The panel renders it under every word chip, flagged or not.
+ */
+export interface ReferencePhone {
+  word: string;
+  phones: string;
+}
+/**
+ * MispronouncedWord is one engine-flagged word: expected vs heard IPA.
+ */
+export interface MispronouncedWord {
+  word: string;
+  expected: string;
+  heard: string;
+  confidence: number /* float64 */;
+  phones: PhoneDetail[];
+}
+/**
+ * Prosody carries the learner's pitch and energy contours, downsampled by
+ * the engine to at most 120 points each.
+ */
+export interface Prosody {
+  f0: number /* float64 */[];
+  energy: number /* float64 */[];
+}
+/**
+ * PronunciationResult is the engine's assessment of one read-aloud attempt.
+ */
+export interface PronunciationResult {
+  score: number /* float64 */;
+  transcription: string;
+  phonemeErrorRate: number /* float64 */;
+  wordErrorRate: number /* float64 */;
+  acousticDistance: number /* float64 */;
+  errors: MispronouncedWord[];
+  prosody: Prosody;
+  modelCurve: number /* float64 */[];
+  learnerCurve: number /* float64 */[];
+  referencePhones: ReferencePhone[];
+}
+/**
+ * Activity is one ordered lesson part. Exactly one payload pointer is set,
+ * matching Type. DurationMin and SkillFocus are plain columns on the model.
  */
 export interface Activity {
   id: string;
@@ -69,9 +114,9 @@ export interface Activity {
   durationMin: number /* int */;
   skillFocus: string;
   reading?: ReadingPayload;
-  dictation?: DictationPayload;
+  listening?: ListeningPayload;
   writing?: WritingPayload;
-  voice?: VoicePayload;
+  speaking?: SpeakingPayload;
 }
 
 //////////
@@ -87,18 +132,6 @@ export interface LessonDetails {
   skill?: ActivityType;
 }
 /**
- * LessonProgress is the user-specific state derived from attempts and
- * bookmarks (nil when the user has no interaction with the lesson).
- */
-export interface LessonProgress {
-  status: LessonStatus;
-  percent: number /* int */;
-  partsCompleted: number /* int */;
-  partsTotal: number /* int */;
-  bookmarked: boolean;
-  savedAt?: string /* RFC3339 */;
-}
-/**
  * Section is a lesson_sections row: the titled, ordered path group.
  */
 export interface Section {
@@ -112,6 +145,9 @@ export interface Section {
 /**
  * Lesson is a unit card and the unit detail header. Section repeats per
  * unit so a card renders without wrapper context; the hub groups on it.
+ * Part totals are not stored here: the web derives them from the activity
+ * list it already fetches per card (a server-side count field is a cache
+ * that lies the moment the activities change).
  */
 export interface Lesson {
   id: string;
@@ -121,8 +157,6 @@ export interface Lesson {
   cefrLevel: CEFR;
   description: string;
   details: LessonDetails;
-  partCount: number /* int */;
-  progress?: LessonProgress;
 }
 /**
  * UnitSection mirrors models.LessonSection field for field, with Units

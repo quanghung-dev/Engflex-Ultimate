@@ -4,23 +4,23 @@ import { APP_ROUTES } from "#/app/app-route";
 import { ProgressBar } from "#/components/common/progress-bar";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
-import { useLessonSections } from "#/features/lessons/queries";
+import { useLessonDetail, useLessonSections } from "#/features/lessons/queries";
 import { lessonsStore, progressFrom } from "#/features/lessons/store";
 import { m } from "#/paraglide/messages";
 
 export function ActiveLessonCard() {
 	const sectionsQuery = useLessonSections();
-	const units =
-		sectionsQuery.data?.flatMap((section) => section.units) ?? [];
+	const units = sectionsQuery.data?.flatMap((section) => section.units) ?? [];
 	const storeState = useStore(lessonsStore);
 	const lesson =
 		units.find(
-			(unit) =>
-				progressFrom(storeState, unit.id, unit.partCount).status ===
-				"in_progress",
+			(unit) => progressFrom(storeState, unit.id).status === "in_progress",
 		) ?? units[0];
+	// Only the picked lesson needs its activity total; the store already knows
+	// the totals of any lesson practiced this session.
+	const detailQuery = useLessonDetail(lesson?.id);
 	const progress = lesson
-		? progressFrom(storeState, lesson.id, lesson.partCount)
+		? progressFrom(storeState, lesson.id, detailQuery.data?.activities.length)
 		: null;
 
 	if (!lesson || !progress) return null;
@@ -51,7 +51,7 @@ export function ActiveLessonCard() {
 				<ProgressBar value={progress.percent} />
 			</div>
 			<Button asChild className="btn btn-primary w-fit">
-				<Link to={APP_ROUTES.LESSONS.DETAIL} params={{ lessonId: lesson.id }}>
+				<Link to={APP_ROUTES.LESSONS.DETAIL} params={{ slug: lesson.slug }}>
 					{m["dashboard.activeLesson.continue"]()}
 				</Link>
 			</Button>

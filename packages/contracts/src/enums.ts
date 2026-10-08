@@ -8,10 +8,10 @@
  * lesson skill tag (lessons.details.skill).
  */
 export const ActivityTypeReading = "reading";
-export const ActivityTypeDictation = "dictation";
+export const ActivityTypeListening = "listening";
 export const ActivityTypeWriting = "writing";
-export const ActivityTypeVoice = "voice";
-export type ActivityType = typeof ActivityTypeReading | typeof ActivityTypeDictation | typeof ActivityTypeWriting | typeof ActivityTypeVoice;
+export const ActivityTypeSpeaking = "speaking";
+export type ActivityType = typeof ActivityTypeReading | typeof ActivityTypeListening | typeof ActivityTypeWriting | typeof ActivityTypeSpeaking;
 
 //////////
 // source: attempt_type.go
@@ -19,16 +19,17 @@ export type ActivityType = typeof ActivityTypeReading | typeof ActivityTypeDicta
 /**
  * AttemptType is the attempt category (attempts.type). Superset of
  * ActivityType: attempts also come from non-lesson flows (shadowing,
- * flashcard drills, the onboarding benchmark).
+ * flashcard drills, the onboarding benchmark, standalone dictation).
  */
 export const AttemptTypeReading = "reading";
-export const AttemptTypeDictation = "dictation";
+export const AttemptTypeListening = "listening";
 export const AttemptTypeWriting = "writing";
-export const AttemptTypeVoice = "voice";
+export const AttemptTypeSpeaking = "speaking";
 export const AttemptTypeShadowing = "shadowing";
 export const AttemptTypeFlashcard = "flashcard";
 export const AttemptTypeBenchmark = "benchmark";
-export type AttemptType = typeof AttemptTypeReading | typeof AttemptTypeDictation | typeof AttemptTypeWriting | typeof AttemptTypeVoice | typeof AttemptTypeShadowing | typeof AttemptTypeFlashcard | typeof AttemptTypeBenchmark;
+export const AttemptTypeDictation = "dictation";
+export type AttemptType = typeof AttemptTypeReading | typeof AttemptTypeListening | typeof AttemptTypeWriting | typeof AttemptTypeSpeaking | typeof AttemptTypeShadowing | typeof AttemptTypeFlashcard | typeof AttemptTypeBenchmark | typeof AttemptTypeDictation;
 
 //////////
 // source: cefr.go

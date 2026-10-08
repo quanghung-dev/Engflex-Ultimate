@@ -1,10 +1,8 @@
-import type { Activity } from "@engflex/contracts";
-import { Link } from "@tanstack/react-router";
+import type { Activity, ActivityType } from "@engflex/contracts";
 import { useStore } from "@tanstack/react-store";
 import { cn } from "cn";
 import { CircleCheck } from "lucide-react";
-import { APP_ROUTES } from "#/app/app-route";
-import { type LessonPart, PART_META } from "#/features/lessons/parts";
+import { PART_META } from "#/features/lessons/parts";
 import { lessonsStore } from "#/features/lessons/store";
 import { m } from "#/paraglide/messages";
 
@@ -12,10 +10,12 @@ export function LessonStepNavigator({
 	lessonId,
 	activities,
 	currentPart,
+	onSelect,
 }: {
 	lessonId: string;
 	activities: Activity[];
-	currentPart: LessonPart;
+	currentPart: ActivityType;
+	onSelect: (part: ActivityType) => void;
 }) {
 	const completed = useStore(
 		lessonsStore,
@@ -25,17 +25,17 @@ export function LessonStepNavigator({
 	return (
 		<nav className="flex flex-wrap items-center gap-2">
 			{activities.map((activity) => {
-				const part = activity.type as LessonPart;
+				const part = activity.type;
 				const done = completed.includes(activity.partNumber);
 				const active = part === currentPart;
 				return (
-					<Link
+					<button
 						key={activity.id}
-						to={APP_ROUTES.LESSONS.PART}
-						params={{ lessonId, part }}
+						type="button"
+						onClick={() => onSelect(part)}
 						aria-current={active ? "step" : undefined}
 						className={cn(
-							"inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1 text-xs font-bold transition",
+							"inline-flex cursor-pointer items-center gap-1.5 rounded-full border-2 px-3 py-1 text-xs font-bold transition",
 							active
 								? "border-primary bg-primary text-primary-foreground"
 								: "border-border bg-card text-muted-foreground hover:border-primary",
@@ -55,7 +55,7 @@ export function LessonStepNavigator({
 									? m["lessons.step.active"]()
 									: m["lessons.step.upcoming"]()}
 						</span>
-					</Link>
+					</button>
 				);
 			})}
 		</nav>

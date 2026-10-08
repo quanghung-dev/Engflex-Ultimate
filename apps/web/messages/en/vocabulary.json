@@ -30,9 +30,6 @@
       "share": "Share",
       "fullDefinition": "Full definition"
     },
-    "crumb": {
-      "detailFallback": "Word detail"
-    },
     "hub": {
       "title": "Vocabulary studio",
       "subtitle": "Review technical terminology, manage custom engineering phrases, and track active recall retention.",

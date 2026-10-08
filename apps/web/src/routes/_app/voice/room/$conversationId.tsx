@@ -5,7 +5,7 @@ import {
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useRef } from "react";
 import { APP_ROUTES } from "#/app/app-route";
-import { breadcrumb } from "#/app/breadcrumbs";
+import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { VoiceRoom } from "#/features/voice/components/room/voice-room";
 import { useSessionCountdown } from "#/features/voice/hooks/use-session-countdown";
 import { useVoiceSession } from "#/features/voice/hooks/use-voice-session";
@@ -13,13 +13,6 @@ import { useScenario } from "#/features/voice/queries";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/voice/room/$conversationId")({
-	staticData: breadcrumb([
-		{
-			label: () => m["nav.item.voice"](),
-			target: { to: APP_ROUTES.VOICE.LIST },
-		},
-		() => m["voice.crumb.room"](),
-	]),
 	component: VoiceRoomPage,
 });
 
@@ -31,6 +24,10 @@ function formatLeft(totalSec: number): string {
 
 /** Production injector: live session state in, same VoiceRoom out. */
 function VoiceRoomPage() {
+	useBreadcrumbs([
+		{ label: m["nav.item.voice"](), to: APP_ROUTES.VOICE.LIST },
+		{ label: m["voice.crumb.room"]() },
+	]);
 	const { conversationId } = Route.useParams();
 	const navigate = useNavigate();
 	const exit = () => navigate({ to: APP_ROUTES.VOICE.LIST });

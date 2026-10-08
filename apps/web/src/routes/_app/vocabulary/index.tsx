@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
 import { LibraryBig, Pencil } from "lucide-react";
 import { useState } from "react";
-import { breadcrumb } from "#/app/breadcrumbs";
+import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { EmptyList } from "#/components/common/empty-list";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
@@ -23,11 +23,11 @@ import {
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/vocabulary/")({
-	staticData: breadcrumb(() => m["nav.item.vocabulary"]()),
 	component: VocabularyPage,
 });
 
 function VocabularyPage() {
+	useBreadcrumbs([{ label: m["nav.item.vocabulary"]() }]);
 	const [filters, setFilters] = useState<VocabFilters>(DEFAULT_VOCAB_FILTERS);
 	useStore(vocabularyStore); // subscribe to mastered/note/add changes
 

@@ -1,34 +1,20 @@
-import type { Scenario, ScenarioDifficulty } from "@engflex/contracts";
+import type { ScenarioDifficulty } from "@engflex/contracts";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useStore } from "@tanstack/react-store";
 import { cn } from "cn";
 import { Search } from "lucide-react";
 import { useDeferredValue, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { APP_ROUTES } from "#/app/app-route";
-import { breadcrumb } from "#/app/breadcrumbs";
+import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { EmptyList } from "#/components/common/empty-list";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
-import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
-import {
-	useLessonDetail,
-	useLessonSections,
-} from "#/features/lessons/queries";
-import { lessonsStore } from "#/features/lessons/store";
 import { ScenarioCard } from "#/features/voice/components/scenarios/scenario-card";
 import { useTopicsWithPreview } from "#/features/voice/queries";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/voice/scenarios/")({
-	staticData: breadcrumb([
-		{
-			label: () => m["nav.item.voice"](),
-			target: { to: APP_ROUTES.VOICE.LIST },
-		},
-		() => m["voice.crumb.scenarios"](),
-	]),
 	component: ScenariosPage,
 });
 
@@ -40,6 +26,10 @@ function levelLabel(level: (typeof LEVELS)[number]): string {
 }
 
 function ScenariosPage() {
+	useBreadcrumbs([
+		{ label: m["nav.item.voice"](), to: APP_ROUTES.VOICE.LIST },
+		{ label: m["voice.crumb.scenarios"]() },
+	]);
 	const navigate = useNavigate();
 	const [difficulty, setDifficulty] = useState<"all" | ScenarioDifficulty>(
 		"all",
@@ -65,29 +55,6 @@ function ScenariosPage() {
 			toast.error(m["voice.scenarios.topicsFailed"]());
 		}
 	}, [topicsFailed]);
-	const lessonState = useStore(lessonsStore);
-	const sectionsQuery = useLessonSections();
-	const liveUnits =
-		sectionsQuery.data?.flatMap((section) => section.units) ?? [];
-	const activeLesson = liveUnits.find((lesson) => {
-		const completed = lessonState.completedParts[lesson.id] ?? [];
-		return completed.length > 0 && completed.length < lesson.partCount;
-	});
-	const activeDetailQuery = useLessonDetail(
-		activeLesson ? activeLesson.id : undefined,
-	);
-	const activeVoice = activeDetailQuery.data?.activities.find(
-		(activity) => activity.type === "voice",
-	);
-	const activeSlot =
-		activeLesson && activeVoice?.voice
-			? { slot: activeLesson.title, scenarioId: activeVoice.voice.scenarioId }
-			: null;
-	// Server data only: fixture ids are not UUIDs and cannot start a
-	// session, so there is no fixture fallback. The hero hides while the
-	// catalog loads.
-	const suggested: Scenario | undefined = topics[0]?.scenarios[0];
-
 	const visibleTopics = topics.filter(
 		(topicEntry) => topic === "all" || topicEntry.id === topic,
 	);
@@ -112,36 +79,6 @@ function ScenariosPage() {
 				description: m["voice.scenarios.subtitle"](),
 			}}
 		>
-			{suggested ? (
-				<section className="surface-hero flex flex-col gap-4 p-5 md:flex-row md:items-center">
-					<div className="min-w-0 flex-1">
-						<p className="text-[11px] font-bold text-muted-foreground">
-							{activeSlot
-								? m["voice.scenarios.suggestLine"]({ slot: activeSlot.slot })
-								: m["voice.scenarios.title"]()}
-						</p>
-						<h2 className="mt-1 text-xl font-bold text-foreground">
-							{suggested.title}
-						</h2>
-						<p className="mt-1 text-[15px] font-medium text-muted-foreground">
-							{suggested.objective}
-						</p>
-						<div className="mt-3">
-							<Button
-								type="button"
-								className="btn btn-primary"
-								onClick={() => {
-									void openDetail(suggested.id);
-								}}
-							>
-								{m["voice.scenarios.startOne"]()}
-							</Button>
-						</div>
-					</div>
-					<MoMascot variant="heart" size={110} className="mx-auto shrink-0" />
-				</section>
-			) : null}
-
 			<div className="flex flex-col gap-3">
 				<div className="relative">
 					<Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />

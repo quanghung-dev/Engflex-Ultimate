@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
 import { useMemo, useState } from "react";
-import { breadcrumb } from "#/app/breadcrumbs";
+import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { EmptyList } from "#/components/common/empty-list";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
@@ -17,11 +17,11 @@ import { lessonsStore, progressFrom } from "#/features/lessons/store";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/lessons/")({
-	staticData: breadcrumb(() => m["nav.item.lessons"]()),
 	component: LessonsPage,
 });
 
 function LessonsPage() {
+	useBreadcrumbs([{ label: m["nav.item.lessons"]() }]);
 	const [filters, setFilters] = useState<LessonFilters>(DEFAULT_LESSON_FILTERS);
 	const storeState = useStore(lessonsStore);
 	const sectionsQuery = useLessonSections();
@@ -34,10 +34,7 @@ function LessonsPage() {
 
 	const progressById = useMemo(() => {
 		return Object.fromEntries(
-			units.map((lesson) => [
-				lesson.id,
-				progressFrom(storeState, lesson.id, lesson.partCount),
-			]),
+			units.map((lesson) => [lesson.id, progressFrom(storeState, lesson.id)]),
 		);
 	}, [storeState, units]);
 
@@ -108,7 +105,7 @@ function LessonsPage() {
 					section={hero.section.title}
 					lessons={hero.section.units}
 					progressById={progressById}
-					resumeId={hero.resume.id}
+					resumeSlug={hero.resume.slug}
 					resumeTitle={hero.resume.title}
 				/>
 			) : null}
@@ -124,7 +121,6 @@ function LessonsPage() {
 						key={section.id}
 						section={section}
 						units={section.units}
-						progressById={progressById}
 						unlocksAfterById={unlocksAfterById}
 						recommendedId={
 							section.id === hero.section?.id ? hero.recommendedId : undefined

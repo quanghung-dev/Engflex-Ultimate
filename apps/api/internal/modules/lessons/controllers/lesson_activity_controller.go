@@ -1,23 +1,30 @@
 package controllers
 
 import (
+	"io"
+	"net/http"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 
+	"engflex-api/config"
 	"engflex-api/internal/common"
 	"engflex-api/internal/modules/lessons/dtos/requests"
 	"engflex-api/internal/modules/lessons/dtos/responses"
 	"engflex-api/internal/modules/lessons/services"
 	"engflex-api/internal/utils"
+	"engflex-api/internal/voice/pronunciation"
 )
 
 // LessonActivityController exposes ordered lesson parts.
 type LessonActivityController struct {
 	activities services.LessonActivityService
+	media      config.MediaConfig
 }
 
 // NewLessonActivityController wires the controller to the service.
-func NewLessonActivityController(activities services.LessonActivityService) *LessonActivityController {
-	return &LessonActivityController{activities: activities}
+func NewLessonActivityController(activities services.LessonActivityService, media config.MediaConfig) *LessonActivityController {
+	return &LessonActivityController{activities: activities, media: media}
 }
 
 // List godoc
@@ -43,7 +50,7 @@ func (h *LessonActivityController) List(c *gin.Context) {
 	_ = utils.MapSlice(&dtos, items)
 	for i := range dtos {
 		if i < len(items) {
-			dtos[i].SplitPayload(items[i].Type, items[i].Config)
+			ApplyPayload(&dtos[i], items[i], h.media)
 		}
 	}
 	common.OK(c, "lesson activities", dtos)
@@ -65,6 +72,79 @@ func (h *LessonActivityController) GetByID(c *gin.Context) {
 	}
 	var dto responses.Activity
 	_ = utils.Map(&dto, m)
-	dto.SplitPayload(m.Type, m.Config)
+	ApplyPayload(&dto, m, h.media)
 	common.OK(c, "lesson activity", dto)
+}
+
+// CheckAnswer godoc
+// @Summary      Check one reading/listening question
+// @Tags         lesson-activities
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "activity id"
+// @Param        body body requests.CheckAnswer true "answer"
+// @Success      200 {object} common.ApiResponse{data=responses.CheckResult}
+// @Router       /lesson-activities/{id}/check [post]
+func (h *LessonActivityController) CheckAnswer(c *gin.Context) {
+	var req requests.CheckAnswer
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.Fail(c, common.BadRequest(err.Error()))
+		return
+	}
+	res, err := h.activities.CheckAnswer(c.Request.Context(), c.Param("id"), req.QuestionIndex, req.Key)
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	common.OK(c, "activity checked", res)
+}
+
+// Pronounce godoc
+// @Summary      Score one read-aloud attempt
+// @Tags         lesson-activities
+// @Security     BearerAuth
+// @Accept       multipart/form-data
+// @Produce      json
+// @Param        id path string true "activity id"
+// @Param        itemIndex formData int true "index of the speaking item"
+// @Param        audio formData file true "recorded audio"
+// @Success      200 {object} common.ApiResponse{data=responses.PronunciationResult}
+// @Router       /lesson-activities/{id}/pronounce [post]
+func (h *LessonActivityController) Pronounce(c *gin.Context) {
+	file, err := c.FormFile("audio")
+	if err != nil {
+		common.Fail(c, common.BadRequest("audio is required"))
+		return
+	}
+	if file.Size > int64(pronunciation.MaxAudioBytes) {
+		common.Fail(c, common.New(http.StatusRequestEntityTooLarge, "audio too large"))
+		return
+	}
+	itemIndex, err := strconv.Atoi(c.PostForm("itemIndex"))
+	if err != nil {
+		common.Fail(c, common.BadRequest("itemIndex is required"))
+		return
+	}
+	f, err := file.Open()
+	if err != nil {
+		common.Fail(c, common.BadRequest("audio is required"))
+		return
+	}
+	defer f.Close()
+	audio, err := io.ReadAll(io.LimitReader(f, int64(pronunciation.MaxAudioBytes)+1))
+	if err != nil {
+		common.Fail(c, common.BadRequest("audio is required"))
+		return
+	}
+	if len(audio) > pronunciation.MaxAudioBytes {
+		common.Fail(c, common.New(http.StatusRequestEntityTooLarge, "audio too large"))
+		return
+	}
+	res, err := h.activities.Pronounce(c.Request.Context(), c.Param("id"), itemIndex, audio, file.Header.Get("Content-Type"))
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	common.OK(c, "pronunciation scored", res)
 }

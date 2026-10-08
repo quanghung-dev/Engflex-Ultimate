@@ -43,7 +43,7 @@ export const SEQUENCE_CARDS: SequenceCard[] = [
 		id: "dictation",
 		durationMin: 12,
 		state: "up-next",
-		target: { kind: "lesson", lessonId: "describing-your-job" },
+		target: { kind: "lesson", lessonId: "introductions-and-personal-details" },
 	},
 	{
 		id: "roleplay",

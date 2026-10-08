@@ -22,11 +22,11 @@ func TestLessonDetailsScan(t *testing.T) {
 	}{
 		{
 			name:      "camelCase blob decodes every field",
-			value:     []byte(`{"estimatedDurationMin":12,"acousticTargetPct":80,"coverImageUrl":"https://cdn.test/cover.png","skill":"dictation"}`),
+			value:     []byte(`{"estimatedDurationMin":12,"acousticTargetPct":80,"coverImageUrl":"https://cdn.test/cover.png","skill":"listening"}`),
 			wantDur:   12,
 			wantPct:   80,
 			wantCover: "https://cdn.test/cover.png",
-			wantSkill: enums.ActivityTypeDictation,
+			wantSkill: enums.ActivityTypeListening,
 		},
 		{
 			name:      "absent optional keys stay zero",
@@ -69,7 +69,7 @@ func TestLessonDetailsScan(t *testing.T) {
 func TestLessonDetailsValue(t *testing.T) {
 	duration := 12
 	target := 80
-	skill := enums.ActivityTypeDictation
+	skill := enums.ActivityTypeListening
 	in := models.LessonDetails{
 		EstimatedDurationMin: &duration,
 		AcousticTargetPct:    &target,
@@ -82,7 +82,7 @@ func TestLessonDetailsValue(t *testing.T) {
 	encoded, ok := raw.([]byte)
 	require.True(t, ok)
 
-	assert.JSONEq(t, `{"estimatedDurationMin":12,"acousticTargetPct":80,"coverImageUrl":"https://cdn.test/cover.png","skill":"dictation"}`, string(encoded))
+	assert.JSONEq(t, `{"estimatedDurationMin":12,"acousticTargetPct":80,"coverImageUrl":"https://cdn.test/cover.png","skill":"listening"}`, string(encoded))
 
 	var back models.LessonDetails
 	require.NoError(t, back.Scan(encoded))

@@ -5,8 +5,8 @@ export const APP_ROUTES = {
 	ONBOARDING: "/onboarding",
 	LESSONS: {
 		LIST: "/lessons",
-		DETAIL: "/lessons/$lessonId",
-		PART: "/lessons/$lessonId/parts/$part",
+		DETAIL: "/lessons/$slug",
+		PRACTICE: "/lessons/$slug/practice",
 	},
 	VOCABULARY: {
 		LIST: "/vocabulary",

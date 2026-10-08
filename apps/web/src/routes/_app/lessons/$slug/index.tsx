@@ -2,49 +2,52 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
 import { ArrowLeft, Gauge } from "lucide-react";
 import { APP_ROUTES } from "#/app/app-route";
-import { breadcrumb, lessonCrumbLabel } from "#/app/breadcrumbs";
+import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { PageLayout } from "#/components/common/page-layout";
 import { Button } from "#/components/ui/button";
 import { ActivityRow } from "#/features/lessons/components/activity-row";
 import { LessonHeader } from "#/features/lessons/components/lesson-header";
 import { TipBar } from "#/features/lessons/components/tip-bar";
-import { LESSON_PART_TYPES } from "#/features/lessons/parts";
-import { useLessonDetail } from "#/features/lessons/queries";
+import { useLessonDetailBySlug } from "#/features/lessons/queries";
 import {
-	getFirstIncompletePart,
+	getFirstIncompleteActivity,
 	lessonsStore,
 	progressFrom,
 	toggleBookmark,
 } from "#/features/lessons/store";
 import { m } from "#/paraglide/messages";
 
-export const Route = createFileRoute("/_app/lessons/$lessonId/")({
-	staticData: breadcrumb([
-		{
-			label: () => m["nav.item.lessons"](),
-			target: { to: APP_ROUTES.LESSONS.LIST },
-		},
-		lessonCrumbLabel,
-	]),
+export const Route = createFileRoute("/_app/lessons/$slug/")({
 	component: LessonDetailPage,
 });
 
 function LessonDetailPage() {
-	const { lessonId } = Route.useParams();
-	const detailQuery = useLessonDetail(lessonId);
+	const { slug } = Route.useParams();
+	const detailQuery = useLessonDetailBySlug(slug);
 	const detail = detailQuery.data;
 	const storeState = useStore(lessonsStore);
+	useBreadcrumbs(
+		detail
+			? [
+					{ label: m["nav.item.lessons"](), to: APP_ROUTES.LESSONS.LIST },
+					{ label: detail.title },
+				]
+			: [],
+	);
 
 	if (detailQuery.isPending) return null;
 	if (!detail) throw notFound();
 
 	const progress = progressFrom(
 		storeState,
-		lessonId,
+		detail.id,
 		detail.activities.length,
 	);
-	const startPart = getFirstIncompletePart(lessonId, detail.activities.length);
-	const startPartNumber = LESSON_PART_TYPES.indexOf(startPart) + 1;
+	const startActivity = getFirstIncompleteActivity(
+		detail.id,
+		detail.activities,
+	);
+	if (!startActivity) throw notFound();
 
 	return (
 		<PageLayout>
@@ -70,9 +73,9 @@ function LessonDetailPage() {
 			<LessonHeader
 				lesson={detail}
 				progress={progress}
-				startPart={startPart}
-				startPartNumber={startPartNumber}
-				onToggleBookmark={() => toggleBookmark(lessonId)}
+				startPart={startActivity.type}
+				startPartNumber={startActivity.partNumber}
+				onToggleBookmark={() => toggleBookmark(detail.id)}
 			/>
 
 			<section className="flex flex-col gap-3">
@@ -88,7 +91,7 @@ function LessonDetailPage() {
 					{detail.activities.map((activity) => (
 						<ActivityRow
 							key={activity.id}
-							lessonId={lessonId}
+							slug={detail.slug}
 							activity={activity}
 						/>
 					))}

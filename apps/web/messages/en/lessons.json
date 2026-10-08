@@ -1,33 +1,11 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "lessons": {
-    "dictation": {
-      "nextSentence": "Next sentence →",
-      "context": "Dialogue context",
-      "speakerB": "Speaker B:",
-      "yourTranscription": "Your transcription",
-      "placeholder": "Type what you hear…",
-      "characters": "{count} characters",
-      "check": "Check transcription",
-      "sentenceCompleted": "Sentence completed",
-      "typedLabel": "What you typed:",
-      "referenceLabel": "Reference text:",
-      "remaining": "{count} sentences remaining in this session",
-      "hint": "Need a hint? Tap for first words",
-      "coach": {
-        "title": "Mo the Sloth · Listening coach",
-        "body": "Take it slow and steady. In rapid standups, vowels compress — keep your ears peeled for small glue words."
-      }
-    },
     "reading": {
       "previousQuestion": "Previous",
       "readTime": "~2 min read",
       "questionOf": "Question {number} of {total}",
       "nextQuestion": "Next question"
-    },
-    "crumb": {
-      "practice": "Practice",
-      "detailFallback": "Lesson detail"
     },
     "hub": {
       "title": "Executive lesson hub",
@@ -77,7 +55,7 @@
       "estDuration": "Est. {minutes} mins",
       "activitiesCount": "{count} activities",
       "start": "Start",
-      "meta": "{minutes} min • {parts} parts",
+      "meta": "{minutes} min",
       "activityDuration": "{minutes} mins"
     },
     "unit": {
@@ -89,15 +67,15 @@
     },
     "skill": {
       "reading": "Reading",
-      "dictation": "Dictation",
       "writing": "Writing",
-      "voice": "Voice"
+      "listening": "Listening",
+      "speaking": "Speaking"
     },
     "part": {
       "reading": "Reading Comprehension",
-      "dictation": "Acoustic Dictation",
       "writing": "Guided Writing",
-      "voice": "Free Voice Dialogue"
+      "listening": "Listening Comprehension",
+      "speaking": "Read Aloud"
     },
     "step": {
       "done": "Done",
@@ -113,18 +91,49 @@
       "placeholder": "Write your response…",
       "wordsCount": "{count} / {max} words",
       "submit": "Submit for feedback",
-      "feedback": {
-        "title": "Instant Linguistic Feedback",
-        "kind": {
-          "grammar": "Grammar",
-          "vocabulary": "Vocabulary",
-          "naturalness": "Naturalness"
-        },
-        "cefr": "{level} checked"
+      "model": {
+        "title": "Model answer",
+        "checklist": "Self-check checklist"
       },
-      "assessment": "Mo’s live assessment",
-      "assessmentBody": "Excellent framing! Stating the exact recovery window gives the reader immediate confidence, while confirming the key terms eliminates any fear of misunderstanding.",
       "responseTitle": "Your response"
+    },
+    "speaking": {
+      "title": "Read aloud",
+      "instruction": "Listen to the model, then record yourself reading the sentence.",
+      "listenModel": "Listen to the model",
+      "record": "Record",
+      "stop": "Stop",
+      "retry": "Retry",
+      "next": "Next →",
+      "scoreLabel": "Pronunciation score",
+      "scoreEmpty": "Record the sentence — the score and per-word feedback will appear here.",
+      "coachPrefix": "Fix how you pronounce",
+      "coachCorrect": "Nice work — nothing to fix.",
+      "coachNone": "No flagged words — work on your rhythm.",
+      "heardShort": "heard:",
+      "bandNearModel": "Near model",
+      "bandGettingThere": "Getting there",
+      "bandKeepPracticing": "Keep practicing",
+      "bandHardToRecognize": "Hard to recognize",
+      "soundsLabel": "Sounds",
+      "wordsLabel": "Words",
+      "listenSelf": "Listen to yourself",
+      "micDenied": "Microphone unavailable. Please allow microphone access and try again.",
+      "uploadFailed": "Upload failed. Please try recording again."
+    },
+    "listening": {
+      "title": "Listening",
+      "context": "Dialogue context",
+      "audioFailed": "Audio failed to load. Please try again later.",
+      "transcript": "Transcript",
+      "restart": "Restart from the beginning"
+    },
+    "check": {
+      "correct": "Correct!",
+      "incorrect": "Not quite — the answer is {key}",
+      "explanation": "Explanation",
+      "submit": "Check answer",
+      "failed": "Could not check your answer. Please try again."
     }
   }
 }

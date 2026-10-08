@@ -1,19 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { APP_ROUTES } from "#/app/app-route";
-import { breadcrumb } from "#/app/breadcrumbs";
+import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/about")({
-	staticData: breadcrumb([
-		{ label: () => m["nav.item.home"](), target: { to: APP_ROUTES.HOME } },
-		() => m["about.crumb"](),
-	]),
 	component: About,
 });
 
 function About() {
+	useBreadcrumbs([
+		{ label: m["nav.item.home"](), to: APP_ROUTES.HOME },
+		{ label: m["about.crumb"]() },
+	]);
 	return (
 		<PageLayout
 			hero={{

@@ -47,3 +47,13 @@ export * from './vocabulary-requests.ts';
 export * from './vocabulary-responses.ts';
 export * from './attempts-requests.ts';
 export * from './attempts-responses.ts';
+// Both conversations and lessons responses declare structurally identical
+// MispronouncedWord/PhoneDetail/Prosody/ReferencePhone copies; an explicit
+// re-export resolves the star-export ambiguity (TS2308). Structural typing
+// keeps both wire copies compatible.
+export type {
+  MispronouncedWord,
+  PhoneDetail,
+  Prosody,
+  ReferencePhone,
+} from './conversations-responses.ts';

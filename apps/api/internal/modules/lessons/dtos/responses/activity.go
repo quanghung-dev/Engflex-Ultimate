@@ -1,94 +1,106 @@
 package responses
 
 import (
-	"encoding/json"
-
-	"gorm.io/datatypes"
-
 	"engflex-api/internal/common/enums"
 )
 
-// QuestionOption is one multiple-choice option. Correctness is intentionally
-// not exposed: answer checking becomes a server endpoint (see spec).
+// QuestionOption is one multiple-choice option; correctness never crosses.
 type QuestionOption struct {
 	Key  string `json:"key"`
 	Text string `json:"text"`
 }
 
-// Question is one comprehension question of a reading activity.
+// Question is one checkable reading/listening item (answers stay server-side).
 type Question struct {
 	Stem        string           `json:"stem"`
 	Instruction string           `json:"instruction"`
 	Options     []QuestionOption `json:"options"`
 }
 
-// ReadingPayload is lesson_activities.config for type=reading.
 type ReadingPayload struct {
-	Passage   string     `json:"passage"`
+	Text      string     `json:"text"`
 	Questions []Question `json:"questions"`
 }
 
-// DictationSentence is one dictation queue item.
-type DictationSentence struct {
-	Prompt     string `json:"prompt"`
-	Reference  string `json:"reference"`
-	AudioURL   string `json:"audioUrl"`
-	DurationMS int    `json:"durationMs"`
+type ListeningPayload struct {
+	AudioURL   string     `json:"audioUrl"`
+	Transcript string     `json:"transcript"`
+	Questions  []Question `json:"questions"`
 }
 
-// DictationPayload is lesson_activities.config for type=dictation.
-type DictationPayload struct {
-	Sentences []DictationSentence `json:"sentences"`
-}
-
-// WritingPayload is lesson_activities.config for type=writing.
 type WritingPayload struct {
-	Title            string   `json:"title"`
-	MinWords         int      `json:"minWords"`
-	MaxWords         int      `json:"maxWords"`
-	ContextQuestions []string `json:"contextQuestions"`
+	Task         string   `json:"task"`
+	Instructions string   `json:"instructions"`
+	Stimulus     string   `json:"stimulus"`
+	MinWords     int      `json:"minWords"`
+	MaxWords     int      `json:"maxWords"`
+	ModelAnswer  string   `json:"modelAnswer"`
+	Checklist    []string `json:"checklist"`
 }
 
-// VoicePayload is lesson_activities.config for type=voice.
-type VoicePayload struct {
-	ScenarioID string `json:"scenarioId"`
+type SpeakingItem struct {
+	Text          string `json:"text"`
+	ModelAudioURL string `json:"modelAudioUrl"`
 }
 
-// SplitPayload unmarshals the raw config blob into exactly one typed payload
-// by activity type. utils.Map cannot do this split (it matches Go field
-// names; Config has no Reading/Dictation/Writing/Voice counterpart), so every
-// controller that renders an Activity calls this after Map. Unknown types
-// and broken blobs leave all payloads nil — the part header still renders.
-func (a *Activity) SplitPayload(activityType enums.ActivityType, config datatypes.JSON) {
-	if len(config) == 0 {
-		return
-	}
-	switch activityType {
-	case enums.ActivityTypeReading:
-		var p ReadingPayload
-		if json.Unmarshal(config, &p) == nil {
-			a.Reading = &p
-		}
-	case enums.ActivityTypeDictation:
-		var p DictationPayload
-		if json.Unmarshal(config, &p) == nil {
-			a.Dictation = &p
-		}
-	case enums.ActivityTypeWriting:
-		var p WritingPayload
-		if json.Unmarshal(config, &p) == nil {
-			a.Writing = &p
-		}
-	case enums.ActivityTypeVoice:
-		var p VoicePayload
-		if json.Unmarshal(config, &p) == nil {
-			a.Voice = &p
-		}
-	}
+type SpeakingPayload struct {
+	Items []SpeakingItem `json:"items"`
 }
 
-// Activity is one ordered lesson part. Exactly one of Reading, Dictation,
-// Writing, or Voice is set, matching Type.
+// CheckResult is the grading outcome for one question. The explanation is
+// revealed only after the learner commits an answer.
+type CheckResult struct {
+	Correct     bool   `json:"correct"`
+	CorrectKey  string `json:"correctKey"`
+	Explanation string `json:"explanation"`
+}
+
+// PhoneDetail is one mispronounced phone: expected vs heard IPA with confidence.
+type PhoneDetail struct {
+	Expected   string  `json:"expected"`
+	Heard      string  `json:"heard"`
+	Confidence float64 `json:"confidence"`
+}
+
+// ReferencePhone is one reference word's expected IPA, in sentence order.
+// The panel renders it under every word chip, flagged or not.
+type ReferencePhone struct {
+	Word   string `json:"word"`
+	Phones string `json:"phones"`
+}
+
+// MispronouncedWord is one engine-flagged word: expected vs heard IPA.
+type MispronouncedWord struct {
+	Word       string        `json:"word"`
+	Expected   string        `json:"expected"`
+	Heard      string        `json:"heard"`
+	Confidence float64       `json:"confidence"`
+	Phones     []PhoneDetail `json:"phones"`
+}
+
+// Prosody carries the learner's pitch and energy contours, downsampled by
+// the engine to at most 120 points each.
+type Prosody struct {
+	F0     []float64 `json:"f0"`
+	Energy []float64 `json:"energy"`
+}
+
+// PronunciationResult is the engine's assessment of one read-aloud attempt.
+type PronunciationResult struct {
+	Score            float64             `json:"score"`
+	Transcription    string              `json:"transcription"`
+	PhonemeErrorRate float64             `json:"phonemeErrorRate"`
+	WordErrorRate    float64             `json:"wordErrorRate"`
+	AcousticDistance float64             `json:"acousticDistance"`
+	Errors           []MispronouncedWord `json:"errors"`
+	Prosody          Prosody             `json:"prosody"`
+	ModelCurve       []float64           `json:"modelCurve"`
+	LearnerCurve     []float64           `json:"learnerCurve"`
+	ReferencePhones  []ReferencePhone    `json:"referencePhones"`
+}
+
+// Activity is one ordered lesson part. Exactly one payload pointer is set,
+// matching Type. DurationMin and SkillFocus are plain columns on the model.
 type Activity struct {
 	ID          string             `json:"id"`
 	PartNumber  int                `json:"partNumber"`
@@ -98,7 +110,7 @@ type Activity struct {
 	DurationMin int                `json:"durationMin"`
 	SkillFocus  string             `json:"skillFocus"`
 	Reading     *ReadingPayload    `json:"reading"`
-	Dictation   *DictationPayload  `json:"dictation"`
+	Listening   *ListeningPayload  `json:"listening"`
 	Writing     *WritingPayload    `json:"writing"`
-	Voice       *VoicePayload      `json:"voice"`
+	Speaking    *SpeakingPayload   `json:"speaking"`
 }

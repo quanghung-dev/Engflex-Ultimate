@@ -109,7 +109,7 @@ export function SequenceCard({ card }: { card: SequenceCardFixture }) {
 						<Button asChild variant="ghost" size="sm">
 							<Link
 								to={APP_ROUTES.LESSONS.DETAIL}
-								params={{ lessonId: card.target.lessonId }}
+								params={{ slug: card.target.lessonId }}
 							>
 								{copy?.cta()}
 							</Link>

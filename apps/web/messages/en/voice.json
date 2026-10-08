@@ -32,10 +32,6 @@
         "analyzeFailed": "Analysis failed. Try again.",
         "reanalyze": "Analyze again"
       },
-      "brief": {
-        "tip1": "· Speak naturally — the partner adapts to your phrasing.",
-        "tip2": "· Analyze a turn after the session to reveal diagnostics."
-      },
       "guide": {
         "eyebrow": "Before you start",
         "title": "How voice sparring works",
@@ -154,8 +150,6 @@
         "search": "Search scenarios"
       },
       "emptyTitle": "No scenario matches current filters",
-      "suggestLine": "Mo suggests, because you are on Unit {slot}",
-      "startOne": "Start this one",
       "topic": {
         "all": "All topics",
         "label": "Topic:"
@@ -192,7 +186,6 @@
       }
     },
     "card": {
-      "partner": "Partner: {role}",
       "maxSession": "Max {max} min session",
       "start": "Start practice"
     },

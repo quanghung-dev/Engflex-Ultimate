@@ -6,8 +6,8 @@ CREATE TABLE attempts (
     activity_id     uuid REFERENCES lesson_activities (id) ON DELETE SET NULL,
     conversation_id uuid REFERENCES conversations (id) ON DELETE SET NULL,
     type            text NOT NULL CONSTRAINT chk_attempts_type
-        CHECK (type IN ('reading', 'dictation', 'writing', 'voice',
-                        'shadowing', 'flashcard', 'benchmark')),
+        CHECK (type IN ('reading', 'listening', 'writing', 'speaking',
+                        'shadowing', 'flashcard', 'benchmark', 'dictation')),
     score           numeric(5, 2),
     result          jsonb NOT NULL DEFAULT '{}',
     duration_sec    integer,

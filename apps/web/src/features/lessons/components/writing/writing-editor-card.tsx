@@ -10,12 +10,14 @@ export function WritingEditorCard({
 	maxWords,
 	onClear,
 	onSubmit,
+	submitted = false,
 }: {
 	value: string;
 	onChange: (next: string) => void;
 	maxWords: number;
 	onClear: () => void;
 	onSubmit: () => void;
+	submitted?: boolean;
 }) {
 	const words = value.trim() ? value.trim().split(/\s+/).length : 0;
 	const overLimit = words > maxWords;
@@ -45,6 +47,7 @@ export function WritingEditorCard({
 				rows={7}
 				placeholder={m["lessons.writing.placeholder"]()}
 				className="field min-h-40 text-[15px]"
+				disabled={submitted}
 			/>
 			<div className="flex flex-wrap items-center gap-2">
 				<span
@@ -63,6 +66,7 @@ export function WritingEditorCard({
 					size="sm"
 					className="btn btn-outline"
 					onClick={onClear}
+					disabled={submitted}
 				>
 					{m["common.actions.clear"]()}
 				</Button>
@@ -71,7 +75,7 @@ export function WritingEditorCard({
 					size="sm"
 					className="btn btn-primary"
 					onClick={onSubmit}
-					disabled={words === 0}
+					disabled={words === 0 || submitted}
 				>
 					<Send data-icon="inline-start" />
 					{m["lessons.writing.submit"]()}

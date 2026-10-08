@@ -1,43 +1,72 @@
-import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
-import { getLessonDetail, listSections } from "#/features/lessons/service";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+	checkAnswer,
+	getLessonDetail,
+	getLessonDetailBySlug,
+	listSections,
+	pronounceAttempt,
+} from "#/features/lessons/service";
 
 export const lessonKeys = {
 	sections: ["lesson-sections"] as const,
 	detail: (id: string) => ["lesson", id] as const,
+	detailBySlug: (slug: string) => ["lesson", "slug", slug] as const,
 };
 
-/** Sync title lookup for breadcrumbs (staticData labels can't await). */
-export const lessonTitleCache = new Map<string, string>();
-
-function cacheTitles(sections: { units: { id: string; title: string }[] }[]) {
-	for (const section of sections) {
-		for (const unit of section.units) {
-			lessonTitleCache.set(unit.id, unit.title);
-		}
-	}
-}
-
 export function useLessonSections() {
-	const query = useQuery({
+	return useQuery({
 		queryKey: lessonKeys.sections,
 		queryFn: () => listSections(),
 	});
-	useEffect(() => {
-		if (query.data) cacheTitles(query.data);
-	}, [query.data]);
-	return query;
+}
+
+/** Shared config so hub-level aggregates can `useQueries` the same objects
+ *  the cards fetch (React Query dedupes identical keys). */
+export function lessonDetailQueryOptions(id: string) {
+	return {
+		queryKey: lessonKeys.detail(id),
+		queryFn: () => getLessonDetail(id),
+	};
 }
 
 export function useLessonDetail(id: string | undefined) {
-	const query = useQuery({
-		queryKey: lessonKeys.detail(id ?? "none"),
-		queryFn: () => getLessonDetail(id as string),
+	return useQuery({
+		...lessonDetailQueryOptions(id ?? "none"),
 		enabled: !!id,
 	});
-	const title = query.data?.title;
-	useEffect(() => {
-		if (id && title) lessonTitleCache.set(id, title);
-	}, [id, title]);
-	return query;
+}
+
+export function useLessonDetailBySlug(slug: string | undefined) {
+	return useQuery({
+		queryKey: lessonKeys.detailBySlug(slug ?? "none"),
+		queryFn: () => getLessonDetailBySlug(slug ?? "none"),
+		enabled: !!slug,
+	});
+}
+
+export function useCheckAnswer() {
+	return useMutation({
+		mutationFn: (input: {
+			activityId: string;
+			questionIndex: number;
+			key: string;
+		}) => checkAnswer(input.activityId, input.questionIndex, input.key),
+	});
+}
+
+export function usePronounceAttempt() {
+	return useMutation({
+		mutationFn: (input: {
+			activityId: string;
+			itemIndex: number;
+			audio: Blob;
+			mime: string;
+		}) =>
+			pronounceAttempt(
+				input.activityId,
+				input.itemIndex,
+				input.audio,
+				input.mime,
+			),
+	});
 }

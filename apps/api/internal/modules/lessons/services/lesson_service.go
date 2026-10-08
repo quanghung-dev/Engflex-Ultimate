@@ -16,6 +16,7 @@ import (
 type LessonService interface {
 	ListSections(ctx context.Context, req requests.ListLessons) ([]*models.LessonSection, error)
 	GetDetail(ctx context.Context, id string) (*models.Lesson, error)
+	GetDetailBySlug(ctx context.Context, slug string) (*models.Lesson, error)
 }
 
 type lessonService struct {
@@ -48,5 +49,16 @@ func (s *lessonService) GetDetail(ctx context.Context, id string) (*models.Lesso
 		return nil, appErr
 	}
 	slog.InfoContext(ctx, "lesson detail found", "id", m.ID)
+	return m, nil
+}
+
+func (s *lessonService) GetDetailBySlug(ctx context.Context, slug string) (*models.Lesson, error) {
+	m, err := s.lessons.GetDetailBySlug(ctx, slug)
+	if err != nil {
+		appErr := common.FromDBError(err, "lesson")
+		logger.Report(ctx, "get lesson detail by slug failed", appErr, "slug", slug)
+		return nil, appErr
+	}
+	slog.InfoContext(ctx, "lesson detail found", "id", m.ID, "slug", m.Slug)
 	return m, nil
 }

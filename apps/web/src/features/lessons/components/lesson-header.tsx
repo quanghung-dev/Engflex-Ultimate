@@ -1,11 +1,12 @@
-import type { LessonDetail, LessonProgress } from "@engflex/contracts";
+import type { ActivityType, LessonDetail } from "@engflex/contracts";
 import { Link } from "@tanstack/react-router";
 import { BookmarkCheck, BookmarkPlus, Clock3, Layers } from "lucide-react";
 import { APP_ROUTES } from "#/app/app-route";
 import { CefrBadge } from "#/components/common/cefr-badge";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { Button } from "#/components/ui/button";
-import { type LessonPart, PART_META } from "#/features/lessons/parts";
+import { PART_META } from "#/features/lessons/parts";
+import type { LessonProgress } from "#/features/lessons/store";
 import { m } from "#/paraglide/messages";
 
 export function LessonHeader({
@@ -17,7 +18,7 @@ export function LessonHeader({
 }: {
 	lesson: LessonDetail;
 	progress: LessonProgress;
-	startPart: LessonPart;
+	startPart: ActivityType;
 	startPartNumber: number;
 	onToggleBookmark: () => void;
 }) {
@@ -49,8 +50,8 @@ export function LessonHeader({
 				<div className="flex flex-wrap gap-3">
 					<Button asChild className="btn btn-primary">
 						<Link
-							to={APP_ROUTES.LESSONS.PART}
-							params={{ lessonId: lesson.id, part: startPart }}
+							to={APP_ROUTES.LESSONS.PRACTICE}
+							params={{ slug: lesson.slug }}
 						>
 							{m["lessons.detail.startLesson"]({
 								number: startPartNumber,

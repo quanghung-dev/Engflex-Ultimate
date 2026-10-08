@@ -7,7 +7,7 @@ import {
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { APP_ROUTES } from "#/app/app-route";
-import { breadcrumb } from "#/app/breadcrumbs";
+import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
 import { Button } from "#/components/ui/button";
@@ -19,22 +19,16 @@ import { ApiError } from "#/lib/api";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/voice/scenarios/$scenarioId")({
-	staticData: breadcrumb([
-		{
-			label: () => m["nav.item.voice"](),
-			target: { to: APP_ROUTES.VOICE.LIST },
-		},
-		{
-			label: () => m["voice.crumb.scenarios"](),
-			target: { to: APP_ROUTES.VOICE.SCENARIOS },
-		},
-		() => m["voice.crumb.detail"](),
-	]),
 	component: ScenarioDetailPage,
 });
 
 /** Server-driven detail: badges, partner, and content come from the API. */
 function ScenarioDetailPage() {
+	useBreadcrumbs([
+		{ label: m["nav.item.voice"](), to: APP_ROUTES.VOICE.LIST },
+		{ label: m["voice.crumb.scenarios"](), to: APP_ROUTES.VOICE.SCENARIOS },
+		{ label: m["voice.crumb.detail"]() },
+	]);
 	const { scenarioId } = Route.useParams();
 	const navigate = useNavigate();
 	const scenarioQuery = useScenario(scenarioId);

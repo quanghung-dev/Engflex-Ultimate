@@ -14,6 +14,7 @@ import (
 type LessonRepository interface {
 	GetByID(ctx context.Context, id string) (*models.Lesson, error)
 	GetDetail(ctx context.Context, id string) (*models.Lesson, error)
+	GetDetailBySlug(ctx context.Context, slug string) (*models.Lesson, error)
 	WithTx(tx *gorm.DB) LessonRepository
 }
 
@@ -56,6 +57,23 @@ func (r *lessonRepository) GetDetail(ctx context.Context, id string) (*models.Le
 	}
 	activities := make([]*models.LessonActivity, 0)
 	if err := r.db.WithContext(ctx).Where("lesson_id = ?", id).Order("part_number asc").Find(&activities).Error; err != nil {
+		return nil, err
+	}
+	m.Activities = activities
+	return &m, nil
+}
+
+// GetDetailBySlug returns one unit by its unique slug with its section joined
+// in a single round trip and its activities attached from a second query
+// ordered by part_number. The second query keys on the row's own uuid, so the
+// text slug never meets the uuid column.
+func (r *lessonRepository) GetDetailBySlug(ctx context.Context, slug string) (*models.Lesson, error) {
+	var m models.Lesson
+	if err := r.db.WithContext(ctx).Joins("Section").First(&m, "lessons.slug = ?", slug).Error; err != nil {
+		return nil, err
+	}
+	activities := make([]*models.LessonActivity, 0)
+	if err := r.db.WithContext(ctx).Where("lesson_id = ?", m.ID).Order("part_number asc").Find(&activities).Error; err != nil {
 		return nil, err
 	}
 	m.Activities = activities

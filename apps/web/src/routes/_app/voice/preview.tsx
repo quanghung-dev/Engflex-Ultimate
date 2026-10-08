@@ -2,7 +2,7 @@ import type { Turn } from "@engflex/contracts";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { APP_ROUTES } from "#/app/app-route";
-import { breadcrumb } from "#/app/breadcrumbs";
+import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { MO_VARIANTS, MoMascot } from "#/components/common/mo-mascot";
 import { Button } from "#/components/ui/button";
 import {
@@ -12,14 +12,6 @@ import {
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/voice/preview")({
-	staticData: breadcrumb([
-		{
-			label: () => m["nav.item.voice"](),
-			target: { to: APP_ROUTES.VOICE.LIST },
-		},
-		() => m["voice.crumb.room"](),
-		() => "preview",
-	]),
 	component: VoicePreviewPage,
 });
 
@@ -193,6 +185,11 @@ function VoicePreviewPage() {
 }
 
 function PreviewRoom() {
+	useBreadcrumbs([
+		{ label: m["nav.item.voice"](), to: APP_ROUTES.VOICE.LIST },
+		{ label: m["voice.crumb.room"]() },
+		{ label: "preview" },
+	]);
 	const [phase, setPhase] = useState<Phase>("live");
 	const [source, setSource] = useState<"live" | "saved">("live");
 	const [connectionLost, setConnectionLost] = useState(false);

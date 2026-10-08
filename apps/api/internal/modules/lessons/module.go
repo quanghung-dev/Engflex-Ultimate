@@ -7,22 +7,31 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	"engflex-api/config"
 	"engflex-api/internal/database/repositories"
 	"engflex-api/internal/modules/lessons/controllers"
 	"engflex-api/internal/modules/lessons/services"
 	"engflex-api/internal/server/middleware"
+	"engflex-api/internal/voice"
+	"engflex-api/internal/voice/pronunciation"
 )
 
 // RegisterRoutes mounts the lesson endpoints under /api/v1.
-func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
+// sessionLimiter is an optional IP-keyed throttle (nil = disabled) applied
+// BEFORE auth on the engine-costly pronounce route (conversations parity:
+// limiter precedes auth because the userID is unavailable pre-auth).
+func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, voiceCfg config.VoiceConfig, media config.MediaConfig, sessionLimiter gin.HandlerFunc) {
 	lessonSvc := services.NewLessonService(
 		repositories.NewLessonSectionRepository(db),
 		repositories.NewLessonRepository(db),
 	)
-	lessonCtl := controllers.NewLessonController(lessonSvc)
+	lessonCtl := controllers.NewLessonController(lessonSvc, media)
 
-	activitySvc := services.NewLessonActivityService(repositories.NewLessonActivityRepository(db))
-	activityCtl := controllers.NewLessonActivityController(activitySvc)
+	activitySvc := services.NewLessonActivityService(
+		repositories.NewLessonActivityRepository(db),
+		pronunciation.NewScorer(voice.NewHTTPPronounceEngine(voiceCfg.PronounceURL, voiceCfg.PronounceTimeout)),
+	)
+	activityCtl := controllers.NewLessonActivityController(activitySvc, media)
 
 	bookmarkSvc := services.NewLessonBookmarkService(repositories.NewLessonBookmarkRepository(db))
 	bookmarkCtl := controllers.NewLessonBookmarkController(bookmarkSvc)
@@ -30,10 +39,17 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 	l := rg.Group("/lessons")
 	l.GET("", middleware.RequireAuth(), lessonCtl.List)
 	l.GET("/:id", middleware.RequireAuth(), lessonCtl.GetByID)
+	l.GET("/by-slug/:slug", middleware.RequireAuth(), lessonCtl.GetBySlug)
 
 	la := rg.Group("/lesson-activities")
 	la.GET("", middleware.RequireAuth(), activityCtl.List)
 	la.GET("/:id", middleware.RequireAuth(), activityCtl.GetByID)
+	la.POST("/:id/check", middleware.RequireAuth(), activityCtl.CheckAnswer)
+	strict := []gin.HandlerFunc{}
+	if sessionLimiter != nil {
+		strict = append(strict, sessionLimiter)
+	}
+	la.POST("/:id/pronounce", append(strict, middleware.RequireAuth(), activityCtl.Pronounce)...)
 
 	lb := rg.Group("/lesson-bookmarks")
 	lb.GET("", middleware.RequireAuth(), bookmarkCtl.List)

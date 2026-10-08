@@ -1,40 +1,47 @@
-import type { Lesson, LessonProgress } from "@engflex/contracts";
+import type { ActivityType, Lesson } from "@engflex/contracts";
 import { Link } from "@tanstack/react-router";
+import { useStore } from "@tanstack/react-store";
 import { cn } from "cn";
 import { Clock3, Layers, Lock, RotateCcw } from "lucide-react";
 import { APP_ROUTES } from "#/app/app-route";
 import { CefrBadge } from "#/components/common/cefr-badge";
 import { ProgressBar } from "#/components/common/progress-bar";
 import { Button } from "#/components/ui/button";
-import { getFirstIncompletePart } from "#/features/lessons/store";
 import { useLessonDetail } from "#/features/lessons/queries";
+import {
+	getFirstIncompleteActivity,
+	lessonsStore,
+	progressFrom,
+} from "#/features/lessons/store";
 import { m } from "#/paraglide/messages";
 import { LessonStatusPill } from "./status-pill";
 
-const ACTIVITY_LABEL: Record<string, () => string> = {
+const ACTIVITY_LABEL: Record<ActivityType, () => string> = {
 	reading: () => m["lessons.skill.reading"](),
-	dictation: () => m["lessons.skill.dictation"](),
+	listening: () => m["lessons.skill.listening"](),
 	writing: () => m["lessons.skill.writing"](),
-	voice: () => m["lessons.skill.voice"](),
+	speaking: () => m["lessons.skill.speaking"](),
 };
 
 export function LessonCard({
 	lesson,
-	progress,
 	locked = false,
 	unlocksAfter,
 	recommended = false,
 }: {
 	lesson: Lesson;
-	progress: LessonProgress;
 	locked?: boolean;
 	unlocksAfter?: string;
 	recommended?: boolean;
 }) {
 	const detailQuery = useLessonDetail(lesson.id);
 	const detail = detailQuery.data;
-	const current = getFirstIncompletePart(lesson.id, lesson.partCount);
 	const activities = detail?.activities ?? [];
+	// The card already fetches the detail for its activity chips, so the real
+	// part count feeds the progress math here — no server-side count field.
+	const storeState = useStore(lessonsStore);
+	const progress = progressFrom(storeState, lesson.id, activities.length);
+	const current = getFirstIncompleteActivity(lesson.id, activities)?.type;
 
 	return (
 		<article
@@ -65,7 +72,6 @@ export function LessonCard({
 					<Clock3 className="size-3.5" />
 					{m["lessons.card.meta"]({
 						minutes: lesson.details.estimatedDurationMin ?? 0,
-						parts: lesson.partCount,
 					})}
 				</span>
 				<span className="inline-flex items-center gap-1">
@@ -86,7 +92,7 @@ export function LessonCard({
 									"chip-selected",
 							)}
 						>
-							{ACTIVITY_LABEL[activity.type]?.() ?? activity.type}
+							{ACTIVITY_LABEL[activity.type]()}
 							{!locked &&
 							activity.type === current &&
 							progress.status === "in_progress"
@@ -132,20 +138,14 @@ export function LessonCard({
 						size="sm"
 						className="btn btn-outline"
 					>
-						<Link
-							to={APP_ROUTES.LESSONS.DETAIL}
-							params={{ lessonId: lesson.id }}
-						>
+						<Link to={APP_ROUTES.LESSONS.DETAIL} params={{ slug: lesson.slug }}>
 							<RotateCcw data-icon="inline-start" />
 							{m["lessons.card.actionReview"]()}
 						</Link>
 					</Button>
 				) : progress.status === "in_progress" ? (
 					<Button asChild size="sm" className="btn btn-primary">
-						<Link
-							to={APP_ROUTES.LESSONS.DETAIL}
-							params={{ lessonId: lesson.id }}
-						>
+						<Link to={APP_ROUTES.LESSONS.DETAIL} params={{ slug: lesson.slug }}>
 							{m["lessons.card.actionContinue"]()}
 						</Link>
 					</Button>
@@ -156,10 +156,7 @@ export function LessonCard({
 						size="sm"
 						className="btn btn-outline"
 					>
-						<Link
-							to={APP_ROUTES.LESSONS.DETAIL}
-							params={{ lessonId: lesson.id }}
-						>
+						<Link to={APP_ROUTES.LESSONS.DETAIL} params={{ slug: lesson.slug }}>
 							{m["lessons.hub.start"]()}
 						</Link>
 					</Button>

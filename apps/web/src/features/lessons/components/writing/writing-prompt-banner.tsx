@@ -3,17 +3,19 @@ import { m } from "#/paraglide/messages";
 export function WritingPromptBanner({
 	partNumber,
 	partCount,
-	title,
+	task,
+	instructions,
+	stimulus,
 	minWords,
 	maxWords,
-	contextQuestions,
 }: {
 	partNumber: number;
 	partCount: number;
-	title: string;
+	task: string;
+	instructions: string;
+	stimulus: string;
 	minWords: number;
 	maxWords: number;
-	contextQuestions: string[];
 }) {
 	return (
 		<div className="surface-card flex h-full flex-col gap-3 p-5">
@@ -26,26 +28,18 @@ export function WritingPromptBanner({
 				</span>
 			</div>
 			<h2 className="text-xl font-bold text-foreground">
-				{m["lessons.writing.prompt"]({ title })}
+				{m["lessons.writing.prompt"]({ title: task })}
 			</h2>
+			<p className="text-[15px] leading-[24px] font-medium text-foreground">
+				{stimulus}
+			</p>
 			<div className="flex flex-col gap-2 rounded-[16px] border-2 border-border bg-accent p-3">
 				<span className="text-xs font-bold text-muted-foreground">
 					{m["lessons.writing.hint"]()}
 				</span>
-				<ul className="flex flex-col gap-1.5">
-					{contextQuestions.map((question) => (
-						<li
-							key={question}
-							className="flex items-start gap-2 text-[15px] font-medium text-foreground"
-						>
-							<span
-								aria-hidden="true"
-								className="mt-[9px] size-1.5 shrink-0 rounded-full bg-primary"
-							/>
-							{question}
-						</li>
-					))}
-				</ul>
+				<p className="text-[15px] font-medium text-foreground">
+					{instructions}
+				</p>
 			</div>
 		</div>
 	);

@@ -3,6 +3,7 @@ package controllers
 import (
 	"github.com/gin-gonic/gin"
 
+	"engflex-api/config"
 	"engflex-api/internal/common"
 	"engflex-api/internal/modules/lessons/dtos/requests"
 	"engflex-api/internal/modules/lessons/dtos/responses"
@@ -13,11 +14,12 @@ import (
 // LessonController exposes unit browsing.
 type LessonController struct {
 	lessons services.LessonService
+	media   config.MediaConfig
 }
 
 // NewLessonController wires the controller to the service.
-func NewLessonController(lessons services.LessonService) *LessonController {
-	return &LessonController{lessons: lessons}
+func NewLessonController(lessons services.LessonService, media config.MediaConfig) *LessonController {
+	return &LessonController{lessons: lessons, media: media}
 }
 
 // List godoc
@@ -64,7 +66,31 @@ func (h *LessonController) GetByID(c *gin.Context) {
 	_ = utils.Map(&dto, m)
 	for i := range dto.Activities {
 		if i < len(m.Activities) {
-			dto.Activities[i].SplitPayload(m.Activities[i].Type, m.Activities[i].Config)
+			ApplyPayload(&dto.Activities[i], m.Activities[i], h.media)
+		}
+	}
+	common.OK(c, "lesson", dto)
+}
+
+// GetBySlug godoc
+// @Summary      Get one unit by slug with ordered activities
+// @Tags         lessons
+// @Security     BearerAuth
+// @Produce      json
+// @Param        slug path string true "lesson slug"
+// @Success      200 {object} common.ApiResponse{data=responses.LessonDetail}
+// @Router       /lessons/by-slug/{slug} [get]
+func (h *LessonController) GetBySlug(c *gin.Context) {
+	m, err := h.lessons.GetDetailBySlug(c.Request.Context(), c.Param("slug"))
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	var dto responses.LessonDetail
+	_ = utils.Map(&dto, m)
+	for i := range dto.Activities {
+		if i < len(m.Activities) {
+			ApplyPayload(&dto.Activities[i], m.Activities[i], h.media)
 		}
 	}
 	common.OK(c, "lesson", dto)

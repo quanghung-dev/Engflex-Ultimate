@@ -2,7 +2,7 @@ import { useUser } from "@clerk/tanstack-react-start";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Gauge } from "lucide-react";
 import { APP_ROUTES } from "#/app/app-route";
-import { breadcrumb } from "#/app/breadcrumbs";
+import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
 import { StatCard } from "#/components/common/stat-card";
@@ -14,14 +14,14 @@ import { HIGH_FRICTION_COUNT } from "#/features/dashboard/fixtures";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/")({
-	staticData: breadcrumb([
-		{ label: () => m["nav.item.home"](), target: { to: APP_ROUTES.HOME } },
-		() => m["nav.group.practice"](),
-	]),
 	component: DashboardPage,
 });
 
 function DashboardPage() {
+	useBreadcrumbs([
+		{ label: m["nav.item.home"](), to: APP_ROUTES.HOME },
+		{ label: m["nav.group.practice"]() },
+	]);
 	const { user } = useUser();
 	const firstName = user?.firstName;
 

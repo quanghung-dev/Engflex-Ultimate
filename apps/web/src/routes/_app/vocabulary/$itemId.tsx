@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
 import { APP_ROUTES } from "#/app/app-route";
-import { breadcrumb, vocabularyCrumbLabel } from "#/app/breadcrumbs";
+import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { PageLayout } from "#/components/common/page-layout";
 import { AcousticBreakdownCard } from "#/features/vocabulary/components/acoustic-breakdown-card";
 import { CollocationsGrid } from "#/features/vocabulary/components/collocations-grid";
@@ -16,13 +16,6 @@ import {
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/vocabulary/$itemId")({
-	staticData: breadcrumb([
-		{
-			label: () => m["nav.item.vocabulary"](),
-			target: { to: APP_ROUTES.VOCABULARY.LIST },
-		},
-		vocabularyCrumbLabel,
-	]),
 	beforeLoad: ({ params }) => {
 		if (!getVocabularyItem(params.itemId)) {
 			throw redirect({ to: APP_ROUTES.VOCABULARY.LIST });
@@ -35,6 +28,14 @@ function WordDetailPage() {
 	const { itemId } = Route.useParams();
 	useStore(vocabularyStore); // subscribe to mastered/note changes
 	const item = getVocabularyItem(itemId);
+	useBreadcrumbs(
+		item
+			? [
+					{ label: m["nav.item.vocabulary"](), to: APP_ROUTES.VOCABULARY.LIST },
+					{ label: item.term },
+				]
+			: [],
+	);
 
 	if (!item) return null;
 	const details = item.details;

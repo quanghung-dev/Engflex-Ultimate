@@ -26,3 +26,11 @@ export interface ListActivities {
 export interface SaveBookmark {
   lessonId: string;
 }
+/**
+ * CheckAnswer grades one reading/listening question. min=0, not required:
+ * `required` rejects the zero value, and question 0 is valid.
+ */
+export interface CheckAnswer {
+  questionIndex: number /* int */;
+  key: string;
+}

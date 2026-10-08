@@ -5,10 +5,10 @@ import { Button } from "#/components/ui/button";
 import { m } from "#/paraglide/messages";
 
 export function ActivityRow({
-	lessonId,
+	slug,
 	activity,
 }: {
-	lessonId: string;
+	slug: string;
 	activity: Activity;
 }) {
 	return (
@@ -40,10 +40,7 @@ export function ActivityRow({
 				size="sm"
 				className="btn btn-outline sm:ml-auto"
 			>
-				<Link
-					to={APP_ROUTES.LESSONS.PART}
-					params={{ lessonId, part: activity.type }}
-				>
+				<Link to={APP_ROUTES.LESSONS.PRACTICE} params={{ slug }}>
 					{m["lessons.card.start"]()}
 				</Link>
 			</Button>

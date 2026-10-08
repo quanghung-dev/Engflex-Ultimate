@@ -9,7 +9,7 @@ type CreateAttempt struct {
 	LessonID       *string           `json:"lessonId" binding:"omitempty,uuid"`
 	ActivityID     *string           `json:"activityId" binding:"omitempty,uuid"`
 	ConversationID *string           `json:"conversationId" binding:"omitempty,uuid"`
-	Type           enums.AttemptType `json:"type" binding:"required,oneof=reading dictation writing voice shadowing flashcard benchmark"`
+	Type           enums.AttemptType `json:"type" binding:"required,oneof=reading listening writing speaking shadowing flashcard benchmark dictation"`
 	Score          *float64          `json:"score"`
 	Result         map[string]any    `json:"result"`
 	DurationSec    *int              `json:"durationSec" binding:"omitempty,min=0"`
