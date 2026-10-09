@@ -12,6 +12,7 @@ type Config struct {
 	Cors      CorsConfig
 	Log       LogConfig
 	Voice     VoiceConfig
+	LLM       LLMConfig
 	Redis     RedisConfig
 	RateLimit RateLimitConfig
 	Media     MediaConfig
@@ -35,6 +36,7 @@ func Load(dotEnvPaths ...string) (Config, error) {
 		Cors:      LoadCorsConfig(),
 		Log:       LoadLogConfig(server.Env),
 		Voice:     LoadVoiceConfig(),
+		LLM:       LoadLLMConfig(),
 		Redis:     LoadRedisConfig(),
 		RateLimit: LoadRateLimitConfig(),
 		Media:     LoadMediaConfig(),

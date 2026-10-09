@@ -15,3 +15,10 @@ packages:
       filename: "mock_{{.InterfaceName}}.go"
       pkgname: "mocks"
       template: testify
+  engflex-api/internal/llm:
+    config:
+      all: true
+      dir: "internal/llm/mocks"
+      filename: "mock_{{.InterfaceName}}.go"
+      pkgname: "mocks"
+      template: testify
