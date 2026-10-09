@@ -3,14 +3,19 @@ import {
 	checkAnswer,
 	getLessonDetail,
 	getLessonDetailBySlug,
+	getOpenAttempt,
 	listSections,
 	pronounceAttempt,
+	scoreWriting,
+	startLessonAttempt,
 } from "#/features/lessons/service";
+import { ApiError } from "#/lib/api";
 
 export const lessonKeys = {
 	sections: ["lesson-sections"] as const,
 	detail: (id: string) => ["lesson", id] as const,
 	detailBySlug: (slug: string) => ["lesson", "slug", slug] as const,
+	openAttempt: (id: string) => ["lesson", id, "open-attempt"] as const,
 };
 
 export function useLessonSections() {
@@ -58,9 +63,16 @@ export function useCheckAnswer() {
 	return useMutation({
 		mutationFn: (input: {
 			activityId: string;
+			attemptId: string;
 			questionIndex: number;
 			key: string;
-		}) => checkAnswer(input.activityId, input.questionIndex, input.key),
+		}) =>
+			checkAnswer(
+				input.activityId,
+				input.attemptId,
+				input.questionIndex,
+				input.key,
+			),
 	});
 }
 
@@ -68,15 +80,45 @@ export function usePronounceAttempt() {
 	return useMutation({
 		mutationFn: (input: {
 			activityId: string;
+			attemptId: string;
 			itemIndex: number;
 			audio: Blob;
 			mime: string;
 		}) =>
 			pronounceAttempt(
 				input.activityId,
+				input.attemptId,
 				input.itemIndex,
 				input.audio,
 				input.mime,
 			),
+	});
+}
+
+export function useStartLessonAttempt() {
+	return useMutation({
+		mutationFn: (lessonId: string) => startLessonAttempt(lessonId),
+	});
+}
+
+/** Open-run resume: 404 (no open run) is control flow to the fallback card,
+ *  never retried; everything else retries with the default backoff instead
+ *  of crashing fail-fast (doc Pattern 7). */
+export function openAttemptQueryOptions(id: string) {
+	return {
+		queryKey: lessonKeys.openAttempt(id),
+		queryFn: () => getOpenAttempt(id),
+		retry: (failureCount: number, error: unknown) =>
+			!(error instanceof ApiError && error.status === 404) && failureCount < 3,
+	};
+}
+
+export function useScoreWriting() {
+	return useMutation({
+		mutationFn: (input: {
+			activityId: string;
+			attemptId: string;
+			text: string;
+		}) => scoreWriting(input.activityId, input.attemptId, input.text),
 	});
 }

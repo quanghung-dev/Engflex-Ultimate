@@ -49,7 +49,10 @@ export const API_ROUTES = {
 		LIST: "/lessons",
 		BY_ID: (id: ApiId) => `/lessons/${id}`,
 		BY_SLUG: (slug: string) => `/lessons/by-slug/${slug}`,
+		START_ATTEMPT: (id: ApiId) => `/lessons/${id}/attempts`,
+		OPEN_ATTEMPT: (id: ApiId) => `/lessons/${id}/attempts/open`,
 		CHECK: (activityId: ApiId) => `/lesson-activities/${activityId}/check`,
+		SCORE: (activityId: ApiId) => `/lesson-activities/${activityId}/score`,
 		PRONOUNCE: (activityId: ApiId) =>
 			`/lesson-activities/${activityId}/pronounce`,
 	},

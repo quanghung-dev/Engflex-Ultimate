@@ -1,8 +1,11 @@
 import type {
+	Attempt,
+	AttemptProgress,
 	CheckResult,
 	LessonDetail,
 	PronunciationResult,
 	UnitSection,
+	WritingScoreResponse,
 } from "@engflex/contracts";
 import { API_ROUTES } from "#/app/api-routes";
 import { api } from "#/lib/api";
@@ -26,22 +29,25 @@ export function getLessonDetailBySlug(slug: string): Promise<LessonDetail> {
 
 export function checkAnswer(
 	activityId: string,
+	attemptId: string,
 	questionIndex: number,
 	key: string,
 ): Promise<CheckResult> {
 	return api<CheckResult>(API_ROUTES.LESSONS.CHECK(activityId), {
 		method: "POST",
-		body: JSON.stringify({ questionIndex, key }),
+		body: JSON.stringify({ attemptId, questionIndex, key }),
 	});
 }
 
 export function pronounceAttempt(
 	activityId: string,
+	attemptId: string,
 	itemIndex: number,
 	audio: Blob,
 	mime: string,
 ): Promise<PronunciationResult> {
 	const form = new FormData();
+	form.append("attemptId", attemptId);
 	form.append("itemIndex", String(itemIndex));
 	form.append(
 		"audio",
@@ -54,4 +60,34 @@ export function pronounceAttempt(
 	});
 }
 
-export type { CheckResult, LessonDetail, PronunciationResult, UnitSection };
+export function startLessonAttempt(lessonId: string): Promise<Attempt> {
+	return api<Attempt>(API_ROUTES.LESSONS.START_ATTEMPT(lessonId), {
+		method: "POST",
+	});
+}
+
+/** Open run with graded questions for resume; 404 when no run is open. */
+export function getOpenAttempt(lessonId: string): Promise<AttemptProgress> {
+	return api<AttemptProgress>(API_ROUTES.LESSONS.OPEN_ATTEMPT(lessonId));
+}
+
+export function scoreWriting(
+	activityId: string,
+	attemptId: string,
+	text: string,
+): Promise<WritingScoreResponse> {
+	return api<WritingScoreResponse>(API_ROUTES.LESSONS.SCORE(activityId), {
+		method: "POST",
+		body: JSON.stringify({ attemptId, text }),
+	});
+}
+
+export type {
+	Attempt,
+	AttemptProgress,
+	CheckResult,
+	LessonDetail,
+	PronunciationResult,
+	UnitSection,
+	WritingScoreResponse,
+};

@@ -1,8 +1,14 @@
 import type { ActivityType } from "@engflex/contracts";
+import { Link } from "@tanstack/react-router";
+import { ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
+import { APP_ROUTES } from "#/app/app-route";
 import { CefrBadge } from "#/components/common/cefr-badge";
+import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
+import { Button } from "#/components/ui/button";
 import { useLessonDetail } from "#/features/lessons/queries";
+import { m } from "#/paraglide/messages";
 import { LessonStepNavigator } from "./lesson-step-navigator";
 
 /** Stitch practice shell: step pills + level meta, no header card. */
@@ -22,7 +28,21 @@ export function PartShell({
 	if (!detail) return null;
 
 	return (
-		<PageLayout>
+		<PageLayout
+			hero={{
+				icon: <MoMascot variant="heart" />,
+				title: detail.title,
+				description: detail.description,
+			}}
+			action={
+				<Button asChild variant="ghost" size="sm" className="w-fit">
+					<Link to={APP_ROUTES.LESSONS.DETAIL} params={{ slug: detail.slug }}>
+						<ArrowLeft data-icon="inline-start" />
+						{m["lessons.detail.backToLesson"]()}
+					</Link>
+				</Button>
+			}
+		>
 			<div className="flex flex-wrap items-center justify-between gap-3">
 				<LessonStepNavigator
 					lessonId={lessonId}

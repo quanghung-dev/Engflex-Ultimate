@@ -91,9 +91,28 @@
       "placeholder": "Write your response…",
       "wordsCount": "{count} / {max} words",
       "submit": "Submit for feedback",
+      "revise": "Revise and resubmit",
       "model": {
         "title": "Model answer",
         "checklist": "Self-check checklist"
+      },
+      "score": {
+        "title": "Feedback on your writing",
+        "points": "{covered}/{total} points",
+        "words": "{count} words ({min}–{max})",
+        "taskTitle": "Task checklist",
+        "grammarTitle": "Grammar",
+        "grammarEmpty": "No significant grammar errors.",
+        "phrasingTitle": "Phrasing",
+        "phrasingEmpty": "No significant phrasing issues.",
+        "expressionsTitle": "Useful expressions",
+        "suggestedTitle": "Suggested rewrite",
+        "tipTitle": "Tip",
+        "answersPrompt": "Answers the prompt",
+        "covered": "Covered",
+        "partial": "Partial",
+        "missing": "Missing",
+        "failed": "Could not score this response. Try again."
       },
       "responseTitle": "Your response"
     },
@@ -134,6 +153,14 @@
       "explanation": "Explanation",
       "submit": "Check answer",
       "failed": "Could not check your answer. Please try again."
+    },
+    "attempt": {
+      "failed": "Could not start this lesson attempt. Reload to try again."
+    },
+    "practice": {
+      "noRunTitle": "No open run yet",
+      "noRunBody": "Start a run to begin practicing this lesson.",
+      "noRunAction": "Start practicing"
     }
   }
 }

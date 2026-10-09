@@ -91,9 +91,28 @@
       "placeholder": "Viết câu trả lời của bạn…",
       "wordsCount": "{count} / {max} từ",
       "submit": "Gửi để nhận phản hồi",
+      "revise": "Sửa và chấm lại",
       "model": {
         "title": "Bài viết mẫu",
         "checklist": "Danh sách tự kiểm tra"
+      },
+      "score": {
+        "title": "Nhận xét bài viết của bạn",
+        "points": "{covered}/{total} điểm",
+        "words": "{count} từ ({min}–{max})",
+        "taskTitle": "Danh sách yêu cầu",
+        "grammarTitle": "Ngữ pháp",
+        "grammarEmpty": "Không có lỗi ngữ pháp đáng kể.",
+        "phrasingTitle": "Cách diễn đạt",
+        "phrasingEmpty": "Không có vấn đề diễn đạt đáng kể.",
+        "expressionsTitle": "Mẫu câu hữu ích",
+        "suggestedTitle": "Bài viết gợi ý",
+        "tipTitle": "Mẹo",
+        "answersPrompt": "Trả lời đúng yêu cầu",
+        "covered": "Đã đạt",
+        "partial": "Một phần",
+        "missing": "Còn thiếu",
+        "failed": "Không chấm được bài này. Hãy thử lại."
       },
       "responseTitle": "Bài viết của bạn"
     },
@@ -134,6 +153,14 @@
       "explanation": "Giải thích",
       "submit": "Kiểm tra",
       "failed": "Không kiểm tra được câu trả lời. Hãy thử lại."
+    },
+    "attempt": {
+      "failed": "Không mở được lượt làm bài. Tải lại để thử lại."
+    },
+    "practice": {
+      "noRunTitle": "Chưa có lượt làm bài",
+      "noRunBody": "Hãy mở một lượt làm bài để bắt đầu luyện tập bài học này.",
+      "noRunAction": "Bắt đầu làm bài"
     }
   }
 }

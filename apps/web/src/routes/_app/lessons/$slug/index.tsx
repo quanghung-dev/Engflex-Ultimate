@@ -8,6 +8,7 @@ import { Button } from "#/components/ui/button";
 import { ActivityRow } from "#/features/lessons/components/activity-row";
 import { LessonHeader } from "#/features/lessons/components/lesson-header";
 import { TipBar } from "#/features/lessons/components/tip-bar";
+import { useStartPractice } from "#/features/lessons/hooks/use-start-practice";
 import {
 	lessonDetailBySlugQueryOptions,
 	useLessonDetailBySlug,
@@ -41,6 +42,7 @@ function LessonDetailPage() {
 	const detailQuery = useLessonDetailBySlug(slug);
 	const detail = detailQuery.data;
 	const storeState = useStore(lessonsStore);
+	const starting = useStartPractice();
 	useBreadcrumbs(
 		detail
 			? [
@@ -70,14 +72,17 @@ function LessonDetailPage() {
 	if (!startActivity) return null;
 
 	return (
-		<PageLayout>
-			<div className="flex flex-wrap items-center gap-2">
+		<PageLayout
+			action={
 				<Button asChild variant="outline" size="sm" className="btn btn-outline">
 					<Link to={APP_ROUTES.LESSONS.LIST}>
 						<ArrowLeft data-icon="inline-start" />
 						{m["lessons.detail.backToLesson"]()}
 					</Link>
 				</Button>
+			}
+		>
+			<div className="flex flex-wrap items-center gap-2">
 				<span className="chip px-2 py-0.5 text-xs">
 					{detail.section?.title}
 				</span>
@@ -96,6 +101,8 @@ function LessonDetailPage() {
 				startPart={startActivity.type}
 				startPartNumber={startActivity.partNumber}
 				onToggleBookmark={() => toggleBookmark(detail.id)}
+				onStart={() => void starting.begin(detail.slug, detail.id)}
+				startPending={starting.pending}
 			/>
 
 			<section className="flex flex-col gap-3">
@@ -111,8 +118,9 @@ function LessonDetailPage() {
 					{detail.activities.map((activity) => (
 						<ActivityRow
 							key={activity.id}
-							slug={detail.slug}
 							activity={activity}
+							onStart={() => void starting.begin(detail.slug, detail.id)}
+							startPending={starting.pending}
 						/>
 					))}
 				</div>

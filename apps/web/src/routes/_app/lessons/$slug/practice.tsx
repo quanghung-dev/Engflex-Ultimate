@@ -1,28 +1,38 @@
+import { useAuth } from "@clerk/tanstack-react-start";
 import type {
 	Activity,
 	ActivityType,
+	AttemptProgress,
+	CheckedQuestion,
 	CheckResult,
 	LessonDetail,
+	WritingScoreResponse,
 } from "@engflex/contracts";
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { PageSplit } from "#/components/common/page-layout";
+import { SubmitButton } from "#/components/common/submit-button";
 import { CheckQuestionPanel } from "#/features/lessons/components/check-question-panel";
 import { ListeningBriefCard } from "#/features/lessons/components/listening/listening-brief-card";
 import { PartShell } from "#/features/lessons/components/part-shell";
 import { PassagePanel } from "#/features/lessons/components/reading/passage-panel";
 import { SpeakingActivity } from "#/features/lessons/components/speaking/read-aloud-card";
 import { ModelAnswerCard } from "#/features/lessons/components/writing/model-answer-card";
+import { ScoreCard } from "#/features/lessons/components/writing/score-card";
 import { WritingEditorCard } from "#/features/lessons/components/writing/writing-editor-card";
 import { WritingPromptBanner } from "#/features/lessons/components/writing/writing-prompt-banner";
 import { PART_META } from "#/features/lessons/parts";
 import {
 	lessonDetailBySlugQueryOptions,
+	openAttemptQueryOptions,
 	useCheckAnswer,
 	useLessonDetailBySlug,
+	useScoreWriting,
+	useStartLessonAttempt,
 } from "#/features/lessons/queries";
 import {
 	completePart,
@@ -56,6 +66,54 @@ function PracticePage() {
 	return <PracticeInner key={detail.id} slug={slug} detail={detail} />;
 }
 
+/** Rehydrated per-question state for one checkable activity. */
+interface QuestionSeed {
+	answers: Record<number, string>;
+	results: Record<number, CheckResult>;
+}
+
+function toQuestionSeed(list: CheckedQuestion[]): QuestionSeed {
+	const answers: Record<number, string> = {};
+	const results: Record<number, CheckResult> = {};
+	for (const item of list) {
+		answers[item.index] = item.key;
+		results[item.index] = {
+			correct: item.correct,
+			correctKey: item.correctKey,
+			explanation: item.explanation,
+		};
+	}
+	return { answers, results };
+}
+
+function buildQuestionSeeds(
+	progress: AttemptProgress,
+): Record<string, QuestionSeed> {
+	const seeds: Record<string, QuestionSeed> = {};
+	for (const [activityId, list] of Object.entries(progress.checks)) {
+		seeds[activityId] = toQuestionSeed(list);
+	}
+	return seeds;
+}
+
+/** Fully-answered check activities count as complete for pills + resume. */
+function markCompleteParts(
+	lessonId: string,
+	activities: Activity[],
+	progress: AttemptProgress,
+) {
+	for (const activity of activities) {
+		const total =
+			activity.reading?.questions.length ??
+			activity.listening?.questions.length ??
+			0;
+		const answered = progress.checks[activity.id]?.length ?? 0;
+		if (total > 0 && answered >= total) {
+			completePart(lessonId, activity.partNumber, activities.length);
+		}
+	}
+}
+
 function PracticeInner({
 	slug,
 	detail,
@@ -86,29 +144,76 @@ function PracticeInner({
 		return () => window.removeEventListener("beforeunload", handler);
 	}, []);
 
+	const { isLoaded } = useAuth();
+	// Read-only mount: the run is opened by the entry click (LessonHeader /
+	// ActivityRow) or the fallback card below. Remounts are pure reads by
+	// construction — no once-guards, no writes.
+	// `enabled: isLoaded` prevents doomed fail-fast fetches: inside Clerk's
+	// loading window getToken() yields null, so the request is a guaranteed
+	// 401 and retry can only burn time on it — including seconds of SSR burn
+	// on hard loads. In-flight token dips are covered by the
+	// retry-except-404 in the query options instead.
+	const openQuery = useQuery({
+		...openAttemptQueryOptions(lessonId),
+		enabled: isLoaded,
+	});
+	const [startedId, setStartedId] = useState<string | null>(null);
+	const progress = openQuery.data ?? null;
+	const attemptId = startedId ?? progress?.attempt.id ?? null;
+	const seeds = progress ? buildQuestionSeeds(progress) : {};
+	useEffect(() => {
+		if (progress) markCompleteParts(lessonId, detail.activities, progress);
+	}, [progress, lessonId, detail]);
+
 	const activity = detail.activities.find((item) => item.type === activePart);
 	if (!activity)
 		throw new Error(`practice: no activity for part ${activePart}`);
 	const currentPart: ActivityType = activity.type;
 
+	if (attemptId === null && !openQuery.isPending) {
+		return (
+			<PartShell
+				lessonId={lessonId}
+				part={currentPart}
+				onSelect={setActivePart}
+			>
+				<NoOpenRunCard
+					lessonId={lessonId}
+					onStarted={(id) => {
+						setStartedId(id);
+						void openQuery.refetch();
+					}}
+				/>
+			</PartShell>
+		);
+	}
+
 	return (
 		<PartShell lessonId={lessonId} part={currentPart} onSelect={setActivePart}>
-			{currentPart === "reading" && activity?.reading ? (
+			{currentPart === "reading" && activity?.reading && attemptId !== null ? (
 				<ReadingActivity
+					key={`${activity.id}:${attemptId}`}
 					lessonId={lessonId}
 					slug={slug}
 					activity={activity}
 					activities={detail.activities}
 					onAdvance={setActivePart}
+					attemptId={attemptId}
+					seed={seeds[activity.id] ?? { answers: {}, results: {} }}
 				/>
 			) : null}
-			{currentPart === "listening" && activity?.listening ? (
+			{currentPart === "listening" &&
+			activity?.listening &&
+			attemptId !== null ? (
 				<ListeningActivity
+					key={`${activity.id}:${attemptId}`}
 					lessonId={lessonId}
 					slug={slug}
 					activity={activity}
 					activities={detail.activities}
 					onAdvance={setActivePart}
+					attemptId={attemptId}
+					seed={seeds[activity.id] ?? { answers: {}, results: {} }}
 				/>
 			) : null}
 			{currentPart === "writing" && activity?.writing ? (
@@ -118,6 +223,7 @@ function PracticeInner({
 					activity={activity}
 					activities={detail.activities}
 					onAdvance={setActivePart}
+					attemptId={attemptId}
 				/>
 			) : null}
 			{currentPart === "speaking" && activity?.speaking ? (
@@ -127,25 +233,43 @@ function PracticeInner({
 					activity={activity}
 					activities={detail.activities}
 					onAdvance={setActivePart}
+					attemptId={attemptId}
 				/>
 			) : null}
 		</PartShell>
 	);
 }
 
-/** Shared per-question check state: answers + locked results by index. */
-function useCheckedQuestions(activity: Activity) {
-	const [index, setIndex] = useState(0);
-	const [answers, setAnswers] = useState<Record<number, string>>({});
-	const [results, setResults] = useState<Record<number, CheckResult>>({});
+/** Shared per-question check state: answers + locked results by index. The
+ *  activity mounts only once the run (and therefore the seed) exists, so
+ *  plain `useState` initializers do the whole job — no sync effect. */
+function useCheckedQuestions(
+	activity: Activity,
+	attemptId: string | null,
+	seed: QuestionSeed,
+) {
+	const [index, setIndex] = useState(() => firstUnanswered(seed, activity));
+	const [answers, setAnswers] = useState(seed.answers);
+	const [results, setResults] = useState(seed.results);
 	const check = useCheckAnswer();
 
+	function firstUnanswered(seed: QuestionSeed, activity: Activity): number {
+		const total =
+			activity.reading?.questions.length ??
+			activity.listening?.questions.length ??
+			0;
+		let target = 0;
+		while (target < total && seed.results[target] !== undefined) target++;
+		return Math.max(0, Math.min(target, total - 1));
+	}
+
 	function handleCheck() {
+		if (!attemptId) return;
 		const key = answers[index];
 		if (key === undefined || results[index] !== undefined || check.isPending)
 			return;
 		check.mutate(
-			{ activityId: activity.id, questionIndex: index, key },
+			{ activityId: activity.id, attemptId, questionIndex: index, key },
 			{
 				onSuccess: (result) => {
 					setResults((current) => ({ ...current, [index]: result }));
@@ -194,21 +318,60 @@ function useContinue(
 	return { continueLabel, handleContinue };
 }
 
+function NoOpenRunCard({
+	lessonId,
+	onStarted,
+}: {
+	lessonId: string;
+	onStarted: (id: string) => void;
+}) {
+	const start = useStartLessonAttempt();
+	return (
+		<div className="surface-card flex flex-col items-start gap-3 p-5">
+			<h2 className="text-lg font-bold text-foreground">
+				{m["lessons.practice.noRunTitle"]()}
+			</h2>
+			<p className="text-[15px] font-medium text-muted-foreground">
+				{m["lessons.practice.noRunBody"]()}
+			</p>
+			<SubmitButton
+				type="button"
+				className="btn btn-primary"
+				pending={start.isPending}
+				onClick={() =>
+					start.mutate(lessonId, {
+						onSuccess: (attempt) => onStarted(attempt.id),
+						onError: () => {
+							toast.error(m["lessons.attempt.failed"]());
+						},
+					})
+				}
+			>
+				{m["lessons.practice.noRunAction"]()}
+			</SubmitButton>
+		</div>
+	);
+}
+
 function ReadingActivity({
 	lessonId,
 	slug,
 	activity,
 	activities,
 	onAdvance,
+	attemptId,
+	seed,
 }: {
 	lessonId: string;
 	slug: string;
 	activity: Activity;
 	activities: Activity[];
 	onAdvance: (part: ActivityType) => void;
+	attemptId: string | null;
+	seed: QuestionSeed;
 }) {
 	const payload = activity.reading;
-	const checked = useCheckedQuestions(activity);
+	const checked = useCheckedQuestions(activity, attemptId, seed);
 	const { handleContinue } = useContinue(
 		lessonId,
 		slug,
@@ -254,7 +417,7 @@ function ReadingActivity({
 					}
 					isLast={isLast}
 					onContinue={handleContinue}
-					pending={checked.pending}
+					pending={checked.pending || attemptId === null}
 				/>
 			}
 		/>
@@ -267,15 +430,19 @@ function ListeningActivity({
 	activity,
 	activities,
 	onAdvance,
+	attemptId,
+	seed,
 }: {
 	lessonId: string;
 	slug: string;
 	activity: Activity;
 	activities: Activity[];
 	onAdvance: (part: ActivityType) => void;
+	attemptId: string | null;
+	seed: QuestionSeed;
 }) {
 	const payload = activity.listening;
-	const checked = useCheckedQuestions(activity);
+	const checked = useCheckedQuestions(activity, attemptId, seed);
 	const { handleContinue } = useContinue(
 		lessonId,
 		slug,
@@ -323,7 +490,7 @@ function ListeningActivity({
 					}
 					isLast={isLast}
 					onContinue={handleContinue}
-					pending={checked.pending}
+					pending={checked.pending || attemptId === null}
 				/>
 			}
 		/>
@@ -336,16 +503,31 @@ function WritingActivity({
 	activity,
 	activities,
 	onAdvance,
+	attemptId,
 }: {
 	lessonId: string;
 	slug: string;
 	activity: Activity;
 	activities: Activity[];
 	onAdvance: (part: ActivityType) => void;
+	attemptId: string | null;
 }) {
 	const payload = activity.writing;
 	const [text, setText] = useState("");
-	const [submitted, setSubmitted] = useState(false);
+	const score = useScoreWriting();
+	const [result, setResult] = useState<WritingScoreResponse | null>(null);
+	function handleSubmit() {
+		if (!attemptId || score.isPending) return;
+		score.mutate(
+			{ activityId: activity.id, attemptId, text },
+			{
+				onSuccess: (value) => setResult(value),
+				onError: () => {
+					toast.error(m["lessons.writing.score.failed"]());
+				},
+			},
+		);
+	}
 	const { continueLabel, handleContinue } = useContinue(
 		lessonId,
 		slug,
@@ -360,33 +542,47 @@ function WritingActivity({
 	return (
 		<PageSplit
 			main={
-				<WritingPromptBanner
-					partNumber={activity.partNumber}
-					partCount={partCount}
-					task={payload.task}
-					instructions={payload.instructions}
-					stimulus={payload.stimulus}
-					minWords={payload.minWords}
-					maxWords={payload.maxWords}
-				/>
+				<div className="flex flex-col gap-4">
+					<WritingPromptBanner
+						partNumber={activity.partNumber}
+						partCount={partCount}
+						task={payload.task}
+						instructions={payload.instructions}
+						stimulus={payload.stimulus}
+						minWords={payload.minWords}
+						maxWords={payload.maxWords}
+					/>
+					{result ? (
+						<ModelAnswerCard
+							modelAnswer={payload.modelAnswer}
+							checklist={payload.checklist}
+							continueLabel={continueLabel}
+							onContinue={handleContinue}
+						/>
+					) : null}
+				</div>
 			}
 			aside={
 				<div className="flex flex-col gap-4">
 					<WritingEditorCard
 						value={text}
-						onChange={setText}
+						onChange={(next) => {
+							setText(next);
+							if (result !== null) setResult(null);
+						}}
 						maxWords={payload.maxWords}
 						onClear={() => {
 							setText("");
-							setSubmitted(false);
+							setResult(null);
 						}}
-						onSubmit={() => setSubmitted(true)}
-						submitted={submitted}
+						onSubmit={handleSubmit}
+						onRevise={() => setResult(null)}
+						submitted={result !== null || score.isPending}
+						pending={score.isPending}
 					/>
-					{submitted ? (
-						<ModelAnswerCard
-							modelAnswer={payload.modelAnswer}
-							checklist={payload.checklist}
+					{result ? (
+						<ScoreCard
+							score={result}
 							continueLabel={continueLabel}
 							onContinue={handleContinue}
 						/>
@@ -403,12 +599,14 @@ function SpeakingBranch({
 	activity,
 	activities,
 	onAdvance,
+	attemptId,
 }: {
 	lessonId: string;
 	slug: string;
 	activity: Activity;
 	activities: Activity[];
 	onAdvance: (part: ActivityType) => void;
+	attemptId: string | null;
 }) {
 	const { handleContinue } = useContinue(
 		lessonId,
@@ -422,5 +620,11 @@ function SpeakingBranch({
 		handleContinue();
 	}
 
-	return <SpeakingActivity activity={activity} onComplete={handleComplete} />;
+	return (
+		<SpeakingActivity
+			activity={activity}
+			attemptId={attemptId}
+			onComplete={handleComplete}
+		/>
+	);
 }

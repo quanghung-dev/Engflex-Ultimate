@@ -61,13 +61,19 @@ export function PageSplit({
 
 export function PageLayout({
 	hero,
+	action,
 	children,
 }: {
 	hero?: PageHeroSpec | null;
+	/** Left-of-hero slot: back navigation or a page-level call to action.
+	 *  The caller owns label + link (a `Button asChild` + `Link` block) —
+	 *  this component only positions it. */
+	action?: ReactNode;
 	children?: ReactNode;
 }) {
 	return (
 		<div className="container-content flex flex-col gap-6 py-8">
+			{action ? <div className="flex items-center gap-2">{action}</div> : null}
 			{hero ? (
 				<PageHero
 					icon={hero.icon}

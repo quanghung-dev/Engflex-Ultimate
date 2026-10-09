@@ -1,15 +1,15 @@
 import type { Activity } from "@engflex/contracts";
-import { Link } from "@tanstack/react-router";
-import { APP_ROUTES } from "#/app/app-route";
-import { Button } from "#/components/ui/button";
+import { SubmitButton } from "#/components/common/submit-button";
 import { m } from "#/paraglide/messages";
 
 export function ActivityRow({
-	slug,
 	activity,
+	onStart,
+	startPending,
 }: {
-	slug: string;
 	activity: Activity;
+	onStart: () => void;
+	startPending: boolean;
 }) {
 	return (
 		<div className="surface-card flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:gap-4">
@@ -34,16 +34,16 @@ export function ActivityRow({
 					{activity.description}
 				</p>
 			</div>
-			<Button
-				asChild
+			<SubmitButton
+				type="button"
 				variant="outline"
 				size="sm"
 				className="btn btn-outline sm:ml-auto"
+				onClick={onStart}
+				pending={startPending}
 			>
-				<Link to={APP_ROUTES.LESSONS.PRACTICE} params={{ slug }}>
-					{m["lessons.card.start"]()}
-				</Link>
-			</Button>
+				{m["lessons.card.start"]()}
+			</SubmitButton>
 		</div>
 	);
 }

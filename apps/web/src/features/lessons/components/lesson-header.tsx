@@ -1,9 +1,8 @@
 import type { ActivityType, LessonDetail } from "@engflex/contracts";
-import { Link } from "@tanstack/react-router";
 import { BookmarkCheck, BookmarkPlus, Clock3, Layers } from "lucide-react";
-import { APP_ROUTES } from "#/app/app-route";
 import { CefrBadge } from "#/components/common/cefr-badge";
 import { MoMascot } from "#/components/common/mo-mascot";
+import { SubmitButton } from "#/components/common/submit-button";
 import { Button } from "#/components/ui/button";
 import { PART_META } from "#/features/lessons/parts";
 import type { LessonProgress } from "#/features/lessons/store";
@@ -15,12 +14,16 @@ export function LessonHeader({
 	startPart,
 	startPartNumber,
 	onToggleBookmark,
+	onStart,
+	startPending,
 }: {
 	lesson: LessonDetail;
 	progress: LessonProgress;
 	startPart: ActivityType;
 	startPartNumber: number;
 	onToggleBookmark: () => void;
+	onStart: () => void;
+	startPending: boolean;
 }) {
 	const partCount = lesson.activities.length;
 	return (
@@ -48,17 +51,17 @@ export function LessonHeader({
 					</p>
 				</div>
 				<div className="flex flex-wrap gap-3">
-					<Button asChild className="btn btn-primary">
-						<Link
-							to={APP_ROUTES.LESSONS.PRACTICE}
-							params={{ slug: lesson.slug }}
-						>
-							{m["lessons.detail.startLesson"]({
-								number: startPartNumber,
-								part: PART_META[startPart].label(),
-							})}
-						</Link>
-					</Button>
+					<SubmitButton
+						type="button"
+						className="btn btn-primary"
+						onClick={onStart}
+						pending={startPending}
+					>
+						{m["lessons.detail.startLesson"]({
+							number: startPartNumber,
+							part: PART_META[startPart].label(),
+						})}
+					</SubmitButton>
 					<Button
 						type="button"
 						variant="outline"
