@@ -12,9 +12,8 @@ export interface Attempt {
   id: string;
   userId: string;
   lessonId?: string;
-  activityId?: string;
-  conversationId?: string;
   type: AttemptType;
+  status: AttemptStatus;
   score?: number /* float64 */;
   result: { [key: string]: unknown};
   durationSec?: number /* int */;

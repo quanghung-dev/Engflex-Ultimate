@@ -14,6 +14,17 @@ export const ActivityTypeSpeaking = "speaking";
 export type ActivityType = typeof ActivityTypeReading | typeof ActivityTypeListening | typeof ActivityTypeWriting | typeof ActivityTypeSpeaking;
 
 //////////
+// source: attempt_status.go
+
+/**
+ * AttemptStatus is the lesson-attempt lifecycle (Moodle parity).
+ */
+export const AttemptStatusInProgress = "in_progress";
+export const AttemptStatusCompleted = "completed";
+export const AttemptStatusAbandoned = "abandoned";
+export type AttemptStatus = typeof AttemptStatusInProgress | typeof AttemptStatusCompleted | typeof AttemptStatusAbandoned;
+
+//////////
 // source: attempt_type.go
 
 /**
@@ -29,7 +40,8 @@ export const AttemptTypeShadowing = "shadowing";
 export const AttemptTypeFlashcard = "flashcard";
 export const AttemptTypeBenchmark = "benchmark";
 export const AttemptTypeDictation = "dictation";
-export type AttemptType = typeof AttemptTypeReading | typeof AttemptTypeListening | typeof AttemptTypeWriting | typeof AttemptTypeSpeaking | typeof AttemptTypeShadowing | typeof AttemptTypeFlashcard | typeof AttemptTypeBenchmark | typeof AttemptTypeDictation;
+export const AttemptTypeLesson = "lesson";
+export type AttemptType = typeof AttemptTypeReading | typeof AttemptTypeListening | typeof AttemptTypeWriting | typeof AttemptTypeSpeaking | typeof AttemptTypeShadowing | typeof AttemptTypeFlashcard | typeof AttemptTypeBenchmark | typeof AttemptTypeDictation | typeof AttemptTypeLesson;
 
 //////////
 // source: cefr.go

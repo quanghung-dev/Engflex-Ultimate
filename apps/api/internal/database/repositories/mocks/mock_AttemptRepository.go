@@ -5,6 +5,8 @@
 package mocks
 
 import (
+	"context"
+	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories"
 
 	mock "github.com/stretchr/testify/mock"
@@ -45,6 +47,262 @@ type MockAttemptRepository_Expecter struct {
 
 func (_m *MockAttemptRepository) EXPECT() *MockAttemptRepository_Expecter {
 	return &MockAttemptRepository_Expecter{mock: &_m.Mock}
+}
+
+// Create provides a mock function for the type MockAttemptRepository
+func (_mock *MockAttemptRepository) Create(ctx context.Context, m *models.Attempt) error {
+	ret := _mock.Called(ctx, m)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Create")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *models.Attempt) error); ok {
+		r0 = returnFunc(ctx, m)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockAttemptRepository_Create_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Create'
+type MockAttemptRepository_Create_Call struct {
+	*mock.Call
+}
+
+// Create is a helper method to define mock.On call
+//   - ctx context.Context
+//   - m *models.Attempt
+func (_e *MockAttemptRepository_Expecter) Create(ctx any, m any) *MockAttemptRepository_Create_Call {
+	return &MockAttemptRepository_Create_Call{Call: _e.mock.On("Create", ctx, m)}
+}
+
+func (_c *MockAttemptRepository_Create_Call) Run(run func(ctx context.Context, m *models.Attempt)) *MockAttemptRepository_Create_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *models.Attempt
+		if args[1] != nil {
+			arg1 = args[1].(*models.Attempt)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAttemptRepository_Create_Call) Return(err error) *MockAttemptRepository_Create_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockAttemptRepository_Create_Call) RunAndReturn(run func(ctx context.Context, m *models.Attempt) error) *MockAttemptRepository_Create_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetByID provides a mock function for the type MockAttemptRepository
+func (_mock *MockAttemptRepository) GetByID(ctx context.Context, id string) (*models.Attempt, error) {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByID")
+	}
+
+	var r0 *models.Attempt
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*models.Attempt, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *models.Attempt); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Attempt)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAttemptRepository_GetByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByID'
+type MockAttemptRepository_GetByID_Call struct {
+	*mock.Call
+}
+
+// GetByID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *MockAttemptRepository_Expecter) GetByID(ctx any, id any) *MockAttemptRepository_GetByID_Call {
+	return &MockAttemptRepository_GetByID_Call{Call: _e.mock.On("GetByID", ctx, id)}
+}
+
+func (_c *MockAttemptRepository_GetByID_Call) Run(run func(ctx context.Context, id string)) *MockAttemptRepository_GetByID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAttemptRepository_GetByID_Call) Return(attempt *models.Attempt, err error) *MockAttemptRepository_GetByID_Call {
+	_c.Call.Return(attempt, err)
+	return _c
+}
+
+func (_c *MockAttemptRepository_GetByID_Call) RunAndReturn(run func(ctx context.Context, id string) (*models.Attempt, error)) *MockAttemptRepository_GetByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetOpenAttempt provides a mock function for the type MockAttemptRepository
+func (_mock *MockAttemptRepository) GetOpenAttempt(ctx context.Context, userID string, lessonID string) (*models.Attempt, error) {
+	ret := _mock.Called(ctx, userID, lessonID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetOpenAttempt")
+	}
+
+	var r0 *models.Attempt
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) (*models.Attempt, error)); ok {
+		return returnFunc(ctx, userID, lessonID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) *models.Attempt); ok {
+		r0 = returnFunc(ctx, userID, lessonID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Attempt)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = returnFunc(ctx, userID, lessonID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAttemptRepository_GetOpenAttempt_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetOpenAttempt'
+type MockAttemptRepository_GetOpenAttempt_Call struct {
+	*mock.Call
+}
+
+// GetOpenAttempt is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - lessonID string
+func (_e *MockAttemptRepository_Expecter) GetOpenAttempt(ctx any, userID any, lessonID any) *MockAttemptRepository_GetOpenAttempt_Call {
+	return &MockAttemptRepository_GetOpenAttempt_Call{Call: _e.mock.On("GetOpenAttempt", ctx, userID, lessonID)}
+}
+
+func (_c *MockAttemptRepository_GetOpenAttempt_Call) Run(run func(ctx context.Context, userID string, lessonID string)) *MockAttemptRepository_GetOpenAttempt_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAttemptRepository_GetOpenAttempt_Call) Return(attempt *models.Attempt, err error) *MockAttemptRepository_GetOpenAttempt_Call {
+	_c.Call.Return(attempt, err)
+	return _c
+}
+
+func (_c *MockAttemptRepository_GetOpenAttempt_Call) RunAndReturn(run func(ctx context.Context, userID string, lessonID string) (*models.Attempt, error)) *MockAttemptRepository_GetOpenAttempt_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Update provides a mock function for the type MockAttemptRepository
+func (_mock *MockAttemptRepository) Update(ctx context.Context, m *models.Attempt) error {
+	ret := _mock.Called(ctx, m)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Update")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *models.Attempt) error); ok {
+		r0 = returnFunc(ctx, m)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockAttemptRepository_Update_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Update'
+type MockAttemptRepository_Update_Call struct {
+	*mock.Call
+}
+
+// Update is a helper method to define mock.On call
+//   - ctx context.Context
+//   - m *models.Attempt
+func (_e *MockAttemptRepository_Expecter) Update(ctx any, m any) *MockAttemptRepository_Update_Call {
+	return &MockAttemptRepository_Update_Call{Call: _e.mock.On("Update", ctx, m)}
+}
+
+func (_c *MockAttemptRepository_Update_Call) Run(run func(ctx context.Context, m *models.Attempt)) *MockAttemptRepository_Update_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *models.Attempt
+		if args[1] != nil {
+			arg1 = args[1].(*models.Attempt)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAttemptRepository_Update_Call) Return(err error) *MockAttemptRepository_Update_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockAttemptRepository_Update_Call) RunAndReturn(run func(ctx context.Context, m *models.Attempt) error) *MockAttemptRepository_Update_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // WithTx provides a mock function for the type MockAttemptRepository

@@ -10,8 +10,6 @@
  */
 export interface CreateAttempt {
   lessonId?: string;
-  activityId?: string;
-  conversationId?: string;
   type: AttemptType;
   score?: number /* float64 */;
   result: { [key: string]: unknown};

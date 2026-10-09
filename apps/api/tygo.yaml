@@ -12,6 +12,7 @@ type_mappings:
   time.Time: "string /* RFC3339 */"
   "enums.ActivityType": "ActivityType"
   "enums.AttemptType": "AttemptType"
+  "enums.AttemptStatus": "AttemptStatus"
   "enums.CEFR": "CEFR"
   "enums.ConversationMode": "ConversationMode"
   "enums.ConversationStatus": "ConversationStatus"

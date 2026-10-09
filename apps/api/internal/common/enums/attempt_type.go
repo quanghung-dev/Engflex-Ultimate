@@ -14,4 +14,5 @@ const (
 	AttemptTypeFlashcard AttemptType = "flashcard"
 	AttemptTypeBenchmark AttemptType = "benchmark"
 	AttemptTypeDictation AttemptType = "dictation"
+	AttemptTypeLesson    AttemptType = "lesson"
 )

@@ -15,6 +15,7 @@ import type * as Enums from './enums.ts';
 declare global {
   type ActivityType = Enums.ActivityType;
   type AttemptType = Enums.AttemptType;
+  type AttemptStatus = Enums.AttemptStatus;
   type CEFR = Enums.CEFR;
   type ConversationMode = Enums.ConversationMode;
   type ConversationStatus = Enums.ConversationStatus;
