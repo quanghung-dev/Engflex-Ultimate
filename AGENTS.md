@@ -459,7 +459,7 @@ Assert with `require.ErrorAs(err, &appErr)` + check `.Status`.
       breadcrumbs.ts              # breadcrumb protocol: staticData specs, targets from APP_ROUTES (labels are thunks)
     assets/topics/*.png
     components/
-      common/                     # Logo, PageHeader, StatCard, CefrBadge, SourcePill, AudioButton, Kbd, ProgressBar
+      common/                     # Logo, PageHeader, StatCard, CefrBadge, SourcePill, AudioButton, Kbd, ProgressBar, SubmitButton
       layout/                     # AppShell, AppSidebar, Topbar, LocaleSwitcher (EN/VI pill)
       ui/*                        # shadcn primitives (a11y copy via common.a11y.*)
     features/<domain>/            # attempts, dashboard, dictation, lessons, onboarding, profiles, reading, vocabulary, voice, writing
@@ -500,6 +500,13 @@ Assert with `require.ErrorAs(err, &appErr)` + check `.Status`.
   `errors.*`. It renders bare (no `AppShell`, no Clerk) precisely because it must
   work signed-out; `error-pages.tsx` keeps `RouteNotFound` /
   `RouteErrorFallback` as thin adapters for `__root.tsx` and `_app/route.tsx`.
+- Mutation buttons: anything driven by a `useMutation` (or equivalent async
+  `pending` flag) uses `components/common/SubmitButton` with `pending={...}`,
+  never a raw `Button` with manual `disabled={...isPending}`. Plain `disabled`
+  stays for non-mutation guards only (empty input, locked question, null id).
+  Omit `loadingLabel` unless the pending label differs — the default holds
+  the label invisible and centers the spinner over it (width frozen),
+  needing no new message key.
 - `scripts/check-conventions.mjs` is the web app's only real test harness, so use
   it as one: run it before a change to watch it fail, then after. It derives the
   watched URL segments from `app-route.ts` and the message accessor from each

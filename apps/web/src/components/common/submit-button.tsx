@@ -1,18 +1,27 @@
 import type { VariantProps } from "class-variance-authority";
+import { cn } from "cn";
 import { Loader2Icon } from "lucide-react";
 import type * as React from "react";
 import { Button, type buttonVariants } from "#/components/ui/button";
 
 /** Icon-only sizes have no label, so the spinner takes the icon's place.
- *  For every other size the spinner is prepended and the label stays —
- *  width is unchanged and the accessible name survives. */
+ *  Every other size uses the centered overlay (see `SubmitButton`). */
 const ICON_SIZE = /^icon(-|$)/;
 
 /** The house spinner (`audio-button`, `sonner`). No `size-*` class on
  *  purpose: `buttonVariants` already sizes bare svgs per size variant
- *  (`[&_svg:not([class*='size-'])]:size-4`, `size-3` on xs/icon-xs). */
-function Spinner() {
-	return <Loader2Icon className="animate-spin" data-icon="inline-start" />;
+ *  (`[&_svg:not([class*='size-'])]:size-4`, `size-3` on xs/icon-xs). An
+ *  explicit className marks the centered-overlay use, which is not an
+ *  inline-start icon. Always decorative: the button's own label (kept in
+ *  flow, even when invisible) owns the accessible name. */
+function Spinner({ className }: { className?: string }) {
+	return (
+		<Loader2Icon
+			aria-hidden="true"
+			className={cn("animate-spin", className)}
+			data-icon={className ? undefined : "inline-start"}
+		/>
+	);
 }
 
 /**
@@ -21,13 +30,17 @@ function Spinner() {
  * Takes the same props as `Button` (it reuses `buttonVariants`' type, so
  * every variant, size, `asChild` and native button prop stays valid) plus:
  *
- * - `pending` — native `disabled` + `aria-busy`, and a spinner in place of
- *   the leading icon. Drives both visual state and the double-submit guard.
+ * - `pending` — native `disabled` + `aria-busy`, and a centered spinner
+ *   overlay. The label stays in flow at `opacity-0` (width frozen, and the
+ *   accessible name survives — `visibility:hidden` would drop it), so the
+ *   button never changes size mid-flight. `disabled:opacity-50` keeps the
+ *   disabled look. Icon-only sizes swap icon for spinner instead (same box,
+ *   no shift possible).
  * - `loadingLabel` — optional visible label while pending. Supplying it also
  *   hands the whole pending presentation to this component: the spinner
  *   replaces the entire children (icon included) so a leading icon and the
- *   spinner never appear side by side. Omit it to keep the children as-is
- *   and just prepend the spinner, which needs no message key.
+ *   spinner never appear side by side. Omit it for the centered overlay
+ *   (label held invisible, spinner on top), which needs no message key.
  *
  * Pass `pending` from the mutation (`mutation.isPending`) rather than local
  * state: a local flag would clear the spinner before the request resolves.
@@ -40,6 +53,8 @@ function SubmitButton({
 	pending = false,
 	loadingLabel,
 	size,
+	className,
+	disabled,
 	children,
 	...props
 }: React.ComponentProps<"button"> &
@@ -48,10 +63,21 @@ function SubmitButton({
 		pending?: boolean;
 		loadingLabel?: string;
 	}) {
+	// Centered-spinner overlay, not a label swap: the invisible label holds
+	// the intrinsic width, and the svg stays a direct child so the
+	// `has-[>svg]` padding rules keep matching (losing either would shift
+	// the width). The wrapper replays the button's own gap per size so the
+	// held width is byte-identical to the idle one.
+	// `disabled` is destructured out (not left in `...props`) so a caller
+	// guard like `disabled={words === 0}` can never override the pending
+	// state back to enabled — the `{...props}` spread below would win.
+	const iconSize = ICON_SIZE.test(size ?? "");
+	const overlay = pending && !props.asChild && !loadingLabel && !iconSize;
 	return (
 		<Button
 			size={size}
-			disabled={pending || props.disabled}
+			className={overlay ? cn("relative", className) : className}
+			disabled={pending || disabled}
 			aria-busy={pending || undefined}
 			data-pending={pending || undefined}
 			{...props}
@@ -62,12 +88,19 @@ function SubmitButton({
 						<Spinner />
 						{loadingLabel}
 					</>
-				) : ICON_SIZE.test(size ?? "") ? (
+				) : iconSize ? (
 					<Spinner />
 				) : (
 					<>
-						<Spinner />
-						{children}
+						<span
+							className={cn(
+								"flex items-center opacity-0",
+								size === "xs" ? "gap-1" : size === "sm" ? "gap-1.5" : "gap-2",
+							)}
+						>
+							{children}
+						</span>
+						<Spinner className="absolute inset-0 m-auto" />
 					</>
 				)
 			) : (
