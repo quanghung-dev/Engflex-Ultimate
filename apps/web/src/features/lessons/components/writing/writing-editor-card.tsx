@@ -1,5 +1,6 @@
 import { cn } from "cn";
 import { Copy, Send } from "lucide-react";
+import { SubmitButton } from "#/components/common/submit-button";
 import { Button } from "#/components/ui/button";
 import { Textarea } from "#/components/ui/textarea";
 import { m } from "#/paraglide/messages";
@@ -10,14 +11,18 @@ export function WritingEditorCard({
 	maxWords,
 	onClear,
 	onSubmit,
+	onRevise,
 	submitted = false,
+	pending = false,
 }: {
 	value: string;
 	onChange: (next: string) => void;
 	maxWords: number;
 	onClear: () => void;
 	onSubmit: () => void;
+	onRevise: () => void;
 	submitted?: boolean;
+	pending?: boolean;
 }) {
 	const words = value.trim() ? value.trim().split(/\s+/).length : 0;
 	const overLimit = words > maxWords;
@@ -47,7 +52,7 @@ export function WritingEditorCard({
 				rows={7}
 				placeholder={m["lessons.writing.placeholder"]()}
 				className="field min-h-40 text-[15px]"
-				disabled={submitted}
+				disabled={pending}
 			/>
 			<div className="flex flex-wrap items-center gap-2">
 				<span
@@ -66,20 +71,33 @@ export function WritingEditorCard({
 					size="sm"
 					className="btn btn-outline"
 					onClick={onClear}
-					disabled={submitted}
+					disabled={pending}
 				>
 					{m["common.actions.clear"]()}
 				</Button>
-				<Button
-					type="button"
-					size="sm"
-					className="btn btn-primary"
-					onClick={onSubmit}
-					disabled={words === 0 || submitted}
-				>
-					<Send data-icon="inline-start" />
-					{m["lessons.writing.submit"]()}
-				</Button>
+				{submitted && !pending ? (
+					<Button
+						type="button"
+						size="sm"
+						className="btn btn-primary"
+						onClick={onRevise}
+					>
+						<Send data-icon="inline-start" />
+						{m["lessons.writing.revise"]()}
+					</Button>
+				) : (
+					<SubmitButton
+						type="button"
+						size="sm"
+						className="btn btn-primary"
+						onClick={onSubmit}
+						disabled={words === 0}
+						pending={pending}
+					>
+						<Send data-icon="inline-start" />
+						{m["lessons.writing.submit"]()}
+					</SubmitButton>
+				)}
 			</div>
 		</div>
 	);

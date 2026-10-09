@@ -3,6 +3,7 @@ import { Mic } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { PageSplit } from "#/components/common/page-layout";
+import { SubmitButton } from "#/components/common/submit-button";
 import { Button } from "#/components/ui/button";
 import { useRecorder } from "#/features/lessons/hooks/use-recorder";
 import { usePronounceAttempt } from "#/features/lessons/queries";
@@ -62,9 +63,11 @@ function ModelRow({ text, audioUrl }: { text: string; audioUrl: string }) {
  */
 export function SpeakingActivity({
 	activity,
+	attemptId,
 	onComplete,
 }: {
 	activity: Activity;
+	attemptId: string | null;
 	onComplete?: () => void;
 }) {
 	const items = activity.speaking?.items ?? [];
@@ -80,18 +83,21 @@ export function SpeakingActivity({
 	const scored = result !== null;
 	// Pre-score upload guard only: the ready blob is mid-flight (or about to
 	// be). This never gates the scored screen — Retry/Next key off
-	// `isPending` alone, so success always leaves them enabled.
-	const recordBusy = attempt.isPending || state.status === "ready";
+	// `isPending` alone, so success always leaves them enabled. The Record
+	// button binds `attempt.isPending` via `SubmitButton pending` and keeps
+	// the ready/null guards as plain `disabled`.
 	const isLast = index >= items.length - 1;
 	const readyBlob = state.status === "ready" ? state.blob : null;
 	const [selfAudioUrl, setSelfAudioUrl] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (state.status !== "ready" || submittedRef.current) return;
+		if (!attemptId) return;
 		submittedRef.current = true;
 		attempt.mutate(
 			{
 				activityId: activity.id,
+				attemptId,
 				itemIndex: index,
 				audio: state.blob,
 				mime: state.mime,
@@ -108,7 +114,7 @@ export function SpeakingActivity({
 				},
 			},
 		);
-	}, [state, activity.id, index, attempt.mutate, reset]);
+	}, [state, activity.id, index, attemptId, attempt.mutate, reset]);
 
 	// Object URL for self-playback: created once per scored blob, revoked on
 	// cleanup (retry/next/item change) so no URL outlives its recording.
@@ -162,15 +168,16 @@ export function SpeakingActivity({
 					/>
 					<div className="flex flex-wrap items-center gap-2">
 						{!recording && !scored ? (
-							<Button
+							<SubmitButton
 								type="button"
 								size="sm"
 								className="btn btn-primary"
-								disabled={recordBusy}
+								disabled={state.status === "ready" || attemptId === null}
+								pending={attempt.isPending}
 								onClick={() => void start()}
 							>
 								{m["lessons.speaking.record"]()}
-							</Button>
+							</SubmitButton>
 						) : null}
 						{recording ? (
 							<Button

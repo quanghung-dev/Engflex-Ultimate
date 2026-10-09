@@ -1,7 +1,7 @@
 import type { Scenario } from "@engflex/contracts";
 import { ArrowRight, Clock3 } from "lucide-react";
 import { CefrBadge } from "#/components/common/cefr-badge";
-import { Button } from "#/components/ui/button";
+import { SubmitButton } from "#/components/common/submit-button";
 import { m } from "#/paraglide/messages";
 
 function personaInitials(roleTitle: string): string {
@@ -16,9 +16,11 @@ function personaInitials(roleTitle: string): string {
 export function ScenarioDetailHero({
 	scenario,
 	onStart,
+	pending = false,
 }: {
 	scenario: Scenario;
 	onStart: () => void;
+	pending?: boolean;
 }) {
 	const persona = scenario.persona;
 	return (
@@ -63,14 +65,15 @@ export function ScenarioDetailHero({
 						</div>
 					) : null}
 				</div>
-				<Button
+				<SubmitButton
 					type="button"
 					className="btn btn-primary shrink-0"
 					onClick={onStart}
+					pending={pending}
 				>
 					{m["voice.detail.start"]()}
 					<ArrowRight data-icon="inline-end" />
-				</Button>
+				</SubmitButton>
 			</div>
 		</section>
 	);

@@ -1,5 +1,5 @@
 import { Mic } from "lucide-react";
-import { Button } from "#/components/ui/button";
+import { SubmitButton } from "#/components/common/submit-button";
 import type { ModeCard as ModeCardFixture } from "#/features/voice/fixtures";
 import { m } from "#/paraglide/messages";
 
@@ -43,9 +43,11 @@ const MODE_COPY: Record<
 export function ModeCard({
 	card,
 	onStart,
+	pending = false,
 }: {
 	card: ModeCardFixture;
 	onStart: () => void;
+	pending?: boolean;
 }) {
 	const copy = MODE_COPY[card.id];
 	const primary = card.id === "spontaneous";
@@ -74,17 +76,18 @@ export function ModeCard({
 				{copy.meta()}
 			</p>
 			<div className="mt-auto pt-1">
-				<Button
+				<SubmitButton
 					type="button"
 					variant={primary ? "default" : "outline"}
 					className={
 						primary ? "btn btn-primary w-full" : "btn btn-outline w-full"
 					}
 					onClick={onStart}
+					pending={pending}
 				>
 					{primary ? <Mic data-icon="inline-start" /> : null}
 					{copy.cta()}
-				</Button>
+				</SubmitButton>
 			</div>
 		</div>
 	);

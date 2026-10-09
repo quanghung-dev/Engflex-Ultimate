@@ -1,8 +1,10 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
+import { ArrowLeft } from "lucide-react";
 import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { PageLayout } from "#/components/common/page-layout";
+import { Button } from "#/components/ui/button";
 import { AcousticBreakdownCard } from "#/features/vocabulary/components/acoustic-breakdown-card";
 import { CollocationsGrid } from "#/features/vocabulary/components/collocations-grid";
 import { ContextsSection } from "#/features/vocabulary/components/contexts-section";
@@ -41,7 +43,16 @@ function WordDetailPage() {
 	const details = item.details;
 
 	return (
-		<PageLayout>
+		<PageLayout
+			action={
+				<Button asChild variant="ghost" size="sm" className="w-fit">
+					<Link to={APP_ROUTES.VOCABULARY.LIST}>
+						<ArrowLeft data-icon="inline-start" />
+						{m["common.actions.back"]()}
+					</Link>
+				</Button>
+			}
+		>
 			<WordHeroCard item={item} />
 
 			{details ? (

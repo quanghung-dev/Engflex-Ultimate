@@ -1,4 +1,5 @@
 import { Mic, MicOff, Square } from "lucide-react";
+import { SubmitButton } from "#/components/common/submit-button";
 import { Button } from "#/components/ui/button";
 import {
 	Dialog,
@@ -101,13 +102,14 @@ export function CorrectionModal({
 
 				<div className="mt-2 border-t border-border pt-4">
 					<div className="flex flex-wrap items-center justify-between gap-2.5">
-						<Button
+						<SubmitButton
 							type="button"
 							disabled={!canSend}
+							pending={window.submitting}
 							onClick={() => onSubmit(window.text)}
 						>
 							{m["voice.room.recovery.send"]()}
-						</Button>
+						</SubmitButton>
 						<div className="flex items-center gap-2">
 							{/* Available for as many attempts as the learner wants: each
 							    one replaces the field, and none of them commits anything

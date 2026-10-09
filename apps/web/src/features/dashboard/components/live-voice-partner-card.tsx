@@ -3,7 +3,7 @@ import { Mic } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { APP_ROUTES } from "#/app/app-route";
-import { Button } from "#/components/ui/button";
+import { SubmitButton } from "#/components/common/submit-button";
 import { VOICE_PARTNER_SCENARIO_IDS } from "#/features/dashboard/fixtures";
 import { useCreateConversation, useScenarios } from "#/features/voice/queries";
 import { m } from "#/paraglide/messages";
@@ -62,15 +62,16 @@ export function LiveVoicePartnerCard() {
 					/>
 				))}
 			</div>
-			<Button
+			<SubmitButton
 				className="btn btn-primary mt-auto w-full"
+				pending={createConversation.isPending}
 				onClick={() => {
 					void startFreeTalk();
 				}}
 			>
 				<Mic data-icon="inline-start" />
 				{m["dashboard.voicePartner.start"]()}
-			</Button>
+			</SubmitButton>
 		</div>
 	);
 }

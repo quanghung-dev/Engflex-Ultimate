@@ -47,6 +47,9 @@ function VoiceModesPage() {
 					<ModeCard
 						key={card.id}
 						card={card}
+						pending={
+							card.id === "spontaneous" ? createConversation.isPending : false
+						}
 						onStart={() => {
 							if (card.id === "spontaneous") {
 								void startFreeTalk();

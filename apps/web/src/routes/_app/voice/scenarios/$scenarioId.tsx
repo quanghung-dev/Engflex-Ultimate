@@ -73,15 +73,19 @@ function ScenarioDetailPage() {
 	const scenario = scenarioQuery.data;
 	if (!scenario) return null;
 	return (
-		<PageLayout>
-			<Button asChild variant="ghost" className="w-fit">
-				<Link to={APP_ROUTES.VOICE.SCENARIOS}>
-					<ArrowLeft data-icon="inline-start" />
-					{m["voice.detail.back"]()}
-				</Link>
-			</Button>
+		<PageLayout
+			action={
+				<Button asChild variant="ghost" className="w-fit">
+					<Link to={APP_ROUTES.VOICE.SCENARIOS}>
+						<ArrowLeft data-icon="inline-start" />
+						{m["voice.detail.back"]()}
+					</Link>
+				</Button>
+			}
+		>
 			<ScenarioDetailHero
 				scenario={scenario}
+				pending={createConversation.isPending}
 				onStart={() => {
 					void startRoleplay(scenario.id);
 				}}

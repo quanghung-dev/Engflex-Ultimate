@@ -1,5 +1,6 @@
 import type { CheckResult, Question } from "@engflex/contracts";
 import { CircleCheck, CircleX } from "lucide-react";
+import { SubmitButton } from "#/components/common/submit-button";
 import { Button } from "#/components/ui/button";
 import { RadioGroup } from "#/components/ui/radio-group";
 import { McqOption } from "#/features/lessons/components/reading/mcq-option";
@@ -119,14 +120,15 @@ export function CheckQuestionPanel({
 				>
 					{m["lessons.reading.previousQuestion"]()}
 				</Button>
-				<Button
+				<SubmitButton
 					type="button"
 					className="btn btn-outline"
 					onClick={onCheck}
-					disabled={selectedKey === undefined || locked || pending}
+					disabled={selectedKey === undefined || locked}
+					pending={pending}
 				>
 					{m["lessons.check.submit"]()}
-				</Button>
+				</SubmitButton>
 				<Button
 					type="button"
 					className={isLast ? "btn btn-primary" : "btn btn-outline"}
