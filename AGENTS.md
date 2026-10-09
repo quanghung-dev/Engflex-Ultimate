@@ -423,6 +423,12 @@ Assert with `require.ErrorAs(err, &appErr)` + check `.Status`.
   success `slog.InfoContext(ctx, "op done", "k", v)`,
   failure `logger.Report(ctx, "op failed", appErr, "k", v)`.
   `Report` maps `*AppError`: 4xx → Warn, 5xx/unknown → Error.
+> **Every service function logs both paths — no silent returns.** Each
+> success return gets its `InfoContext`; each 5xx/DB-error return gets its
+> `Report` first (pure-validation 4xx stays silent, matching file
+> precedent). A `return nil, common.Internal()` without a `Report` above it
+> is a defect, and a success return without an `InfoContext` is one too —
+> check both on every function you write or touch, in every module.
 - Never `fmt.Print`/`log.Print`/`slog.New` at call sites.
 - Context carries `request_id` + `user_id` (canonical `userID`, Clerk subject):
   `logger.WithRequestID/WithUserID`, auto-attached by `contextHandler`.
@@ -500,6 +506,11 @@ Assert with `require.ErrorAs(err, &appErr)` + check `.Status`.
   `errors.*`. It renders bare (no `AppShell`, no Clerk) precisely because it must
   work signed-out; `error-pages.tsx` keeps `RouteNotFound` /
   `RouteErrorFallback` as thin adapters for `__root.tsx` and `_app/route.tsx`.
+- `PageLayout` hero action: drill-down pages pass back navigation via the
+  `action` slot (`Button asChild` + `Link` to an `APP_ROUTES` target, label
+  from messages), never a hand-rolled button row in `children`. The slot
+  renders as its own left-aligned row above the hero (or above the content
+  when there is no hero).
 - Mutation buttons: anything driven by a `useMutation` (or equivalent async
   `pending` flag) uses `components/common/SubmitButton` with `pending={...}`,
   never a raw `Button` with manual `disabled={...isPending}`. Plain `disabled`
@@ -507,6 +518,12 @@ Assert with `require.ErrorAs(err, &appErr)` + check `.Status`.
   Omit `loadingLabel` unless the pending label differs — the default holds
   the label invisible and centers the spinner over it (width frozen),
   needing no new message key.
+- React effects (`docs/superpowers/rules/react-effects.md` is the authority):
+  `useEffect` syncs React with outside-React only — never React state with
+  React state. Derive during render, use event handlers for user work, `key`
+  for entity resets, TanStack Query for server state, TanStack Store for
+  client UI state (never server snapshots). Mount queries pair
+  `enabled: isLoaded` with retry-except-control-flow, never `retry: false`.
 - `scripts/check-conventions.mjs` is the web app's only real test harness, so use
   it as one: run it before a change to watch it fail, then after. It derives the
   watched URL segments from `app-route.ts` and the message accessor from each

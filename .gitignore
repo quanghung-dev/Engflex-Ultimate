@@ -68,3 +68,10 @@ temp/
 
 # --- Voice model artifacts (downloaded TTS weights, not source) ---
 apps/voice/models/
+
+
+!/docs/
+!/docs/superpowers/
+!/docs/superpowers/rules/
+!/docs/superpowers/rules/*.md
+/docs/**/*.mjs
