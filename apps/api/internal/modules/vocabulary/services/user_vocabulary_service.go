@@ -36,6 +36,7 @@ func (s *userVocabularyService) ListByUser(ctx context.Context, userID string, l
 		logger.Report(ctx, "list user vocabulary failed", appErr)
 		return nil, appErr
 	}
+	slog.InfoContext(ctx, "user vocabulary listed", "count", len(items))
 	return items, nil
 }
 
@@ -68,5 +69,6 @@ func (s *userVocabularyService) Unsave(ctx context.Context, userID, itemID strin
 		logger.Report(ctx, "unsave user vocabulary failed", appErr)
 		return appErr
 	}
+	slog.InfoContext(ctx, "user vocabulary unsaved", "itemID", itemID)
 	return nil
 }

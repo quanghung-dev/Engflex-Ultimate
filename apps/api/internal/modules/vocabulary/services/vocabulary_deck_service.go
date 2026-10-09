@@ -43,6 +43,7 @@ func (s *vocabularyDeckService) ListByUser(ctx context.Context, userID string, l
 		logger.Report(ctx, "count vocabulary decks failed", appErr)
 		return nil, 0, appErr
 	}
+	slog.InfoContext(ctx, "vocabulary decks listed", "count", len(items), "total", total)
 	return items, total, nil
 }
 
@@ -56,6 +57,7 @@ func (s *vocabularyDeckService) GetDetail(ctx context.Context, userID, id string
 	if m.UserID == nil || *m.UserID != userID {
 		return nil, common.Forbidden("not your deck")
 	}
+	slog.InfoContext(ctx, "vocabulary deck found", "id", m.ID)
 	return m, nil
 }
 
@@ -110,6 +112,7 @@ func (s *vocabularyDeckService) Update(ctx context.Context, userID, id string, r
 		logger.Report(ctx, "update vocabulary deck failed", appErr, "id", id)
 		return nil, appErr
 	}
+	slog.InfoContext(ctx, "vocabulary deck updated", "id", id)
 	return d, nil
 }
 
@@ -128,5 +131,6 @@ func (s *vocabularyDeckService) Delete(ctx context.Context, userID, id string) e
 		logger.Report(ctx, "delete vocabulary deck failed", appErr, "id", id)
 		return appErr
 	}
+	slog.InfoContext(ctx, "vocabulary deck deleted", "id", id)
 	return nil
 }

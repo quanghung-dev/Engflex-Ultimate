@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"log/slog"
 
 	"engflex-api/internal/common"
 	"engflex-api/internal/database/models"
@@ -44,6 +45,7 @@ func (s *PersonaService) List(ctx context.Context, req requests.ListPersonas) ([
 		logger.Report(ctx, "count personas failed", appErr)
 		return nil, 0, appErr
 	}
+	slog.InfoContext(ctx, "personas listed", "count", len(items), "total", total)
 	return items, total, nil
 }
 
@@ -54,5 +56,6 @@ func (s *PersonaService) GetByID(ctx context.Context, id string) (*models.Person
 		logger.Report(ctx, "get persona failed", appErr, "personaID", id)
 		return nil, appErr
 	}
+	slog.InfoContext(ctx, "persona found", "personaID", m.ID)
 	return m, nil
 }

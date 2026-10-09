@@ -42,6 +42,7 @@ func (s *vocabularyItemService) List(ctx context.Context, limit, offset int) ([]
 		logger.Report(ctx, "count vocabulary items failed", appErr)
 		return nil, 0, appErr
 	}
+	slog.InfoContext(ctx, "vocabulary items listed", "count", len(items), "total", total)
 	return items, total, nil
 }
 
@@ -52,6 +53,7 @@ func (s *vocabularyItemService) GetByID(ctx context.Context, id string) (*models
 		logger.Report(ctx, "get vocabulary item failed", appErr, "id", id)
 		return nil, appErr
 	}
+	slog.InfoContext(ctx, "vocabulary item found", "id", m.ID)
 	return m, nil
 }
 

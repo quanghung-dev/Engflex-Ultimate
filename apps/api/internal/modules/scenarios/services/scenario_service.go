@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"log/slog"
 
 	"engflex-api/internal/common"
 	"engflex-api/internal/database/models"
@@ -46,6 +47,7 @@ func (s *ScenarioService) List(ctx context.Context, req requests.ListScenarios) 
 		logger.Report(ctx, "count scenarios failed", appErr)
 		return nil, 0, appErr
 	}
+	slog.InfoContext(ctx, "scenarios listed", "count", len(items), "total", total)
 	return items, total, nil
 }
 
@@ -65,6 +67,7 @@ func (s *ScenarioService) ListTopicsWithPreview(ctx context.Context, previewK in
 		logger.Report(ctx, "list topics with preview failed", appErr)
 		return nil, appErr
 	}
+	slog.InfoContext(ctx, "scenario topics with preview listed", "count", len(out))
 	return out, nil
 }
 
@@ -78,6 +81,7 @@ func (s *ScenarioService) GetDetail(ctx context.Context, id string) (*models.Sce
 		logger.Report(ctx, "get scenario detail failed", appErr, "scenarioID", id)
 		return nil, appErr
 	}
+	slog.InfoContext(ctx, "scenario detail found", "scenarioID", m.ID)
 	return m, nil
 }
 
@@ -90,5 +94,6 @@ func (s *ScenarioService) GetByID(ctx context.Context, id string) (*models.Scena
 		logger.Report(ctx, "get scenario failed", appErr, "scenarioID", id)
 		return nil, appErr
 	}
+	slog.InfoContext(ctx, "scenario found", "scenarioID", m.ID)
 	return m, nil
 }

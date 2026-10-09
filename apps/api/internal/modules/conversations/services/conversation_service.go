@@ -115,7 +115,9 @@ func (s *ConversationService) Start(ctx context.Context, userID, id string) (*mo
 	if affected == 0 {
 		refreshed, err := s.conversations.GetByID(ctx, conv.ID)
 		if err != nil {
-			return nil, nil, common.FromDBError(err, "conversation")
+			appErr := common.FromDBError(err, "conversation")
+			logger.Report(ctx, "recheck conversation start failed", appErr, "conversationID", conv.ID)
+			return nil, nil, appErr
 		}
 		if cached, ok := decodeStartResponse(refreshed.SpeechStartResponse); ok {
 			return refreshed, cached.ICEConfig, nil
@@ -191,7 +193,9 @@ func (s *ConversationService) End(ctx context.Context, userID, id string) (*mode
 	}
 	updated, err := s.conversations.GetByID(ctx, conv.ID)
 	if err != nil {
-		return nil, common.FromDBError(err, "conversation")
+		appErr := common.FromDBError(err, "conversation")
+		logger.Report(ctx, "get ended conversation failed", appErr, "conversationID", conv.ID)
+		return nil, appErr
 	}
 	slog.InfoContext(ctx, "conversation ended", "conversationID", conv.ID)
 	return updated, nil
@@ -206,7 +210,9 @@ func (s *ConversationService) Finalize(ctx context.Context, id string, durationS
 		return common.BadRequest("durationSec must be >= 0")
 	}
 	if _, err := s.conversations.GetByID(ctx, id); err != nil {
-		return common.FromDBError(err, "conversation")
+		appErr := common.FromDBError(err, "conversation")
+		logger.Report(ctx, "finalize conversation lookup failed", appErr, "conversationID", id)
+		return appErr
 	}
 	if _, err := s.conversations.SetEnded(ctx, id, &durationSec); err != nil {
 		appErr := common.FromDBError(err, "conversation")

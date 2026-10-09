@@ -11,6 +11,8 @@ import (
 	mgin "github.com/ulule/limiter/v3/drivers/middleware/gin"
 	mstore "github.com/ulule/limiter/v3/drivers/store/memory"
 	sredis "github.com/ulule/limiter/v3/drivers/store/redis"
+
+	"engflex-api/internal/common"
 )
 
 // ApplyProxyTrust configures which upstream proxies the engine believes for
@@ -50,6 +52,14 @@ func BypassRateLimitForPrefix(prefix string, h gin.HandlerFunc) gin.HandlerFunc 
 	}
 }
 
+// limitReachedHandler answers 429s in the house envelope so API clients see
+// {message} like every other error. The library default is plain-text "Limit
+// exceeded", which fetch clients cannot parse into ApiError and which crashes
+// error boundaries with a SyntaxError instead of a readable status.
+func limitReachedHandler(c *gin.Context) {
+	common.Fail(c, common.TooManyRequests("rate limit exceeded"))
+}
+
 // NewRateLimitMiddleware builds an IP-keyed Gin rate limiter over any
 // limiter.Store. formattedRate is "<limit>-<period>" (S/M/H/D, e.g. "60-M").
 // Unlike sona-voice (which panics), invalid input returns an error so the
@@ -62,6 +72,7 @@ func NewRateLimitMiddleware(store limiter.Store, formattedRate string) (gin.Hand
 	return mgin.NewMiddleware(
 		limiter.New(store, rate),
 		mgin.WithErrorHandler(failOpenHandler),
+		mgin.WithLimitReachedHandler(limitReachedHandler),
 	), nil
 }
 

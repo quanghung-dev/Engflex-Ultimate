@@ -2,6 +2,7 @@ package middleware_test
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -205,6 +206,25 @@ func TestRateLimitStoreErrorFailsOpen(t *testing.T) {
 			assert.Equal(t, http.StatusOK, rec.Code)
 		})
 	}
+}
+
+func TestRateLimitExceededEnvelope(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	h, err := middleware.NewInMemoryRateLimitMiddleware("1-M")
+	require.NoError(t, err)
+	r := gin.New()
+	r.GET("/ping", h, func(c *gin.Context) { c.Status(http.StatusOK) })
+	rec := httptest.NewRecorder()
+	for i := 0; i < 2; i++ {
+		rec = httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodGet, "/ping", nil)
+		req.RemoteAddr = "10.0.0.9:1234"
+		r.ServeHTTP(rec, req)
+	}
+	assert.Equal(t, http.StatusTooManyRequests, rec.Code)
+	var body map[string]any
+	require.NoError(t, json.Unmarshal(rec.Body.Bytes(), &body))
+	assert.Equal(t, "rate limit exceeded", body["message"])
 }
 
 func TestBypassRateLimitForPrefix(t *testing.T) {

@@ -59,6 +59,7 @@ func (s *vocabularyDeckItemService) ListByDeck(ctx context.Context, userID, deck
 		logger.Report(ctx, "list vocabulary deck items failed", appErr, "deckID", deckID)
 		return nil, appErr
 	}
+	slog.InfoContext(ctx, "vocabulary deck items listed", "count", len(items), "deckID", deckID)
 	return items, nil
 }
 
@@ -72,6 +73,7 @@ func (s *vocabularyDeckItemService) GetByID(ctx context.Context, userID, id stri
 	if err := s.requireOwner(ctx, userID, m.DeckID); err != nil {
 		return nil, err
 	}
+	slog.InfoContext(ctx, "vocabulary deck item found", "id", m.ID)
 	return m, nil
 }
 
@@ -116,6 +118,7 @@ func (s *vocabularyDeckItemService) Update(ctx context.Context, userID, id strin
 		logger.Report(ctx, "update vocabulary deck item failed", appErr, "id", id)
 		return nil, appErr
 	}
+	slog.InfoContext(ctx, "vocabulary deck item updated", "id", id)
 	return i, nil
 }
 
@@ -134,5 +137,6 @@ func (s *vocabularyDeckItemService) Delete(ctx context.Context, userID, id strin
 		logger.Report(ctx, "delete vocabulary deck item failed", appErr, "id", id)
 		return appErr
 	}
+	slog.InfoContext(ctx, "vocabulary deck item deleted", "id", id)
 	return nil
 }
