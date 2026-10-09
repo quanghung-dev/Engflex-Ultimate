@@ -1,5 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { notFound } from "@tanstack/react-router";
+import { notFound, redirect } from "@tanstack/react-router";
+import { APP_ROUTES } from "#/app/app-route";
 import { ApiError } from "./api";
 
 /**
@@ -14,19 +15,35 @@ import { ApiError } from "./api";
  * object the component's useQuery uses so loader and component share one
  * cache key.
  *
- * No retries here: React Query's default retry (3 + exponential backoff)
- * would hang every navigation for seconds on an outage before any boundary
- * renders. Preloads fail fast to the retryable error page instead.
+ * A 401 becomes a sign-in redirect instead of a crash. Every caller lives
+ * behind the `_app` auth guard, so a 401 is token plumbing — an SSR load
+ * with no Bearer, or Clerk still hydrating — never a signed-out user. The
+ * sign-in page bounces an active session straight back with fresh
+ * credentials, which heals both cases with no error page.
+ *
+ * Retries exclude control flow: 404 settles instantly to notFound, 401 to
+ * the redirect; real failures (timeouts, 500s, down API) retry with the
+ * default backoff (~7s worst case for 3) before the retryable error page.
  */
 export async function loadOr404<T, TKey extends readonly unknown[]>(
 	queryClient: QueryClient,
 	options: { queryKey: TKey; queryFn: () => Promise<T> },
 ): Promise<T> {
 	try {
-		return await queryClient.query({ ...options, retry: false });
+		return await queryClient.query({
+			...options,
+			retry: (failureCount: number, error: unknown) =>
+				!(
+					error instanceof ApiError &&
+					(error.status === 404 || error.status === 401)
+				) && failureCount < 3,
+		});
 	} catch (error) {
 		if (error instanceof ApiError && error.status === 404) {
 			throw notFound();
+		}
+		if (error instanceof ApiError && error.status === 401) {
+			throw redirect({ href: APP_ROUTES.AUTH.SIGN_IN });
 		}
 		throw error;
 	}

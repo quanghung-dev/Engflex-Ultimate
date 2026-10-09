@@ -1,0 +1,60 @@
+// The only module in the web app that talks to the API — and it runs
+// exclusively on the server. Two guards keep it that way: the `*.server.*`
+// filename is denied to the client graph by TanStack Start's
+// import-protection plugin, and the marker below makes the restriction
+// independent of the filename. The serverFn boundary in `api.ts` is the
+// only legal importer; anywhere else, the client build fails.
+import "@tanstack/react-start/server-only";
+
+import { auth } from "@clerk/tanstack-react-start/server";
+import type { ApiResponse } from "@engflex/contracts";
+import { getRequestIP } from "@tanstack/react-start/server";
+import { API_URL, type ProxyRequest, type ProxyResult } from "./api-base.ts";
+
+/**
+ * Direct call to the API from the server. When the request asks for
+ * credentials (the default), the session cookie is exchanged for a Bearer
+ * via Clerk, so browser-executed RPCs and SSR renders travel the same
+ * authenticated path; `withCredentials: false` skips token minting
+ * entirely for public endpoints. The caller's IP is forwarded so the API's
+ * rate limiter keeps bucketing per client.
+ *
+ * Not a privilege escalation: the base URL is fixed to our API, paths are
+ * validated to stay relative upstream, and only the caller's own session
+ * token is used — it can do what the caller's browser could. Returns a
+ * `ProxyResult`: the parsed house envelope (the generated `ApiResponse`
+ * DTO), or raw text for non-JSON bodies. `ApiError` construction stays in
+ * `api.ts` so every caller sees one contract.
+ */
+export async function fetchApiServer(req: ProxyRequest): Promise<ProxyResult> {
+	let token: string | null = null;
+	if (req.withCredentials) {
+		const { getToken } = await auth();
+		token = await getToken();
+	}
+	// Socket peer by default. If a CDN/LB of your own fronts this server,
+	// switch to `getRequestIP({ xForwardedFor: true })` once that layer
+	// guarantees the header. The API only honors X-Forwarded-For from hosts
+	// in RATE_LIMIT_TRUSTED_PROXIES, so a spoofed header is inert.
+	const clientIP = getRequestIP();
+	const isForm = req.body instanceof FormData;
+	const res = await fetch(`${API_URL}${req.path}`, {
+		method: req.method,
+		headers: {
+			...(isForm ? {} : { "Content-Type": "application/json" }),
+			...(token ? { Authorization: `Bearer ${token}` } : {}),
+			...(clientIP ? { "X-Forwarded-For": clientIP } : {}),
+		},
+		body: req.body ?? undefined,
+	});
+	const text = await res.text();
+	try {
+		return {
+			kind: "json",
+			status: res.status,
+			envelope: JSON.parse(text) as ApiResponse,
+		};
+	} catch {
+		return { kind: "raw", status: res.status, text };
+	}
+}
