@@ -14,6 +14,7 @@ import (
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories/mocks"
+	llmmocks "engflex-api/internal/llm/mocks"
 	conversationsresponses "engflex-api/internal/modules/conversations/dtos/responses"
 	"engflex-api/internal/modules/lessons/services"
 	voicemocks "engflex-api/internal/voice/mocks"
@@ -83,11 +84,25 @@ func TestPronounce(t *testing.T) {
 			repo.EXPECT().GetByID(mock.Anything, id).Return(tt.activity, tt.repoErr).Once()
 			voice := voicemocks.NewMockPronounceEngine(t)
 			tt.setupVoice(voice)
-			svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voice))
-			got, err := svc.Pronounce(context.Background(), id, tt.itemIndex, audio, "audio/webm")
+			attempts := mocks.NewMockAttemptRepository(t)
+			const userID = "user-1"
+			const attemptID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+			if tt.wantStatus == 0 {
+				lessonID := "11111111-1111-1111-1111-111111111111"
+				attempts.EXPECT().GetByID(mock.Anything, attemptID).Return(&models.Attempt{
+					ID: attemptID, UserID: userID, LessonID: &lessonID,
+					Type: enums.AttemptTypeLesson, Status: enums.AttemptStatusInProgress,
+					Result: []byte(`{}`),
+				}, nil).Twice()
+				repo.EXPECT().ListByLesson(mock.Anything, lessonID).Return([]*models.LessonActivity{{ID: id}}, nil).Once()
+				attempts.EXPECT().Update(mock.Anything, mock.Anything).Return(nil).Once()
+			}
+			svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voice), llmmocks.NewMockLLMClient(t), attempts)
+			got, err := svc.Pronounce(context.Background(), userID, id, attemptID, tt.itemIndex, audio, "audio/webm")
 			if tt.wantStatus != 0 {
 				requireAppError(t, err, tt.wantStatus)
 				assert.Nil(t, got)
+				voice.AssertNotCalled(t, "Pronounce", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 				return
 			}
 			require.NoError(t, err)

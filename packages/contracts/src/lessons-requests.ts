@@ -31,6 +31,14 @@ export interface SaveBookmark {
  * `required` rejects the zero value, and question 0 is valid.
  */
 export interface CheckAnswer {
+  attemptId: string;
   questionIndex: number /* int */;
   key: string;
+}
+/**
+ * ScoreWriting grades one writing part into the open lesson attempt.
+ */
+export interface ScoreWriting {
+  attemptId: string;
+  text: string;
 }

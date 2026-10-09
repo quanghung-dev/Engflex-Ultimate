@@ -118,6 +118,65 @@ export interface Activity {
   writing?: WritingPayload;
   speaking?: SpeakingPayload;
 }
+/**
+ * TaskVerdict is one checklist judgement with its evidence quote.
+ */
+export interface TaskVerdict {
+  item: string;
+  status: string;
+  evidence: string;
+}
+/**
+ * Span is one quoted problem with a minimal fix. The array it sits in is the
+ * label (grammar vs phrasing).
+ */
+export interface Span {
+  text: string;
+  occurrence: number /* int */;
+  correction: string;
+  reason: string;
+}
+/**
+ * TaskCompletion is section 1; counts live in ScoreSummary, never here.
+ */
+export interface TaskCompletion {
+  verdicts: TaskVerdict[];
+  answersPrompt: boolean;
+  answersNote: string;
+}
+/**
+ * ScoreSummary is the server-computed header strip.
+ */
+export interface ScoreSummary {
+  pointsCovered: number /* int */;
+  pointsTotal: number /* int */;
+  score: number /* float64 */;
+  wordCount: number /* int */;
+  minWords: number /* int */;
+  maxWords: number /* int */;
+}
+/**
+ * AttemptSummary lets the UI render run state with zero refetch.
+ */
+export interface AttemptSummary {
+  id: string;
+  status: string;
+  score?: number /* float64 */;
+}
+/**
+ * WritingScoreResponse is the full wire response: feedback + numbers + run
+ * state in one round trip. No copy of the learner paragraph anywhere.
+ */
+export interface WritingScoreResponse {
+  summary: ScoreSummary;
+  task: TaskCompletion;
+  grammar: Span[];
+  phrasing: Span[];
+  expressions: string[];
+  suggested: string;
+  tip: string;
+  attempt: AttemptSummary;
+}
 
 //////////
 // source: lesson.go
@@ -192,4 +251,29 @@ export interface LessonDetail {
 export interface Bookmark {
   lessonId: string;
   savedAt: string /* RFC3339 */;
+}
+
+//////////
+// source: progress.go
+
+/**
+ * CheckedQuestion is one already-graded question, rehydrated for resume: the
+ * learner's pick plus the reveal (correct key + explanation) the check
+ * unlocked. Only ever served for the attempt owner's open run.
+ */
+export interface CheckedQuestion {
+  index: number /* int */;
+  key: string;
+  correct: boolean;
+  correctKey: string;
+  explanation: string;
+}
+/**
+ * AttemptProgress is the resume payload: run state plus per-activity graded
+ * questions keyed by activity id. Checkable activities only — writing and
+ * speaking entries carry no rehydratable answers yet and are omitted.
+ */
+export interface AttemptProgress {
+  attempt: AttemptSummary;
+  checks: { [key: string]: CheckedQuestion[]};
 }

@@ -1,17 +1,21 @@
 package controllers
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
 	"engflex-api/config"
 	"engflex-api/internal/common"
+	attemptsresponses "engflex-api/internal/modules/attempts/dtos/responses"
 	"engflex-api/internal/modules/lessons/dtos/requests"
 	"engflex-api/internal/modules/lessons/dtos/responses"
 	"engflex-api/internal/modules/lessons/services"
+	"engflex-api/internal/server/middleware"
 	"engflex-api/internal/utils"
 	"engflex-api/internal/voice/pronunciation"
 )
@@ -92,7 +96,7 @@ func (h *LessonActivityController) CheckAnswer(c *gin.Context) {
 		common.Fail(c, common.BadRequest(err.Error()))
 		return
 	}
-	res, err := h.activities.CheckAnswer(c.Request.Context(), c.Param("id"), req.QuestionIndex, req.Key)
+	res, err := h.activities.CheckAnswer(c.Request.Context(), middleware.UserID(c), c.Param("id"), req.AttemptID, req.QuestionIndex, req.Key)
 	if err != nil {
 		common.Fail(c, err)
 		return
@@ -126,6 +130,11 @@ func (h *LessonActivityController) Pronounce(c *gin.Context) {
 		common.Fail(c, common.BadRequest("itemIndex is required"))
 		return
 	}
+	attemptID := c.PostForm("attemptId")
+	if strings.TrimSpace(attemptID) == "" {
+		common.Fail(c, common.BadRequest("attemptId is required"))
+		return
+	}
 	f, err := file.Open()
 	if err != nil {
 		common.Fail(c, common.BadRequest("audio is required"))
@@ -141,10 +150,75 @@ func (h *LessonActivityController) Pronounce(c *gin.Context) {
 		common.Fail(c, common.New(http.StatusRequestEntityTooLarge, "audio too large"))
 		return
 	}
-	res, err := h.activities.Pronounce(c.Request.Context(), c.Param("id"), itemIndex, audio, file.Header.Get("Content-Type"))
+	res, err := h.activities.Pronounce(c.Request.Context(), middleware.UserID(c), c.Param("id"), attemptID, itemIndex, audio, file.Header.Get("Content-Type"))
 	if err != nil {
 		common.Fail(c, err)
 		return
 	}
 	common.OK(c, "pronunciation scored", res)
+}
+
+// StartAttempt godoc
+// @Summary      Open one lesson attempt
+// @Tags         lesson-attempts
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id path string true "lesson id"
+// @Success      200 {object} common.ApiResponse{data=responses.Attempt}
+// @Router       /lessons/{id}/attempts [post]
+func (h *LessonActivityController) StartAttempt(c *gin.Context) {
+	m, err := h.activities.StartAttempt(c.Request.Context(), middleware.UserID(c), c.Param("id"))
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	var dto attemptsresponses.Attempt
+	_ = utils.Map(&dto, m)
+	// datatypes.JSON does not Map into map[string]any; decode explicitly.
+	_ = json.Unmarshal(m.Result, &dto.Result)
+	if dto.Result == nil {
+		dto.Result = map[string]any{}
+	}
+	common.OK(c, "attempt started", dto)
+}
+
+// GetOpenAttempt godoc
+// @Summary      Open attempt with graded questions for resume
+// @Tags         lesson-attempts
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id path string true "lesson id"
+// @Success      200 {object} common.ApiResponse{data=responses.AttemptProgress}
+// @Router       /lessons/{id}/attempts/open [get]
+func (h *LessonActivityController) GetOpenAttempt(c *gin.Context) {
+	res, err := h.activities.GetOpenProgress(c.Request.Context(), middleware.UserID(c), c.Param("id"))
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	common.OK(c, "open attempt", res)
+}
+
+// ScoreWriting godoc
+// @Summary      Score one writing part into the open attempt
+// @Tags         lesson-activities
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "activity id"
+// @Param        body body requests.ScoreWriting true "attempt and text"
+// @Success      200 {object} common.ApiResponse{data=responses.WritingScoreResponse}
+// @Router       /lesson-activities/{id}/score [post]
+func (h *LessonActivityController) ScoreWriting(c *gin.Context) {
+	var req requests.ScoreWriting
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.Fail(c, common.BadRequest(err.Error()))
+		return
+	}
+	res, err := h.activities.ScoreWriting(c.Request.Context(), middleware.UserID(c), c.Param("id"), req.AttemptID, req.Text)
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	common.OK(c, "writing scored", res)
 }

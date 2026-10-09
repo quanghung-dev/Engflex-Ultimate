@@ -29,6 +29,13 @@ type SaveBookmark struct {
 // CheckAnswer grades one reading/listening question. min=0, not required:
 // `required` rejects the zero value, and question 0 is valid.
 type CheckAnswer struct {
+	AttemptID     string `json:"attemptId" binding:"required,uuid"`
 	QuestionIndex int    `json:"questionIndex" binding:"min=0"`
 	Key           string `json:"key" binding:"required"`
+}
+
+// ScoreWriting grades one writing part into the open lesson attempt.
+type ScoreWriting struct {
+	AttemptID string `json:"attemptId" binding:"required,uuid"`
+	Text      string `json:"text" binding:"required"`
 }

@@ -114,3 +114,56 @@ type Activity struct {
 	Writing     *WritingPayload    `json:"writing"`
 	Speaking    *SpeakingPayload   `json:"speaking"`
 }
+
+// TaskVerdict is one checklist judgement with its evidence quote.
+type TaskVerdict struct {
+	Item     string `json:"item"`
+	Status   string `json:"status"`
+	Evidence string `json:"evidence"`
+}
+
+// Span is one quoted problem with a minimal fix. The array it sits in is the
+// label (grammar vs phrasing).
+type Span struct {
+	Text       string `json:"text"`
+	Occurrence int    `json:"occurrence"`
+	Correction string `json:"correction"`
+	Reason     string `json:"reason"`
+}
+
+// TaskCompletion is section 1; counts live in ScoreSummary, never here.
+type TaskCompletion struct {
+	Verdicts      []TaskVerdict `json:"verdicts"`
+	AnswersPrompt bool          `json:"answersPrompt"`
+	AnswersNote   string        `json:"answersNote"`
+}
+
+// ScoreSummary is the server-computed header strip.
+type ScoreSummary struct {
+	PointsCovered int     `json:"pointsCovered"`
+	PointsTotal   int     `json:"pointsTotal"`
+	Score         float64 `json:"score"`
+	WordCount     int     `json:"wordCount"`
+	MinWords      int     `json:"minWords"`
+	MaxWords      int     `json:"maxWords"`
+}
+
+// AttemptSummary lets the UI render run state with zero refetch.
+type AttemptSummary struct {
+	ID     string   `json:"id"`
+	Status string   `json:"status"`
+	Score  *float64 `json:"score"`
+}
+
+// WritingScoreResponse is the full wire response: feedback + numbers + run
+// state in one round trip. No copy of the learner paragraph anywhere.
+type WritingScoreResponse struct {
+	Summary     ScoreSummary   `json:"summary"`
+	Task        TaskCompletion `json:"task"`
+	Grammar     []Span         `json:"grammar"`
+	Phrasing    []Span         `json:"phrasing"`
+	Expressions []string       `json:"expressions"`
+	Suggested   string         `json:"suggested"`
+	Tip         string         `json:"tip"`
+	Attempt     AttemptSummary `json:"attempt"`
+}

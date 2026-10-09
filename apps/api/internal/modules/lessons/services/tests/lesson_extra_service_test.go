@@ -11,6 +11,7 @@ import (
 
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories/mocks"
+	llmmocks "engflex-api/internal/llm/mocks"
 	"engflex-api/internal/modules/lessons/dtos/requests"
 	"engflex-api/internal/modules/lessons/services"
 	voicemocks "engflex-api/internal/voice/mocks"
@@ -33,7 +34,7 @@ func TestLessonActivityService_ListByLesson_EmptyReturns200(t *testing.T) {
 	repo := mocks.NewMockLessonActivityRepository(t)
 	repo.On("ListByLesson", mock.Anything, lessonID).
 		Return(make([]*models.LessonActivity, 0), nil)
-	svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)))
+	svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llmmocks.NewMockLLMClient(t), mocks.NewMockAttemptRepository(t))
 
 	res, err := svc.ListByLesson(context.Background(), lessonID)
 
