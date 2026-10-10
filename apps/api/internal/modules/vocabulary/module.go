@@ -34,9 +34,9 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 	c := rg.Group("/vocabulary-categories")
 	c.GET("", middleware.RequireAuth(), categoryCtl.List)
 	c.GET("/:id", middleware.RequireAuth(), categoryCtl.GetByID)
-	c.POST("", middleware.RequireAuth(), categoryCtl.Create)
-	c.PUT("/:id", middleware.RequireAuth(), categoryCtl.Update)
-	c.DELETE("/:id", middleware.RequireAuth(), categoryCtl.Delete)
+	c.POST("", middleware.RequireAuth(), middleware.RequireAdmin(), categoryCtl.Create)
+	c.PUT("/:id", middleware.RequireAuth(), middleware.RequireAdmin(), categoryCtl.Update)
+	c.DELETE("/:id", middleware.RequireAuth(), middleware.RequireAdmin(), categoryCtl.Delete)
 
 	d := rg.Group("/vocabulary-decks")
 	d.GET("", middleware.RequireAuth(), deckCtl.List)
