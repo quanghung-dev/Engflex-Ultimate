@@ -42,7 +42,7 @@ func TestVNPayService_VerifyAndHandleIPN_BadSignature(t *testing.T) {
 	subs := mocks.NewMockSubscriptionRepository(t)
 	txns := mocks.NewMockPaymentTransactionRepository(t)
 	plans := mocks.NewMockPlanRepository(t)
-	svc := NewVNPayService(VNPayConfig{HashSecret: testSecret}, subs, txns, plans)
+	svc := NewVNPayService(VNPayConfig{HashSecret: testSecret}, nil, subs, txns, plans)
 
 	q := signedIPNQuery(t, nil)
 	q.Set("vnp_Amount", "1") // tampered after signing
@@ -57,8 +57,8 @@ func TestVNPayService_VerifyAndHandleIPN_UnknownTxnRef(t *testing.T) {
 	subs := mocks.NewMockSubscriptionRepository(t)
 	txns := mocks.NewMockPaymentTransactionRepository(t)
 	plans := mocks.NewMockPlanRepository(t)
-	txns.On("GetByProviderTxnRef", mock.Anything, "vnpay", "ref-1").Return(nil, gorm.ErrRecordNotFound)
-	svc := NewVNPayService(VNPayConfig{HashSecret: testSecret}, subs, txns, plans)
+	txns.On("GetByProviderTxnRefForUpdate", mock.Anything, "vnpay", "ref-1").Return(nil, gorm.ErrRecordNotFound)
+	svc := NewVNPayService(VNPayConfig{HashSecret: testSecret}, nil, subs, txns, plans)
 
 	code, err := svc.VerifyAndHandleIPN(context.Background(), signedIPNQuery(t, nil))
 
@@ -70,9 +70,9 @@ func TestVNPayService_VerifyAndHandleIPN_AlreadyProcessedIsNoOp(t *testing.T) {
 	subs := mocks.NewMockSubscriptionRepository(t)
 	txns := mocks.NewMockPaymentTransactionRepository(t)
 	plans := mocks.NewMockPlanRepository(t)
-	txns.On("GetByProviderTxnRef", mock.Anything, "vnpay", "ref-1").
+	txns.On("GetByProviderTxnRefForUpdate", mock.Anything, "vnpay", "ref-1").
 		Return(&models.PaymentTransaction{ID: "txn_1", SubscriptionID: "sub_1", Amount: 99000, Status: enums.PaymentTransactionStatusSucceeded}, nil)
-	svc := NewVNPayService(VNPayConfig{HashSecret: testSecret}, subs, txns, plans)
+	svc := NewVNPayService(VNPayConfig{HashSecret: testSecret}, nil, subs, txns, plans)
 
 	code, err := svc.VerifyAndHandleIPN(context.Background(), signedIPNQuery(t, nil))
 
@@ -86,9 +86,9 @@ func TestVNPayService_VerifyAndHandleIPN_AmountMismatch(t *testing.T) {
 	subs := mocks.NewMockSubscriptionRepository(t)
 	txns := mocks.NewMockPaymentTransactionRepository(t)
 	plans := mocks.NewMockPlanRepository(t)
-	txns.On("GetByProviderTxnRef", mock.Anything, "vnpay", "ref-1").
+	txns.On("GetByProviderTxnRefForUpdate", mock.Anything, "vnpay", "ref-1").
 		Return(&models.PaymentTransaction{ID: "txn_1", SubscriptionID: "sub_1", Amount: 99000, Status: enums.PaymentTransactionStatusPending}, nil)
-	svc := NewVNPayService(VNPayConfig{HashSecret: testSecret}, subs, txns, plans)
+	svc := NewVNPayService(VNPayConfig{HashSecret: testSecret}, nil, subs, txns, plans)
 
 	code, err := svc.VerifyAndHandleIPN(context.Background(), signedIPNQuery(t, map[string]string{"vnp_Amount": "1"}))
 
@@ -100,7 +100,7 @@ func TestVNPayService_VerifyAndHandleIPN_Success(t *testing.T) {
 	subs := mocks.NewMockSubscriptionRepository(t)
 	txns := mocks.NewMockPaymentTransactionRepository(t)
 	plans := mocks.NewMockPlanRepository(t)
-	txns.On("GetByProviderTxnRef", mock.Anything, "vnpay", "ref-1").
+	txns.On("GetByProviderTxnRefForUpdate", mock.Anything, "vnpay", "ref-1").
 		Return(&models.PaymentTransaction{ID: "txn_1", SubscriptionID: "sub_1", Amount: 99000, Status: enums.PaymentTransactionStatusPending}, nil)
 	txns.On("UpdateResult", mock.Anything, "txn_1", enums.PaymentTransactionStatusSucceeded, mock.Anything, mock.Anything, mock.AnythingOfType("datatypes.JSON")).
 		Return(nil)
@@ -110,7 +110,7 @@ func TestVNPayService_VerifyAndHandleIPN_Success(t *testing.T) {
 		Return(&models.Plan{Plan: enums.SubscriptionPlanOneMonth, Months: 1, Amount: 99_000, Currency: "VND", IsActive: true}, nil)
 	subs.On("UpdateStatus", mock.Anything, "sub_1", enums.SubscriptionStatusActive, mock.Anything, mock.Anything).
 		Return(nil)
-	svc := NewVNPayService(VNPayConfig{HashSecret: testSecret}, subs, txns, plans)
+	svc := NewVNPayService(VNPayConfig{HashSecret: testSecret}, nil, subs, txns, plans)
 
 	code, err := svc.VerifyAndHandleIPN(context.Background(), signedIPNQuery(t, nil))
 
@@ -122,12 +122,12 @@ func TestVNPayService_VerifyAndHandleIPN_PaymentFailed(t *testing.T) {
 	subs := mocks.NewMockSubscriptionRepository(t)
 	txns := mocks.NewMockPaymentTransactionRepository(t)
 	plans := mocks.NewMockPlanRepository(t)
-	txns.On("GetByProviderTxnRef", mock.Anything, "vnpay", "ref-1").
+	txns.On("GetByProviderTxnRefForUpdate", mock.Anything, "vnpay", "ref-1").
 		Return(&models.PaymentTransaction{ID: "txn_1", SubscriptionID: "sub_1", Amount: 99000, Status: enums.PaymentTransactionStatusPending}, nil)
 	txns.On("UpdateResult", mock.Anything, "txn_1", enums.PaymentTransactionStatusFailed, mock.Anything, mock.Anything, mock.AnythingOfType("datatypes.JSON")).
 		Return(nil)
 	subs.On("UpdateStatus", mock.Anything, "sub_1", enums.SubscriptionStatusFailed, mock.Anything, mock.Anything).Return(nil)
-	svc := NewVNPayService(VNPayConfig{HashSecret: testSecret}, subs, txns, plans)
+	svc := NewVNPayService(VNPayConfig{HashSecret: testSecret}, nil, subs, txns, plans)
 
 	code, err := svc.VerifyAndHandleIPN(context.Background(), signedIPNQuery(t, map[string]string{"vnp_ResponseCode": "24"}))
 
@@ -155,7 +155,7 @@ func TestVNPayService_BuildCheckoutURL(t *testing.T) {
 		HashSecret: testSecret,
 		PayURL:     "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html",
 		ReturnURL:  "http://localhost:3000/payments/vnpay/return",
-	}, subs, txns, plans)
+	}, nil, subs, txns, plans)
 
 	res, err := svc.BuildCheckoutURL(context.Background(), "user_1", enums.SubscriptionPlanOneMonth, "127.0.0.1")
 
@@ -172,7 +172,7 @@ func TestVNPayService_BuildCheckoutURL_UnknownPlan(t *testing.T) {
 	plans := mocks.NewMockPlanRepository(t)
 	plans.On("GetByPlan", mock.Anything, enums.SubscriptionPlan("bogus")).
 		Return(nil, gorm.ErrRecordNotFound)
-	svc := NewVNPayService(VNPayConfig{HashSecret: testSecret}, subs, txns, plans)
+	svc := NewVNPayService(VNPayConfig{HashSecret: testSecret}, nil, subs, txns, plans)
 
 	_, err := svc.BuildCheckoutURL(context.Background(), "user_1", enums.SubscriptionPlan("bogus"), "127.0.0.1")
 
@@ -186,7 +186,7 @@ func TestVNPayService_BuildCheckoutURL_InactivePlan(t *testing.T) {
 	plans := mocks.NewMockPlanRepository(t)
 	plans.On("GetByPlan", mock.Anything, enums.SubscriptionPlanOneMonth).
 		Return(&models.Plan{Plan: enums.SubscriptionPlanOneMonth, Months: 1, Amount: 99_000, Currency: "VND", IsActive: false}, nil)
-	svc := NewVNPayService(VNPayConfig{HashSecret: testSecret}, subs, txns, plans)
+	svc := NewVNPayService(VNPayConfig{HashSecret: testSecret}, nil, subs, txns, plans)
 
 	_, err := svc.BuildCheckoutURL(context.Background(), "user_1", enums.SubscriptionPlanOneMonth, "127.0.0.1")
 

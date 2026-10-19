@@ -182,6 +182,80 @@ func (_c *MockPaymentTransactionRepository_GetByProviderTxnRef_Call) RunAndRetur
 	return _c
 }
 
+// GetByProviderTxnRefForUpdate provides a mock function for the type MockPaymentTransactionRepository
+func (_mock *MockPaymentTransactionRepository) GetByProviderTxnRefForUpdate(ctx context.Context, provider string, txnRef string) (*models.PaymentTransaction, error) {
+	ret := _mock.Called(ctx, provider, txnRef)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByProviderTxnRefForUpdate")
+	}
+
+	var r0 *models.PaymentTransaction
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) (*models.PaymentTransaction, error)); ok {
+		return returnFunc(ctx, provider, txnRef)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) *models.PaymentTransaction); ok {
+		r0 = returnFunc(ctx, provider, txnRef)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.PaymentTransaction)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = returnFunc(ctx, provider, txnRef)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockPaymentTransactionRepository_GetByProviderTxnRefForUpdate_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByProviderTxnRefForUpdate'
+type MockPaymentTransactionRepository_GetByProviderTxnRefForUpdate_Call struct {
+	*mock.Call
+}
+
+// GetByProviderTxnRefForUpdate is a helper method to define mock.On call
+//   - ctx context.Context
+//   - provider string
+//   - txnRef string
+func (_e *MockPaymentTransactionRepository_Expecter) GetByProviderTxnRefForUpdate(ctx any, provider any, txnRef any) *MockPaymentTransactionRepository_GetByProviderTxnRefForUpdate_Call {
+	return &MockPaymentTransactionRepository_GetByProviderTxnRefForUpdate_Call{Call: _e.mock.On("GetByProviderTxnRefForUpdate", ctx, provider, txnRef)}
+}
+
+func (_c *MockPaymentTransactionRepository_GetByProviderTxnRefForUpdate_Call) Run(run func(ctx context.Context, provider string, txnRef string)) *MockPaymentTransactionRepository_GetByProviderTxnRefForUpdate_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockPaymentTransactionRepository_GetByProviderTxnRefForUpdate_Call) Return(paymentTransaction *models.PaymentTransaction, err error) *MockPaymentTransactionRepository_GetByProviderTxnRefForUpdate_Call {
+	_c.Call.Return(paymentTransaction, err)
+	return _c
+}
+
+func (_c *MockPaymentTransactionRepository_GetByProviderTxnRefForUpdate_Call) RunAndReturn(run func(ctx context.Context, provider string, txnRef string) (*models.PaymentTransaction, error)) *MockPaymentTransactionRepository_GetByProviderTxnRefForUpdate_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ListBySubscriptionID provides a mock function for the type MockPaymentTransactionRepository
 func (_mock *MockPaymentTransactionRepository) ListBySubscriptionID(ctx context.Context, subscriptionID string) ([]*models.PaymentTransaction, error) {
 	ret := _mock.Called(ctx, subscriptionID)

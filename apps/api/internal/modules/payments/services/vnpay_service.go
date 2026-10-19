@@ -72,15 +72,32 @@ type VNPayService interface {
 
 type vnpayService struct {
 	cfg   VNPayConfig
+	db    *gorm.DB
 	subs  repositories.SubscriptionRepository
 	txns  repositories.PaymentTransactionRepository
 	plans repositories.PlanRepository
 }
 
 // NewVNPayService builds the service over the repository interfaces and
-// gateway config.
-func NewVNPayService(cfg VNPayConfig, subs repositories.SubscriptionRepository, txns repositories.PaymentTransactionRepository, plans repositories.PlanRepository) VNPayService {
-	return &vnpayService{cfg: cfg, subs: subs, txns: txns, plans: plans}
+// gateway config. db is used only to open the transactions BuildCheckoutURL
+// and VerifyAndHandleIPN need across the subscriptions/payment_transactions
+// tables — it may be nil (unit tests construct the service this way,
+// exercising the mocked repositories directly without a live transaction);
+// production wiring always supplies the real handle.
+func NewVNPayService(cfg VNPayConfig, db *gorm.DB, subs repositories.SubscriptionRepository, txns repositories.PaymentTransactionRepository, plans repositories.PlanRepository) VNPayService {
+	return &vnpayService{cfg: cfg, db: db, subs: subs, txns: txns, plans: plans}
+}
+
+// runInTx runs fn inside a real DB transaction when s.db is set, or calls
+// fn(nil) directly otherwise. The two call sites below pass tx straight to
+// WithTx on the repositories they use, so in the nil case those repos are
+// left pointed at their original (non-transactional) handle — correct for
+// unit tests, since the mocked repositories never look at tx.
+func (s *vnpayService) runInTx(ctx context.Context, fn func(tx *gorm.DB) error) error {
+	if s.db == nil {
+		return fn(nil)
+	}
+	return s.db.WithContext(ctx).Transaction(fn)
 }
 
 // generateTxnRef returns a time-prefixed random reference, unique enough
@@ -116,23 +133,30 @@ func (s *vnpayService) BuildCheckoutURL(ctx context.Context, userID string, plan
 		Amount:   def.Amount,
 		Currency: def.Currency,
 	}
-	if err := s.subs.Create(ctx, sub); err != nil {
-		appErr := common.FromDBError(err, "subscription")
-		logger.Report(ctx, "create pending subscription failed", appErr, "user_id", userID)
-		return nil, appErr
-	}
-
 	txnRef := generateTxnRef()
 	txn := &models.PaymentTransaction{
-		SubscriptionID: sub.ID,
 		Provider:       "vnpay",
 		ProviderTxnRef: txnRef,
 		Amount:         def.Amount,
 		Status:         enums.PaymentTransactionStatusPending,
 	}
-	if err := s.txns.Create(ctx, txn); err != nil {
-		appErr := common.FromDBError(err, "payment transaction")
-		logger.Report(ctx, "create payment transaction failed", appErr, "subscription_id", sub.ID)
+
+	// The pending subscription and its payment_transaction must land
+	// together or not at all — a checkout session with one row but not the
+	// other is an inconsistent state nothing else in this flow expects.
+	if err := s.runInTx(ctx, func(tx *gorm.DB) error {
+		subs, txns := s.subs, s.txns
+		if tx != nil {
+			subs, txns = subs.WithTx(tx), txns.WithTx(tx)
+		}
+		if err := subs.Create(ctx, sub); err != nil {
+			return err
+		}
+		txn.SubscriptionID = sub.ID
+		return txns.Create(ctx, txn)
+	}); err != nil {
+		appErr := common.FromDBError(err, "subscription")
+		logger.Report(ctx, "create checkout session failed", appErr, "user_id", userID)
 		return nil, appErr
 	}
 
@@ -176,63 +200,75 @@ func (s *vnpayService) VerifyAndHandleIPN(ctx context.Context, query url.Values)
 	}
 
 	txnRef := query.Get("vnp_TxnRef")
-	txn, err := s.txns.GetByProviderTxnRef(ctx, "vnpay", txnRef)
-	if err != nil {
-		slog.WarnContext(ctx, "vnpay ipn rejected: unknown txn_ref", "txn_ref", txnRef)
-		return vnpayRspOrderNotFound, nil
-	}
-
-	if txn.Status != enums.PaymentTransactionStatusPending {
-		// Already processed — replay is a no-op, not an error.
-		return vnpayRspAlreadyConfirmed, nil
-	}
-
-	gotAmount, parseErr := strconv.ParseInt(query.Get("vnp_Amount"), 10, 64)
-	if parseErr != nil || gotAmount != txn.Amount*100 {
-		return vnpayRspInvalidAmount, nil
-	}
-
 	responseCode := query.Get("vnp_ResponseCode")
 	transactionNo := query.Get("vnp_TransactionNo")
 	raw, _ := json.Marshal(query)
 
-	if err := s.txns.UpdateResult(ctx, txn.ID, statusForResponseCode(responseCode), strPtr(transactionNo), strPtr(responseCode), datatypes.JSON(raw)); err != nil {
-		appErr := common.FromDBError(err, "payment transaction")
-		logger.Report(ctx, "update payment transaction failed", appErr, "txn_ref", txnRef)
+	var rspCode string
+	txErr := s.runInTx(ctx, func(tx *gorm.DB) error {
+		subs, txns := s.subs, s.txns
+		if tx != nil {
+			subs, txns = subs.WithTx(tx), txns.WithTx(tx)
+		}
+
+		// Locked read: a concurrent replay of the same vnp_TxnRef (VNPay
+		// retries IPN until acked) blocks here until this transaction
+		// commits, then sees status != pending and falls into the no-op
+		// branch below — the two deliveries can never both apply the result.
+		txn, err := txns.GetByProviderTxnRefForUpdate(ctx, "vnpay", txnRef)
+		if err != nil {
+			slog.WarnContext(ctx, "vnpay ipn rejected: unknown txn_ref", "txn_ref", txnRef)
+			rspCode = vnpayRspOrderNotFound
+			return nil
+		}
+
+		if txn.Status != enums.PaymentTransactionStatusPending {
+			// Already processed — replay is a no-op, not an error.
+			rspCode = vnpayRspAlreadyConfirmed
+			return nil
+		}
+
+		gotAmount, parseErr := strconv.ParseInt(query.Get("vnp_Amount"), 10, 64)
+		if parseErr != nil || gotAmount != txn.Amount*100 {
+			rspCode = vnpayRspInvalidAmount
+			return nil
+		}
+
+		if err := txns.UpdateResult(ctx, txn.ID, statusForResponseCode(responseCode), strPtr(transactionNo), strPtr(responseCode), datatypes.JSON(raw)); err != nil {
+			return err
+		}
+
+		if responseCode == "00" {
+			now := time.Now()
+			sub, err := subs.GetByID(ctx, txn.SubscriptionID)
+			if err != nil {
+				return err
+			}
+			planDef, err := s.plans.GetByPlan(ctx, sub.Plan)
+			if err != nil {
+				return err
+			}
+			end := now.AddDate(0, planDef.Months, 0)
+			if err := subs.UpdateStatus(ctx, txn.SubscriptionID, enums.SubscriptionStatusActive, &now, &end); err != nil {
+				return err
+			}
+			slog.InfoContext(ctx, "vnpay payment succeeded", "subscription_id", txn.SubscriptionID, "txn_ref", txnRef)
+		} else {
+			if err := subs.UpdateStatus(ctx, txn.SubscriptionID, enums.SubscriptionStatusFailed, nil, nil); err != nil {
+				return err
+			}
+			slog.InfoContext(ctx, "vnpay payment failed", "subscription_id", txn.SubscriptionID, "txn_ref", txnRef, "response_code", responseCode)
+		}
+		rspCode = vnpayRspSuccess
+		return nil
+	})
+	if txErr != nil {
+		appErr := common.FromDBError(txErr, "payment transaction")
+		logger.Report(ctx, "handle vnpay ipn failed", appErr, "txn_ref", txnRef)
 		return vnpayRspUnknownError, appErr
 	}
 
-	if responseCode == "00" {
-		now := time.Now()
-		sub, subErr := s.subs.GetByID(ctx, txn.SubscriptionID)
-		if subErr != nil {
-			appErr := common.FromDBError(subErr, "subscription")
-			logger.Report(ctx, "load subscription for ipn failed", appErr, "subscription_id", txn.SubscriptionID)
-			return vnpayRspUnknownError, appErr
-		}
-		planDef, planErr := s.plans.GetByPlan(ctx, sub.Plan)
-		if planErr != nil {
-			appErr := common.FromDBError(planErr, "plan")
-			logger.Report(ctx, "load plan for ipn failed", appErr, "plan", sub.Plan)
-			return vnpayRspUnknownError, appErr
-		}
-		end := now.AddDate(0, planDef.Months, 0)
-		if err := s.subs.UpdateStatus(ctx, txn.SubscriptionID, enums.SubscriptionStatusActive, &now, &end); err != nil {
-			appErr := common.FromDBError(err, "subscription")
-			logger.Report(ctx, "activate subscription failed", appErr, "subscription_id", txn.SubscriptionID)
-			return vnpayRspUnknownError, appErr
-		}
-		slog.InfoContext(ctx, "vnpay payment succeeded", "subscription_id", txn.SubscriptionID, "txn_ref", txnRef)
-	} else {
-		if err := s.subs.UpdateStatus(ctx, txn.SubscriptionID, enums.SubscriptionStatusFailed, nil, nil); err != nil {
-			appErr := common.FromDBError(err, "subscription")
-			logger.Report(ctx, "mark subscription failed failed", appErr, "subscription_id", txn.SubscriptionID)
-			return vnpayRspUnknownError, appErr
-		}
-		slog.InfoContext(ctx, "vnpay payment failed", "subscription_id", txn.SubscriptionID, "txn_ref", txnRef, "response_code", responseCode)
-	}
-
-	return vnpayRspSuccess, nil
+	return rspCode, nil
 }
 
 func statusForResponseCode(code string) enums.PaymentTransactionStatus {

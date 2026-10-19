@@ -8,6 +8,7 @@ import (
 
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // PaymentTransactionRepository is the DB access layer for the
@@ -18,6 +19,12 @@ import (
 type PaymentTransactionRepository interface {
 	Create(ctx context.Context, t *models.PaymentTransaction) error
 	GetByProviderTxnRef(ctx context.Context, provider, txnRef string) (*models.PaymentTransaction, error)
+	// GetByProviderTxnRefForUpdate is GetByProviderTxnRef with a row lock
+	// (SELECT ... FOR UPDATE). The IPN handler calls this one inside its
+	// transaction so two concurrent deliveries of the same vnp_TxnRef (VNPay
+	// retries IPN until it gets an ack) serialize on this row instead of
+	// both reading "pending" and both applying the result.
+	GetByProviderTxnRefForUpdate(ctx context.Context, provider, txnRef string) (*models.PaymentTransaction, error)
 	ListBySubscriptionID(ctx context.Context, subscriptionID string) ([]*models.PaymentTransaction, error)
 	UpdateResult(ctx context.Context, id string, status enums.PaymentTransactionStatus, providerTxnNo, responseCode *string, rawResponse datatypes.JSON) error
 	WithTx(tx *gorm.DB) PaymentTransactionRepository
@@ -44,6 +51,16 @@ func (r *paymentTransactionRepository) Create(ctx context.Context, t *models.Pay
 func (r *paymentTransactionRepository) GetByProviderTxnRef(ctx context.Context, provider, txnRef string) (*models.PaymentTransaction, error) {
 	var m models.PaymentTransaction
 	if err := r.db.WithContext(ctx).First(&m, "provider = ? AND provider_txn_ref = ?", provider, txnRef).Error; err != nil {
+		return nil, err
+	}
+	return &m, nil
+}
+
+func (r *paymentTransactionRepository) GetByProviderTxnRefForUpdate(ctx context.Context, provider, txnRef string) (*models.PaymentTransaction, error) {
+	var m models.PaymentTransaction
+	if err := r.db.WithContext(ctx).
+		Clauses(clause.Locking{Strength: "UPDATE"}).
+		First(&m, "provider = ? AND provider_txn_ref = ?", provider, txnRef).Error; err != nil {
 		return nil, err
 	}
 	return &m, nil

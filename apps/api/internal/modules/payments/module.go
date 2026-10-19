@@ -34,7 +34,7 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.PaymentConfig) 
 		HashSecret: cfg.VNPayHashSecret,
 		PayURL:     cfg.VNPayPayURL,
 		ReturnURL:  cfg.VNPayReturnURL,
-	}, subRepo, txnRepo, planRepo)
+	}, db, subRepo, txnRepo, planRepo)
 
 	paymentCtl := controllers.NewPaymentController(planSvc, subSvc, vnpaySvc)
 	planCtl := controllers.NewPlanController(planSvc)
