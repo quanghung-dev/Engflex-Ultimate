@@ -2,6 +2,7 @@ import type { Scenario, ScenarioDifficulty } from "@engflex/contracts";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { Field, FieldError, FieldLabel } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
@@ -12,6 +13,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "#/components/ui/select";
+import { Switch } from "#/components/ui/switch";
 import { Textarea } from "#/components/ui/textarea";
 import { ConfirmDeleteDialog } from "#/features/admin/components/confirm-delete-dialog";
 import {
@@ -47,6 +49,7 @@ interface ScenarioFormState {
 	openingText: string;
 	vocab: string;
 	status: "draft" | "published";
+	isPremium: boolean;
 }
 
 const EMPTY_FORM: ScenarioFormState = {
@@ -64,6 +67,7 @@ const EMPTY_FORM: ScenarioFormState = {
 	openingText: "",
 	vocab: "",
 	status: "draft",
+	isPremium: false,
 };
 
 const linesOf = (text: string) =>
@@ -115,6 +119,7 @@ export function ScenariosPanel() {
 			openingText: scenario.details.opening?.text ?? "",
 			vocab: (scenario.details.vocab ?? []).join("\n"),
 			status: scenario.status === "published" ? "published" : "draft",
+			isPremium: scenario.isPremium,
 		});
 		setError(null);
 		setDialogOpen(true);
@@ -140,6 +145,7 @@ export function ScenariosPanel() {
 			objective: form.objective,
 			cefrLevel: form.cefrLevel,
 			maxDuration: Number(form.maxDuration) || 1,
+			isPremium: form.isPremium,
 		};
 		if (editing) {
 			updateMutation.mutate(
@@ -201,9 +207,14 @@ export function ScenariosPanel() {
 			id: "status",
 			header: m["admin.table.status"](),
 			cell: (row) => (
-				<StatusBadge
-					status={row.status === "published" ? "published" : "draft"}
-				/>
+				<div className="flex items-center gap-1.5">
+					<StatusBadge
+						status={row.status === "published" ? "published" : "draft"}
+					/>
+					{row.isPremium && (
+						<Badge variant="default">{m["admin.content.premiumBadge"]()}</Badge>
+					)}
+				</div>
 			),
 		},
 		{
@@ -477,6 +488,18 @@ export function ScenariosPanel() {
 						value={form.vocab}
 						onChange={(event) =>
 							setForm((current) => ({ ...current, vocab: event.target.value }))
+						}
+					/>
+				</Field>
+				<Field className="flex-row items-center justify-between">
+					<FieldLabel htmlFor="scenario-premium">
+						{m["admin.content.isPremium"]()}
+					</FieldLabel>
+					<Switch
+						id="scenario-premium"
+						checked={form.isPremium}
+						onCheckedChange={(checked) =>
+							setForm((current) => ({ ...current, isPremium: checked }))
 						}
 					/>
 				</Field>

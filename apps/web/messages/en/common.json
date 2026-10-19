@@ -28,7 +28,8 @@
       "clipboardUnavailable": "Clipboard unavailable in this browser",
       "addedToVocabulary": "Added to your vocabulary",
       "flashcardSoon": "Flashcard drill coming soon",
-      "replayMockOnly": "Replay is mock-only for now"
+      "replayMockOnly": "Replay is mock-only for now",
+      "error": "Something went wrong, please try again"
     },
     "a11y": {
       "more": "More",
@@ -42,6 +43,10 @@
       "light": "Light",
       "dark": "Dark",
       "auto": "System"
+    },
+    "premium": {
+      "badge": "Premium",
+      "upgradeAction": "Upgrade to unlock"
     }
   }
 }

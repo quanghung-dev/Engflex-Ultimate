@@ -14,13 +14,15 @@ import (
 	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/logger"
+	paymentresponses "engflex-api/internal/modules/payments/dtos/responses"
 	"engflex-api/internal/modules/users/dtos/requests"
 	"engflex-api/internal/modules/users/dtos/responses"
 )
 
 // UserService lists and manages roles for Clerk accounts. Clerk is the
 // only store — there is no local users table — so every method is a thin
-// wrapper over the Clerk Backend API.
+// wrapper over the Clerk Backend API. Premium status is the one field that
+// does come from a local table, filled in via subscriptionLookup.
 type UserService interface {
 	List(ctx context.Context, req requests.ListUsers) ([]*responses.User, int64, error)
 	UpdateRole(ctx context.Context, callerUserID, id, role string) (*responses.User, error)
@@ -34,20 +36,29 @@ type clerkUserClient interface {
 	Update(ctx context.Context, id string, params *user.UpdateParams) (*clerk.User, error)
 }
 
+// subscriptionLookup is the minimal surface List needs to enrich a user
+// row with premium status — narrowed here (not imported as the full
+// services.SubscriptionService) so this package only depends on the shape
+// it actually calls.
+type subscriptionLookup interface {
+	GetActive(ctx context.Context, userID string) (*paymentresponses.Subscription, error)
+}
+
 type userService struct {
 	client clerkUserClient
+	subs   subscriptionLookup
 }
 
 // NewUserService builds the service over the Clerk Go SDK's default
 // backend (configured once in main.go via clerk.SetKey).
-func NewUserService() UserService {
-	return &userService{client: &user.Client{Backend: clerk.GetBackend()}}
+func NewUserService(subs subscriptionLookup) UserService {
+	return &userService{client: &user.Client{Backend: clerk.GetBackend()}, subs: subs}
 }
 
 // NewUserServiceWithClient is the test seam: builds the service over a
 // fake clerkUserClient instead of the real Clerk Backend API.
-func NewUserServiceWithClient(c clerkUserClient) UserService {
-	return &userService{client: c}
+func NewUserServiceWithClient(c clerkUserClient, subs subscriptionLookup) UserService {
+	return &userService{client: c, subs: subs}
 }
 
 // fromClerkError maps a Clerk API error to the house AppError shape by its
@@ -140,10 +151,27 @@ func (s *userService) List(ctx context.Context, req requests.ListUsers) ([]*resp
 	}
 	out := make([]*responses.User, 0, len(list.Users))
 	for _, u := range list.Users {
-		out = append(out, toUserResponse(u))
+		r := toUserResponse(u)
+		s.fillPremium(ctx, r)
+		out = append(out, r)
 	}
 	slog.InfoContext(ctx, "users listed", "count", len(out), "total", list.TotalCount)
 	return out, list.TotalCount, nil
+}
+
+// fillPremium enriches a user row with its current subscription, if any. A
+// lookup failure degrades to "not premium" rather than failing the whole
+// list — one broken row's premium status must never break the directory.
+func (s *userService) fillPremium(ctx context.Context, r *responses.User) {
+	sub, err := s.subs.GetActive(ctx, r.ID)
+	if err != nil {
+		logger.Report(ctx, "load premium status failed", err, "id", r.ID)
+		return
+	}
+	if sub != nil {
+		r.Premium = true
+		r.PremiumExpiresAt = sub.ExpiresAt
+	}
 }
 
 // UpdateRole sets the target user's public_metadata.role. An admin cannot
@@ -165,5 +193,7 @@ func (s *userService) UpdateRole(ctx context.Context, callerUserID, id, role str
 		return nil, appErr
 	}
 	slog.InfoContext(ctx, "user role updated", "id", id, "role", role)
-	return toUserResponse(updated), nil
+	r := toUserResponse(updated)
+	s.fillPremium(ctx, r)
+	return r, nil
 }

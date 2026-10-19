@@ -62,6 +62,7 @@ type VocabularyItem struct {
 	Domain       *enums.VocabularyDomain `json:"domain"`
 	Definition   string                  `json:"definition"`
 	Status       enums.PublishStatus     `json:"status"`
+	IsPremium    bool                    `json:"isPremium"`
 	Details      *VocabularyDetails      `json:"details"`
 	UserState    *UserVocabularyState    `json:"userState"`
 }

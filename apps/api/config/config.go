@@ -16,6 +16,7 @@ type Config struct {
 	Redis     RedisConfig
 	RateLimit RateLimitConfig
 	Media     MediaConfig
+	Payment   PaymentConfig
 }
 
 // Load reads .env files (if present) and then resolves every config section
@@ -40,5 +41,6 @@ func Load(dotEnvPaths ...string) (Config, error) {
 		Redis:     LoadRedisConfig(),
 		RateLimit: LoadRateLimitConfig(),
 		Media:     LoadMediaConfig(),
+		Payment:   LoadPaymentConfig(),
 	}, nil
 }

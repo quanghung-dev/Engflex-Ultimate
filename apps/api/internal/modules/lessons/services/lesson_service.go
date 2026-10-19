@@ -17,8 +17,8 @@ import (
 // in path order. The hub renders the whole path, unpaginated.
 type LessonService interface {
 	ListSections(ctx context.Context, req requests.ListLessons, isAdmin bool) ([]*models.LessonSection, error)
-	GetDetail(ctx context.Context, id string, isAdmin bool) (*models.Lesson, error)
-	GetDetailBySlug(ctx context.Context, slug string, isAdmin bool) (*models.Lesson, error)
+	GetDetail(ctx context.Context, id, userID string, isAdmin bool) (*models.Lesson, error)
+	GetDetailBySlug(ctx context.Context, slug, userID string, isAdmin bool) (*models.Lesson, error)
 	Create(ctx context.Context, req requests.CreateLesson) (*models.Lesson, error)
 	Update(ctx context.Context, id string, req requests.UpdateLesson) (*models.Lesson, error)
 	Delete(ctx context.Context, id string) error
@@ -31,12 +31,13 @@ type LessonService interface {
 type lessonService struct {
 	sections repositories.LessonSectionRepository
 	lessons  repositories.LessonRepository
+	premium  common.PremiumChecker
 }
 
-// NewLessonService builds the service over both repositories. Neither may
-// be nil.
-func NewLessonService(sections repositories.LessonSectionRepository, lessons repositories.LessonRepository) LessonService {
-	return &lessonService{sections: sections, lessons: lessons}
+// NewLessonService builds the service over both repositories and the
+// premium checker. None may be nil.
+func NewLessonService(sections repositories.LessonSectionRepository, lessons repositories.LessonRepository, premium common.PremiumChecker) LessonService {
+	return &lessonService{sections: sections, lessons: lessons, premium: premium}
 }
 
 func (s *lessonService) ListSections(ctx context.Context, req requests.ListLessons, isAdmin bool) ([]*models.LessonSection, error) {
@@ -51,8 +52,10 @@ func (s *lessonService) ListSections(ctx context.Context, req requests.ListLesso
 }
 
 // GetDetail: a draft unit is invisible to non-admins (404, existence not
-// disclosed), same rule as every other admin-curated resource.
-func (s *lessonService) GetDetail(ctx context.Context, id string, isAdmin bool) (*models.Lesson, error) {
+// disclosed), same rule as every other admin-curated resource. A published
+// premium unit stays visible (the learner should see it exists, to be
+// upsold) but 403s on access unless the caller is admin or premium.
+func (s *lessonService) GetDetail(ctx context.Context, id, userID string, isAdmin bool) (*models.Lesson, error) {
 	m, err := s.lessons.GetDetail(ctx, id)
 	if err != nil {
 		appErr := common.FromDBError(err, "lesson")
@@ -62,11 +65,14 @@ func (s *lessonService) GetDetail(ctx context.Context, id string, isAdmin bool) 
 	if m.Status != enums.PublishStatusPublished && !isAdmin {
 		return nil, common.NotFound("lesson not found")
 	}
+	if err := common.RequirePremiumAccess(ctx, s.premium, userID, isAdmin, m.IsPremium); err != nil {
+		return nil, err
+	}
 	slog.InfoContext(ctx, "lesson detail found", "id", m.ID)
 	return m, nil
 }
 
-func (s *lessonService) GetDetailBySlug(ctx context.Context, slug string, isAdmin bool) (*models.Lesson, error) {
+func (s *lessonService) GetDetailBySlug(ctx context.Context, slug, userID string, isAdmin bool) (*models.Lesson, error) {
 	m, err := s.lessons.GetDetailBySlug(ctx, slug)
 	if err != nil {
 		appErr := common.FromDBError(err, "lesson")
@@ -75,6 +81,9 @@ func (s *lessonService) GetDetailBySlug(ctx context.Context, slug string, isAdmi
 	}
 	if m.Status != enums.PublishStatusPublished && !isAdmin {
 		return nil, common.NotFound("lesson not found")
+	}
+	if err := common.RequirePremiumAccess(ctx, s.premium, userID, isAdmin, m.IsPremium); err != nil {
+		return nil, err
 	}
 	slog.InfoContext(ctx, "lesson detail found", "id", m.ID, "slug", m.Slug)
 	return m, nil

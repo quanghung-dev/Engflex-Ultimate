@@ -55,7 +55,7 @@ func TestLessonService_GetDetail(t *testing.T) {
 			if tt.wantErr {
 				id = "missing"
 			}
-			res, err := svc.GetDetail(context.Background(), id, false)
+			res, err := svc.GetDetail(context.Background(), id, "user_1", false)
 
 			if tt.wantErr {
 				requireAppError(t, err, http.StatusNotFound)
@@ -100,7 +100,7 @@ func TestLessonService_GetDetailBySlug(t *testing.T) {
 			svc, _, lessonMock := setupLesson(t)
 			tt.setupMock(lessonMock)
 
-			res, err := svc.GetDetailBySlug(context.Background(), tt.slug, false)
+			res, err := svc.GetDetailBySlug(context.Background(), tt.slug, "user_1", false)
 
 			if tt.wantStatus == 0 {
 				require.NoError(t, err)
@@ -124,7 +124,7 @@ func TestLessonService_GetDetail_DraftVisibility(t *testing.T) {
 		svc, _, lessonMock := setupLesson(t)
 		lessonMock.On("GetDetail", mock.Anything, lessonID).Return(draft, nil)
 
-		res, err := svc.GetDetail(context.Background(), lessonID, false)
+		res, err := svc.GetDetail(context.Background(), lessonID, "user_1", false)
 		requireAppError(t, err, http.StatusNotFound)
 		assert.Nil(t, res)
 	})
@@ -133,7 +133,42 @@ func TestLessonService_GetDetail_DraftVisibility(t *testing.T) {
 		svc, _, lessonMock := setupLesson(t)
 		lessonMock.On("GetDetail", mock.Anything, lessonID).Return(draft, nil)
 
-		res, err := svc.GetDetail(context.Background(), lessonID, true)
+		res, err := svc.GetDetail(context.Background(), lessonID, "admin_1", true)
+		require.NoError(t, err)
+		require.NotNil(t, res)
+	})
+}
+
+// A published premium lesson stays visible to a non-premium caller as far
+// as existence goes, but is blocked (403) from reading its detail — the
+// admin preview and premium-caller paths both pass through.
+func TestLessonService_GetDetail_PremiumGating(t *testing.T) {
+	lessonID := "11111111-1111-1111-1111-111111111111"
+	premiumLesson := &models.Lesson{ID: lessonID, Status: enums.PublishStatusPublished, IsPremium: true}
+
+	t.Run("blocked for non-premium caller", func(t *testing.T) {
+		svc, _, lessonMock := setupLessonWithPremium(t, false)
+		lessonMock.On("GetDetail", mock.Anything, lessonID).Return(premiumLesson, nil)
+
+		res, err := svc.GetDetail(context.Background(), lessonID, "user_1", false)
+		requireAppError(t, err, http.StatusForbidden)
+		assert.Nil(t, res)
+	})
+
+	t.Run("allowed for premium caller", func(t *testing.T) {
+		svc, _, lessonMock := setupLessonWithPremium(t, true)
+		lessonMock.On("GetDetail", mock.Anything, lessonID).Return(premiumLesson, nil)
+
+		res, err := svc.GetDetail(context.Background(), lessonID, "user_1", false)
+		require.NoError(t, err)
+		require.NotNil(t, res)
+	})
+
+	t.Run("admin bypasses the premium check", func(t *testing.T) {
+		svc, _, lessonMock := setupLessonWithPremium(t, false)
+		lessonMock.On("GetDetail", mock.Anything, lessonID).Return(premiumLesson, nil)
+
+		res, err := svc.GetDetail(context.Background(), lessonID, "admin_1", true)
 		require.NoError(t, err)
 		require.NotNil(t, res)
 	})

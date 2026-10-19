@@ -34,12 +34,13 @@ func canManageDeck(d *models.VocabularyDeck, userID string, isAdmin bool) bool {
 }
 
 type vocabularyDeckService struct {
-	repo repositories.VocabularyDeckRepository
+	repo    repositories.VocabularyDeckRepository
+	premium common.PremiumChecker
 }
 
 // NewVocabularyDeckService builds the service over the repository interface.
-func NewVocabularyDeckService(repo repositories.VocabularyDeckRepository) VocabularyDeckService {
-	return &vocabularyDeckService{repo: repo}
+func NewVocabularyDeckService(repo repositories.VocabularyDeckRepository, premium common.PremiumChecker) VocabularyDeckService {
+	return &vocabularyDeckService{repo: repo, premium: premium}
 }
 
 func (s *vocabularyDeckService) ListByUser(ctx context.Context, userID string, isAdmin bool, limit, offset int) ([]*models.VocabularyDeck, int64, error) {
@@ -73,6 +74,9 @@ func (s *vocabularyDeckService) GetDetail(ctx context.Context, userID, id string
 		if m.Status != enums.PublishStatusPublished && !isAdmin {
 			return nil, common.NotFound("vocabulary deck not found")
 		}
+		if err := common.RequirePremiumAccess(ctx, s.premium, userID, isAdmin, m.IsPremium); err != nil {
+			return nil, err
+		}
 	} else if m.UserID != userID {
 		return nil, common.Forbidden("not your deck")
 	}
@@ -90,6 +94,9 @@ func (s *vocabularyDeckService) Create(ctx context.Context, userID string, req r
 	}
 	d.UserID = userID
 	d.Status = enums.PublishStatusPublished
+	// Personal decks are never premium-gated, regardless of what the
+	// shared DTO carried — IsPremium is an admin-only concept.
+	d.IsPremium = false
 	if err := s.repo.Create(ctx, d); err != nil {
 		appErr := common.FromDBError(err, "vocabulary deck")
 		logger.Report(ctx, "create vocabulary deck failed", appErr)
@@ -148,10 +155,14 @@ func (s *vocabularyDeckService) Update(ctx context.Context, userID, id string, i
 	if req.Level != nil {
 		d.Level = *req.Level
 	}
-	// Status only means anything for a system deck, and only an admin can
-	// publish/unpublish one — canManageDeck above already guarantees that.
+	// Status and IsPremium only mean anything for a system deck, and only
+	// an admin can touch either — canManageDeck above already guarantees
+	// that.
 	if req.Status != nil && d.IsDefault {
 		d.Status = *req.Status
+	}
+	if req.IsPremium != nil && d.IsDefault {
+		d.IsPremium = *req.IsPremium
 	}
 	if err := s.repo.Update(ctx, d); err != nil {
 		appErr := common.FromDBError(err, "vocabulary deck")

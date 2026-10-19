@@ -55,6 +55,31 @@ func TestVocabularyDeckService_GetDetail(t *testing.T) {
 	}
 }
 
+// A published, premium system deck stays visible as far as existence
+// goes, but is blocked (403) for a non-premium, non-admin caller. Personal
+// decks never carry IsPremium, so they're untouched by this test.
+func TestVocabularyDeckService_GetDetail_PremiumGating(t *testing.T) {
+	premiumDeck := &models.VocabularyDeck{ID: deckID, Name: "Curated", UserID: "admin_1", IsDefault: true, Status: enums.PublishStatusPublished, IsPremium: true}
+
+	t.Run("blocked for non-premium caller", func(t *testing.T) {
+		svc, mockRepo := setupDeckWithPremium(t, false)
+		mockRepo.On("GetDetail", mock.Anything, deckID).Return(premiumDeck, nil)
+
+		res, err := svc.GetDetail(context.Background(), "user_1", deckID, false)
+		requireAppError(t, err, http.StatusForbidden)
+		assert.Nil(t, res)
+	})
+
+	t.Run("allowed for premium caller", func(t *testing.T) {
+		svc, mockRepo := setupDeckWithPremium(t, true)
+		mockRepo.On("GetDetail", mock.Anything, deckID).Return(premiumDeck, nil)
+
+		res, err := svc.GetDetail(context.Background(), "user_1", deckID, false)
+		require.NoError(t, err)
+		require.NotNil(t, res)
+	})
+}
+
 func TestVocabularyDeckService_GetDetail_NotFound(t *testing.T) {
 	svc, mockRepo := setupDeck(t)
 	mockRepo.On("GetDetail", mock.Anything, "missing").Return(nil, gorm.ErrRecordNotFound)

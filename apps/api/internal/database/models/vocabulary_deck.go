@@ -20,6 +20,7 @@ type VocabularyDeck struct {
 	Level        string              `json:"level"`
 	IsDefault    bool                `gorm:"default:false" json:"isDefault"`
 	Status       enums.PublishStatus `gorm:"not null;default:draft" json:"status"`
+	IsPremium    bool                `gorm:"not null;default:false" json:"isPremium"`
 	CreatedAt    time.Time           `gorm:"autoCreateTime" json:"createdAt"`
 	UpdatedAt    time.Time           `gorm:"autoUpdateTime" json:"updatedAt"`
 	Category     *VocabularyCategory `gorm:"->;foreignKey:CategoryID;references:ID" json:"category,omitempty"`

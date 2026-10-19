@@ -19,6 +19,7 @@ type VideoExercise struct {
 	CEFRLevel    *enums.CEFR         `gorm:"column:cefr_level" json:"cefrLevel"`
 	Duration     float64             `json:"duration"`
 	Status       enums.PublishStatus `gorm:"not null;default:draft" json:"status"`
+	IsPremium    bool                `gorm:"not null;default:false" json:"isPremium"`
 	CreatedAt    time.Time           `gorm:"autoCreateTime" json:"createdAt"`
 	UpdatedAt    time.Time           `gorm:"autoUpdateTime" json:"updatedAt"`
 

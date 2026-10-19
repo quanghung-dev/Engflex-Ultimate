@@ -9,6 +9,7 @@ import {
 	House,
 	Info,
 	ShieldCheck,
+	Sparkles,
 } from "lucide-react";
 import { APP_ROUTES } from "#/app/app-route";
 import { Logo } from "#/components/common/logo";
@@ -165,6 +166,14 @@ export function AppSidebar() {
 							</SidebarMenuButton>
 						</SidebarMenuItem>
 					) : null}
+					<SidebarMenuItem>
+						<SidebarMenuButton asChild tooltip={m["payments.pricing.crumb"]()}>
+							<Link to={APP_ROUTES.PAYMENTS.PRICING} className="font-medium">
+								<Sparkles data-icon="inline-start" />
+								<span>{m["payments.pricing.crumb"]()}</span>
+							</Link>
+						</SidebarMenuButton>
+					</SidebarMenuItem>
 					<SidebarMenuItem>
 						<SidebarMenuButton asChild tooltip={m["about.crumb"]()}>
 							<Link to={APP_ROUTES.ABOUT} className="font-medium">

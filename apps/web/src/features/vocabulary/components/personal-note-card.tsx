@@ -2,7 +2,6 @@ import { Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "#/components/ui/button";
 import { Textarea } from "#/components/ui/textarea";
-import { saveNote } from "#/features/vocabulary/store";
 import { m } from "#/paraglide/messages";
 import { getLocale } from "#/paraglide/runtime";
 
@@ -14,13 +13,13 @@ function formatAdded(createdAt: string) {
 }
 
 export function PersonalNoteCard({
-	itemId,
 	note,
 	createdAt,
+	onSave,
 }: {
-	itemId: string;
 	note: string | undefined;
 	createdAt: string;
+	onSave: (note: string) => void;
 }) {
 	const [editing, setEditing] = useState(false);
 	const [draft, setDraft] = useState(note ?? "");
@@ -59,7 +58,7 @@ export function PersonalNoteCard({
 							type="button"
 							size="sm"
 							onClick={() => {
-								saveNote(itemId, draft);
+								onSave(draft);
 								setEditing(false);
 							}}
 						>
@@ -89,7 +88,7 @@ export function PersonalNoteCard({
 							type="button"
 							variant="ghost"
 							size="sm"
-							onClick={() => saveNote(itemId, "")}
+							onClick={() => onSave("")}
 						>
 							<Trash2 data-icon="inline-start" />
 							{m["vocabulary.detail.deleteNote"]()}

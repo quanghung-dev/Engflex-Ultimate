@@ -24,6 +24,7 @@ export interface CreateVideoExercise {
   thumbnailUrl: string;
   cefrLevel?: CEFR;
   duration: number /* float64 */;
+  isPremium: boolean;
 }
 /**
  * UpdateVideoExercise replaces every field below Status. Status is the one
@@ -40,6 +41,7 @@ export interface UpdateVideoExercise {
   cefrLevel?: CEFR;
   duration: number /* float64 */;
   status?: PublishStatus;
+  isPremium?: boolean;
 }
 
 //////////

@@ -16,6 +16,7 @@ type Scenario struct {
 	MaxDuration int                      `json:"maxDuration"`
 	Details     ScenarioDetail           `json:"details"`
 	Status      enums.PublishStatus      `json:"status"`
+	IsPremium   bool                     `json:"isPremium"`
 }
 
 // ScenarioDetail mirrors models.ScenarioDetail field for field so copier

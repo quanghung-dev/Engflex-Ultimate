@@ -116,7 +116,7 @@ func (h *VideoExerciseController) Delete(c *gin.Context) {
 //	@Router			/video-exercises/{id} [get]
 func (h *VideoExerciseController) GetByID(c *gin.Context) {
 	id := c.Param("id")
-	m, err := h.service.GetByID(c.Request.Context(), id, middleware.Role(c) == enums.UserRoleAdmin)
+	m, err := h.service.GetByID(c.Request.Context(), id, middleware.UserID(c), middleware.Role(c) == enums.UserRoleAdmin)
 	if err != nil {
 		common.Fail(c, err)
 		return

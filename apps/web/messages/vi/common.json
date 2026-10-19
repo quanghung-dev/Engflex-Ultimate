@@ -28,7 +28,8 @@
       "clipboardUnavailable": "Không thể sao chép trong trình duyệt này",
       "addedToVocabulary": "Đã thêm vào từ vựng của bạn",
       "flashcardSoon": "Tính năng flashcard sắp ra mắt",
-      "replayMockOnly": "Xem lại hiện chỉ khả dụng trong bản demo"
+      "replayMockOnly": "Xem lại hiện chỉ khả dụng trong bản demo",
+      "error": "Có lỗi xảy ra, vui lòng thử lại"
     },
     "a11y": {
       "more": "Xem thêm",
@@ -42,6 +43,10 @@
       "light": "Sáng",
       "dark": "Tối",
       "auto": "Hệ thống"
+    },
+    "premium": {
+      "badge": "Premium",
+      "upgradeAction": "Nâng cấp để mở khoá"
     }
   }
 }

@@ -7,6 +7,7 @@ import {
 	GraduationCap,
 	LayoutDashboard,
 	MessageSquare,
+	Sparkles,
 	Users,
 	Video,
 } from "lucide-react";
@@ -62,6 +63,12 @@ const NAV_ITEMS = [
 		to: APP_ROUTES.ADMIN.USERS,
 		icon: Users,
 		tile: "bg-[#0891b2]",
+	},
+	{
+		title: () => m["admin.nav.premium"](),
+		to: APP_ROUTES.ADMIN.PREMIUM,
+		icon: Sparkles,
+		tile: "bg-[#c026d3]",
 	},
 ] as const;
 

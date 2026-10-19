@@ -29,6 +29,9 @@ type_mappings:
   "enums.VocabularySource": "VocabularySource"
   "enums.SpanStatus": "SpanStatus"
   "enums.RelevanceStatus": "RelevanceStatus"
+  "enums.SubscriptionStatus": "SubscriptionStatus"
+  "enums.SubscriptionPlan": "SubscriptionPlan"
+  "enums.PaymentTransactionStatus": "PaymentTransactionStatus"
   # embedded by list request DTOs tagged `tstype:",extends"`
   "common.ListParams": "ListParams"
 
@@ -97,6 +100,13 @@ packages:
     fallback_type: "unknown"
   - path: "engflex-api/internal/modules/users/dtos/responses"
     output_path: "../../packages/contracts/src/users-responses.ts"
+    fallback_type: "unknown"
+
+  - path: "engflex-api/internal/modules/payments/dtos/requests"
+    output_path: "../../packages/contracts/src/payments-requests.ts"
+    fallback_type: "unknown"
+  - path: "engflex-api/internal/modules/payments/dtos/responses"
+    output_path: "../../packages/contracts/src/payments-responses.ts"
     fallback_type: "unknown"
 
   - path: "engflex-api/internal/modules/attempts/dtos/requests"

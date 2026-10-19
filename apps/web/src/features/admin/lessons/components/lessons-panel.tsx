@@ -2,6 +2,7 @@ import type { ActivityType, CEFR, Lesson } from "@engflex/contracts";
 import { Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { Field, FieldError, FieldLabel } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
@@ -12,6 +13,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "#/components/ui/select";
+import { Switch } from "#/components/ui/switch";
 import { Textarea } from "#/components/ui/textarea";
 import { ConfirmDeleteDialog } from "#/features/admin/components/confirm-delete-dialog";
 import {
@@ -53,6 +55,7 @@ interface LessonFormState {
 	coverImageUrl: string;
 	skill: ActivityType | "";
 	status: "draft" | "published";
+	isPremium: boolean;
 }
 
 const EMPTY_FORM: LessonFormState = {
@@ -65,6 +68,7 @@ const EMPTY_FORM: LessonFormState = {
 	coverImageUrl: "",
 	skill: "",
 	status: "draft",
+	isPremium: false,
 };
 
 export function LessonsPanel() {
@@ -112,6 +116,7 @@ export function LessonsPanel() {
 			coverImageUrl: lesson.details.coverImageUrl,
 			skill: lesson.details.skill ?? "",
 			status: lesson.status === "published" ? "published" : "draft",
+			isPremium: lesson.isPremium,
 		});
 		setError(null);
 		setDialogOpen(true);
@@ -135,6 +140,7 @@ export function LessonsPanel() {
 			sectionId: form.sectionId,
 			cefrLevel: form.cefrLevel,
 			description: form.description,
+			isPremium: form.isPremium,
 		};
 		if (editing) {
 			updateMutation.mutate(
@@ -196,9 +202,14 @@ export function LessonsPanel() {
 			id: "status",
 			header: m["admin.table.status"](),
 			cell: (row) => (
-				<StatusBadge
-					status={row.lesson.status === "published" ? "published" : "draft"}
-				/>
+				<div className="flex items-center gap-1.5">
+					<StatusBadge
+						status={row.lesson.status === "published" ? "published" : "draft"}
+					/>
+					{row.lesson.isPremium && (
+						<Badge variant="default">{m["admin.content.premiumBadge"]()}</Badge>
+					)}
+				</div>
 			),
 		},
 		{
@@ -400,6 +411,18 @@ export function LessonsPanel() {
 								...current,
 								description: event.target.value,
 							}))
+						}
+					/>
+				</Field>
+				<Field className="flex-row items-center justify-between">
+					<FieldLabel htmlFor="lesson-premium">
+						{m["admin.content.isPremium"]()}
+					</FieldLabel>
+					<Switch
+						id="lesson-premium"
+						checked={form.isPremium}
+						onCheckedChange={(checked) =>
+							setForm((current) => ({ ...current, isPremium: checked }))
 						}
 					/>
 				</Field>

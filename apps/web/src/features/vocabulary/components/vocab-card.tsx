@@ -5,17 +5,26 @@ import { Check, CircleCheck } from "lucide-react";
 import { APP_ROUTES } from "#/app/app-route";
 import { AudioButton } from "#/components/common/audio-button";
 import { CefrBadge } from "#/components/common/cefr-badge";
+import { PremiumBadge } from "#/components/common/premium-badge";
 import { SourcePill } from "#/components/common/source-pill";
 import { Button } from "#/components/ui/button";
+import { useCanAccessPremium } from "#/features/payments/queries";
 import { isDue } from "#/features/vocabulary/dates";
-import { toggleMastered } from "#/features/vocabulary/store";
 import { m } from "#/paraglide/messages";
 
-export function VocabCard({ item }: { item: VocabularyItem }) {
+export function VocabCard({
+	item,
+	onToggleMastered,
+}: {
+	item: VocabularyItem;
+	onToggleMastered: () => void;
+}) {
 	const state = item.userState;
 	const mastered = state?.mastered ?? false;
 	const due = isDue(state?.srsDueAt);
 	const context = item.details?.contexts?.[0];
+	const canAccessPremium = useCanAccessPremium();
+	const premiumBlocked = item.isPremium && !canAccessPremium;
 
 	return (
 		<article className="surface-card flex flex-col gap-3 p-5">
@@ -32,7 +41,7 @@ export function VocabCard({ item }: { item: VocabularyItem }) {
 				) : due ? (
 					<button
 						type="button"
-						onClick={() => toggleMastered(item.id)}
+						onClick={onToggleMastered}
 						className="chip chip-accent shrink-0 px-2 py-0.5 text-xs"
 					>
 						<CircleCheck className="size-3.5" />
@@ -41,7 +50,7 @@ export function VocabCard({ item }: { item: VocabularyItem }) {
 				) : (
 					<button
 						type="button"
-						onClick={() => toggleMastered(item.id)}
+						onClick={onToggleMastered}
 						className="chip shrink-0 px-2 py-0.5 text-xs hover:border-primary"
 					>
 						<Check className="size-3.5" />
@@ -51,9 +60,12 @@ export function VocabCard({ item }: { item: VocabularyItem }) {
 			</div>
 
 			<div className="flex flex-wrap items-center gap-1.5">
-				<span className="chip bg-accent px-1.5 py-0 text-[11px]">
-					{item.partOfSpeech}
-				</span>
+				{item.isPremium ? <PremiumBadge /> : null}
+				{item.partOfSpeech ? (
+					<span className="chip bg-accent px-1.5 py-0 text-[11px]">
+						{item.partOfSpeech}
+					</span>
+				) : null}
 				{state ? <SourcePill source={state.sourceType} /> : null}
 			</div>
 
@@ -80,9 +92,18 @@ export function VocabCard({ item }: { item: VocabularyItem }) {
 					</span>
 				) : null}
 				<Button asChild size="sm" className="btn btn-primary ml-auto">
-					<Link to={APP_ROUTES.VOCABULARY.DETAIL} params={{ itemId: item.id }}>
-						{m["vocabulary.card.review"]()}
-					</Link>
+					{premiumBlocked ? (
+						<Link to={APP_ROUTES.PAYMENTS.PRICING}>
+							{m["common.premium.upgradeAction"]()}
+						</Link>
+					) : (
+						<Link
+							to={APP_ROUTES.VOCABULARY.DETAIL}
+							params={{ itemId: item.id }}
+						>
+							{m["vocabulary.card.review"]()}
+						</Link>
+					)}
 				</Button>
 			</div>
 

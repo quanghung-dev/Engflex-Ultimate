@@ -36,6 +36,7 @@ export interface Scenario {
   maxDuration: number /* int */;
   details: ScenarioDetail;
   status: PublishStatus;
+  isPremium: boolean;
 }
 /**
  * ScenarioDetail mirrors models.ScenarioDetail field for field so copier

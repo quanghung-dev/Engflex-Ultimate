@@ -68,6 +68,7 @@ export interface CreateLesson {
   cefrLevel: CEFR;
   description: string;
   details: LessonDetailsInput;
+  isPremium: boolean;
 }
 /**
  * UpdateLesson edits a unit. Status only takes effect for the explicit
@@ -81,6 +82,7 @@ export interface UpdateLesson {
   description?: string;
   details?: LessonDetailsInput;
   status?: PublishStatus;
+  isPremium?: boolean;
 }
 /**
  * CreateLessonSection / UpdateLessonSection manage the path's ordered

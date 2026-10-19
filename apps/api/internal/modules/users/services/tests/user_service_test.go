@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/clerk/clerk-sdk-go/v2/user"
@@ -12,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"engflex-api/internal/common"
+	paymentresponses "engflex-api/internal/modules/payments/dtos/responses"
 	"engflex-api/internal/modules/users/dtos/requests"
 	"engflex-api/internal/modules/users/services"
 )
@@ -29,6 +31,26 @@ func (f fakeClerkClient) List(ctx context.Context, params *user.ListParams) (*cl
 
 func (f fakeClerkClient) Update(ctx context.Context, id string, params *user.UpdateParams) (*clerk.User, error) {
 	return f.updateFn(ctx, id, params)
+}
+
+// fakeSubscriptionLookup implements the service's subscriptionLookup seam.
+// Defaults to "no active subscription" — these tests exercise the
+// Clerk-facing behavior, not premium enrichment.
+type fakeSubscriptionLookup struct{}
+
+func (fakeSubscriptionLookup) GetActive(ctx context.Context, userID string) (*paymentresponses.Subscription, error) {
+	return nil, nil
+}
+
+// fakeSubscriptionLookupFn lets a single test override GetActive's result.
+type fakeSubscriptionLookupFn func(ctx context.Context, userID string) (*paymentresponses.Subscription, error)
+
+func (f fakeSubscriptionLookupFn) GetActive(ctx context.Context, userID string) (*paymentresponses.Subscription, error) {
+	return f(ctx, userID)
+}
+
+func newUserService(c fakeClerkClient) services.UserService {
+	return services.NewUserServiceWithClient(c, fakeSubscriptionLookup{})
 }
 
 func strPtr(s string) *string { return &s }
@@ -57,7 +79,7 @@ func TestUserService_List_MapsPrimaryEmailAndRole(t *testing.T) {
 			}, nil
 		},
 	}
-	svc := services.NewUserServiceWithClient(fake)
+	svc := newUserService(fake)
 
 	items, total, err := svc.List(context.Background(), requests.ListUsers{ListParams: common.ListParams{Page: 1, PageSize: 20}})
 
@@ -80,7 +102,7 @@ func TestUserService_List_DefaultsRoleToUser(t *testing.T) {
 			}, nil
 		},
 	}
-	svc := services.NewUserServiceWithClient(fake)
+	svc := newUserService(fake)
 
 	items, _, err := svc.List(context.Background(), requests.ListUsers{ListParams: common.ListParams{Page: 1, PageSize: 20}})
 
@@ -89,13 +111,36 @@ func TestUserService_List_DefaultsRoleToUser(t *testing.T) {
 	assert.Equal(t, "user", items[0].Role)
 }
 
+func TestUserService_List_EnrichesPremiumStatus(t *testing.T) {
+	fake := fakeClerkClient{
+		listFn: func(ctx context.Context, params *user.ListParams) (*clerk.UserList, error) {
+			return &clerk.UserList{
+				Users:      []*clerk.User{{ID: "user_3", PublicMetadata: json.RawMessage(`{}`)}},
+				TotalCount: 1,
+			}, nil
+		},
+	}
+	expires := time.Date(2027, 1, 1, 0, 0, 0, 0, time.UTC)
+	subs := fakeSubscriptionLookupFn(func(ctx context.Context, userID string) (*paymentresponses.Subscription, error) {
+		return &paymentresponses.Subscription{ExpiresAt: &expires}, nil
+	})
+	svc := services.NewUserServiceWithClient(fake, subs)
+
+	items, _, err := svc.List(context.Background(), requests.ListUsers{ListParams: common.ListParams{Page: 1, PageSize: 20}})
+
+	require.NoError(t, err)
+	require.Len(t, items, 1)
+	assert.True(t, items[0].Premium)
+	assert.Equal(t, &expires, items[0].PremiumExpiresAt)
+}
+
 func TestUserService_List_ClerkErrorMapsTo503(t *testing.T) {
 	fake := fakeClerkClient{
 		listFn: func(ctx context.Context, params *user.ListParams) (*clerk.UserList, error) {
 			return nil, assert.AnError
 		},
 	}
-	svc := services.NewUserServiceWithClient(fake)
+	svc := newUserService(fake)
 
 	items, total, err := svc.List(context.Background(), requests.ListUsers{ListParams: common.ListParams{Page: 1, PageSize: 20}})
 
@@ -115,7 +160,7 @@ func TestUserService_UpdateRole_RejectsSelfDemotion(t *testing.T) {
 			return nil, nil
 		},
 	}
-	svc := services.NewUserServiceWithClient(fake)
+	svc := newUserService(fake)
 
 	_, err := svc.UpdateRole(context.Background(), "user_1", "user_1", "user")
 
@@ -136,7 +181,7 @@ func TestUserService_UpdateRole_AllowsOtherUsers(t *testing.T) {
 			return &clerk.User{ID: id, PublicMetadata: *params.PublicMetadata}, nil
 		},
 	}
-	svc := services.NewUserServiceWithClient(fake)
+	svc := newUserService(fake)
 
 	updated, err := svc.UpdateRole(context.Background(), "admin_1", "user_2", "admin")
 
@@ -151,7 +196,7 @@ func TestUserService_UpdateRole_NotFoundMapsTo404(t *testing.T) {
 			return nil, &clerk.APIErrorResponse{HTTPStatusCode: http.StatusNotFound}
 		},
 	}
-	svc := services.NewUserServiceWithClient(fake)
+	svc := newUserService(fake)
 
 	_, err := svc.UpdateRole(context.Background(), "admin_1", "missing", "admin")
 

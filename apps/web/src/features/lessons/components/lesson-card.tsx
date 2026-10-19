@@ -5,6 +5,7 @@ import { cn } from "cn";
 import { Clock3, Layers, Lock, RotateCcw } from "lucide-react";
 import { APP_ROUTES } from "#/app/app-route";
 import { CefrBadge } from "#/components/common/cefr-badge";
+import { PremiumBadge } from "#/components/common/premium-badge";
 import { ProgressBar } from "#/components/common/progress-bar";
 import { Button } from "#/components/ui/button";
 import { useLessonDetail } from "#/features/lessons/queries";
@@ -13,6 +14,7 @@ import {
 	lessonsStore,
 	progressFrom,
 } from "#/features/lessons/store";
+import { useCanAccessPremium } from "#/features/payments/queries";
 import { m } from "#/paraglide/messages";
 import { LessonStatusPill } from "./status-pill";
 
@@ -42,6 +44,8 @@ export function LessonCard({
 	const storeState = useStore(lessonsStore);
 	const progress = progressFrom(storeState, lesson.id, activities.length);
 	const current = getFirstIncompleteActivity(lesson.id, activities)?.type;
+	const canAccessPremium = useCanAccessPremium();
+	const premiumBlocked = lesson.isPremium && !canAccessPremium;
 
 	return (
 		<article
@@ -51,7 +55,10 @@ export function LessonCard({
 			)}
 		>
 			<div className="flex items-center justify-between gap-2">
-				<CefrBadge value={lesson.cefrLevel} />
+				<div className="flex items-center gap-2">
+					<CefrBadge value={lesson.cefrLevel} />
+					{lesson.isPremium ? <PremiumBadge /> : null}
+				</div>
 				<LessonStatusPill
 					status={progress.status}
 					percent={progress.percent}
@@ -130,6 +137,12 @@ export function LessonCard({
 				{locked ? (
 					<Button type="button" variant="ghost" size="sm" disabled>
 						{m["lessons.status.locked"]()}
+					</Button>
+				) : premiumBlocked ? (
+					<Button asChild size="sm" className="btn btn-primary">
+						<Link to={APP_ROUTES.PAYMENTS.PRICING}>
+							{m["common.premium.upgradeAction"]()}
+						</Link>
 					</Button>
 				) : progress.status === "completed" ? (
 					<Button

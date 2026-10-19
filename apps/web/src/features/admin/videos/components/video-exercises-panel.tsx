@@ -2,6 +2,7 @@ import type { CEFR, VideoExerciseResponse } from "@engflex/contracts";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { Field, FieldError, FieldLabel } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
@@ -12,6 +13,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "#/components/ui/select";
+import { Switch } from "#/components/ui/switch";
 import { Textarea } from "#/components/ui/textarea";
 import { ConfirmDeleteDialog } from "#/features/admin/components/confirm-delete-dialog";
 import {
@@ -41,6 +43,7 @@ interface ExerciseFormState {
 	cefrLevel: CEFR | "";
 	duration: string;
 	status: "draft" | "published";
+	isPremium: boolean;
 }
 
 const EMPTY_FORM: ExerciseFormState = {
@@ -53,6 +56,7 @@ const EMPTY_FORM: ExerciseFormState = {
 	cefrLevel: "",
 	duration: "",
 	status: "draft",
+	isPremium: false,
 };
 
 export function VideoExercisesPanel() {
@@ -92,6 +96,7 @@ export function VideoExercisesPanel() {
 			cefrLevel: exercise.cefrLevel ?? "",
 			duration: String(exercise.duration),
 			status: exercise.status === "published" ? "published" : "draft",
+			isPremium: exercise.isPremium,
 		});
 		setError(null);
 		setDialogOpen(true);
@@ -111,6 +116,7 @@ export function VideoExercisesPanel() {
 			thumbnailUrl: form.thumbnailUrl,
 			cefrLevel: form.cefrLevel || undefined,
 			duration: Number(form.duration) || 0,
+			isPremium: form.isPremium,
 		};
 		if (editing) {
 			updateMutation.mutate(
@@ -149,6 +155,7 @@ export function VideoExercisesPanel() {
 					cefrLevel: exercise.cefrLevel,
 					duration: exercise.duration,
 					status: nextStatus,
+					isPremium: exercise.isPremium,
 				},
 			},
 			{
@@ -186,9 +193,14 @@ export function VideoExercisesPanel() {
 			id: "status",
 			header: m["admin.table.status"](),
 			cell: (row) => (
-				<StatusBadge
-					status={row.status === "published" ? "published" : "draft"}
-				/>
+				<div className="flex items-center gap-1.5">
+					<StatusBadge
+						status={row.status === "published" ? "published" : "draft"}
+					/>
+					{row.isPremium && (
+						<Badge variant="default">{m["admin.content.premiumBadge"]()}</Badge>
+					)}
+				</div>
 			),
 		},
 		{
@@ -365,6 +377,18 @@ export function VideoExercisesPanel() {
 								...current,
 								description: event.target.value,
 							}))
+						}
+					/>
+				</Field>
+				<Field className="flex-row items-center justify-between">
+					<FieldLabel htmlFor="exercise-premium">
+						{m["admin.content.isPremium"]()}
+					</FieldLabel>
+					<Switch
+						id="exercise-premium"
+						checked={form.isPremium}
+						onCheckedChange={(checked) =>
+							setForm((current) => ({ ...current, isPremium: checked }))
 						}
 					/>
 				</Field>

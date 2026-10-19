@@ -1,8 +1,12 @@
 import type { Scenario } from "@engflex/contracts";
+import { Link } from "@tanstack/react-router";
 import { cn } from "cn";
 import { Clock3 } from "lucide-react";
+import { APP_ROUTES } from "#/app/app-route";
 import { CefrBadge } from "#/components/common/cefr-badge";
+import { PremiumBadge } from "#/components/common/premium-badge";
 import { Button } from "#/components/ui/button";
+import { useCanAccessPremium } from "#/features/payments/queries";
 import { m } from "#/paraglide/messages";
 
 const TILE_TONES = [
@@ -28,6 +32,8 @@ export function ScenarioCard({
 }) {
 	const tone =
 		TILE_TONES[(scenario.persona?.name.length ?? 1) % TILE_TONES.length];
+	const canAccessPremium = useCanAccessPremium();
+	const premiumBlocked = scenario.isPremium && !canAccessPremium;
 
 	return (
 		<div className="surface-card flex h-full flex-col gap-3 p-5">
@@ -47,7 +53,8 @@ export function ScenarioCard({
 						</span>
 					</>
 				) : null}
-				<span className="ml-auto shrink-0">
+				<span className="ml-auto flex shrink-0 items-center gap-2">
+					{scenario.isPremium ? <PremiumBadge /> : null}
 					<CefrBadge value={scenario.cefrLevel} />
 				</span>
 			</div>
@@ -60,14 +67,22 @@ export function ScenarioCard({
 					<Clock3 className="size-3.5" />
 					{m["voice.card.maxSession"]({ max: scenario.maxDuration })}
 				</span>
-				<Button
-					type="button"
-					size="sm"
-					className="btn btn-primary"
-					onClick={onStart}
-				>
-					{m["voice.card.start"]()}
-				</Button>
+				{premiumBlocked ? (
+					<Button asChild size="sm" className="btn btn-primary">
+						<Link to={APP_ROUTES.PAYMENTS.PRICING}>
+							{m["common.premium.upgradeAction"]()}
+						</Link>
+					</Button>
+				) : (
+					<Button
+						type="button"
+						size="sm"
+						className="btn btn-primary"
+						onClick={onStart}
+					>
+						{m["voice.card.start"]()}
+					</Button>
+				)}
 			</div>
 		</div>
 	);

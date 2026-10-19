@@ -40,5 +40,10 @@ export const APP_ROUTES = {
 		SCENARIOS: "/admin/scenarios",
 		LESSONS: "/admin/lessons",
 		USERS: "/admin/users",
+		PREMIUM: "/admin/premium",
+	},
+	PAYMENTS: {
+		PRICING: "/payments/pricing",
+		RETURN: "/payments/vnpay/return",
 	},
 } as const;

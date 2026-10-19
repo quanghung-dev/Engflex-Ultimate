@@ -236,6 +236,7 @@ export interface Lesson {
   description: string;
   details: LessonDetails;
   status: PublishStatus;
+  isPremium: boolean;
 }
 /**
  * UnitSection mirrors models.LessonSection field for field, with Units
@@ -263,6 +264,7 @@ export interface LessonDetail {
   description: string;
   details: LessonDetails;
   status: PublishStatus;
+  isPremium: boolean;
   activities: Activity[];
 }
 /**

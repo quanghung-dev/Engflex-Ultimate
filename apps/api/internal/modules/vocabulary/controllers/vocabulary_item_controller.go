@@ -50,7 +50,7 @@ func (h *VocabularyItemController) List(c *gin.Context) {
 // @Success      200 {object} common.ApiResponse{data=responses.VocabularyItem}
 // @Router       /vocabulary-items/{id} [get]
 func (h *VocabularyItemController) GetByID(c *gin.Context) {
-	m, err := h.items.GetByID(c.Request.Context(), c.Param("id"), middleware.Role(c) == enums.UserRoleAdmin)
+	m, err := h.items.GetByID(c.Request.Context(), c.Param("id"), middleware.UserID(c), middleware.Role(c) == enums.UserRoleAdmin)
 	if err != nil {
 		common.Fail(c, err)
 		return

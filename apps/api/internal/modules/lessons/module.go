@@ -13,6 +13,7 @@ import (
 	"engflex-api/internal/llm"
 	"engflex-api/internal/modules/lessons/controllers"
 	"engflex-api/internal/modules/lessons/services"
+	paymentservices "engflex-api/internal/modules/payments/services"
 	"engflex-api/internal/server/middleware"
 	"engflex-api/internal/voice"
 	"engflex-api/internal/voice/pronunciation"
@@ -23,9 +24,12 @@ import (
 // BEFORE auth on the engine-costly pronounce route (conversations parity:
 // limiter precedes auth because the userID is unavailable pre-auth).
 func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, voiceCfg config.VoiceConfig, llmCfg config.LLMConfig, media config.MediaConfig, sessionLimiter gin.HandlerFunc) {
+	premiumSvc := paymentservices.NewSubscriptionService(
+		repositories.NewSubscriptionRepository(db), repositories.NewPlanRepository(db))
 	lessonSvc := services.NewLessonService(
 		repositories.NewLessonSectionRepository(db),
 		repositories.NewLessonRepository(db),
+		premiumSvc,
 	)
 	lessonCtl := controllers.NewLessonController(lessonSvc, media)
 

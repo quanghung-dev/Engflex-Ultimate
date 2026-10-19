@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useStore } from "@tanstack/react-store";
 import { LibraryBig, Pencil } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { EmptyList } from "#/components/common/empty-list";
 import { MoMascot } from "#/components/common/mo-mascot";
@@ -15,11 +15,11 @@ import {
 	VocabFilterBar,
 	type VocabFilters,
 } from "#/features/vocabulary/components/vocab-filter-bar";
-import { VOCABULARY_STATS } from "#/features/vocabulary/fixtures";
+import { isDue } from "#/features/vocabulary/dates";
 import {
-	getVocabularyItems,
-	vocabularyStore,
-} from "#/features/vocabulary/store";
+	useMyVocabularyItems,
+	useSaveUserVocabulary,
+} from "#/features/vocabulary/queries";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/vocabulary/")({
@@ -29,12 +29,34 @@ export const Route = createFileRoute("/_app/vocabulary/")({
 function VocabularyPage() {
 	useBreadcrumbs([{ label: m["nav.item.vocabulary"]() }]);
 	const [filters, setFilters] = useState<VocabFilters>(DEFAULT_VOCAB_FILTERS);
-	useStore(vocabularyStore); // subscribe to mastered/note/add changes
+	const { items, isPending } = useMyVocabularyItems();
+	const saveState = useSaveUserVocabulary();
 
-	const items = getVocabularyItems();
-	const masteryPct = Math.round(
-		(VOCABULARY_STATS.mastered / VOCABULARY_STATS.totalSaved) * 100,
-	);
+	function toggleMastered(itemId: string) {
+		const item = items.find((candidate) => candidate.id === itemId);
+		if (!item?.userState) return;
+		saveState.mutate(
+			{
+				itemId,
+				sourceType: item.userState.sourceType,
+				sourceId: item.userState.sourceId,
+				note: item.userState.note,
+				mastered: !item.userState.mastered,
+			},
+			{ onError: () => toast.error(m["common.toast.error"]()) },
+		);
+	}
+
+	const totalSaved = items.length;
+	const masteredCount = items.filter((item) => item.userState?.mastered).length;
+	const dueToday = items.filter((item) =>
+		isDue(item.userState?.srsDueAt),
+	).length;
+	const customAdditions = items.filter(
+		(item) => item.userState?.sourceType === "manual",
+	).length;
+	const masteryPct =
+		totalSaved > 0 ? Math.round((masteredCount / totalSaved) * 100) : 0;
 
 	const visible = items.filter((item) => {
 		if (filters.search.trim()) {
@@ -86,8 +108,8 @@ function VocabularyPage() {
 					<ProgressBar value={masteryPct} tone="accuracy" />
 					<span className="text-xs font-medium text-muted-foreground">
 						{m["vocabulary.hub.masteredOf"]({
-							done: VOCABULARY_STATS.mastered,
-							total: VOCABULARY_STATS.totalSaved,
+							done: masteredCount,
+							total: totalSaved,
 						})}
 					</span>
 				</div>
@@ -97,11 +119,9 @@ function VocabularyPage() {
 						<span className="size-1.5 rounded-full bg-secondary" />
 					</span>
 					<span className="text-2xl font-bold text-foreground">
-						{VOCABULARY_STATS.dueToday}{" "}
+						{dueToday}{" "}
 						<span className="text-sm font-medium text-muted-foreground">
-							{m["vocabulary.stats.needsReviewSub"]({
-								count: VOCABULARY_STATS.dueToday,
-							})}
+							{m["vocabulary.stats.needsReviewSub"]({ count: dueToday })}
 						</span>
 					</span>
 					<div className="mt-auto">
@@ -124,7 +144,7 @@ function VocabularyPage() {
 						{m["vocabulary.stats.custom"]()}
 					</span>
 					<span className="text-2xl font-bold text-foreground">
-						{VOCABULARY_STATS.customAdditions}
+						{customAdditions}
 					</span>
 					<span className="text-xs font-medium text-muted-foreground">
 						{m["vocabulary.stats.customSub"]()}
@@ -137,7 +157,7 @@ function VocabularyPage() {
 
 			<VocabFilterBar filters={filters} onChange={setFilters} />
 
-			{sorted.length === 0 ? (
+			{!isPending && sorted.length === 0 ? (
 				<EmptyList
 					title={m["vocabulary.hub.emptyTitle"]()}
 					onReset={() => setFilters(DEFAULT_VOCAB_FILTERS)}
@@ -145,7 +165,11 @@ function VocabularyPage() {
 			) : (
 				<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 					{sorted.map((item) => (
-						<VocabCard key={item.id} item={item} />
+						<VocabCard
+							key={item.id}
+							item={item}
+							onToggleMastered={() => toggleMastered(item.id)}
+						/>
 					))}
 				</div>
 			)}
@@ -153,7 +177,7 @@ function VocabularyPage() {
 			<p className="text-xs font-medium text-muted-foreground">
 				{m["vocabulary.hub.showing"]({
 					shown: sorted.length,
-					total: VOCABULARY_STATS.totalSaved,
+					total: totalSaved,
 				})}
 			</p>
 

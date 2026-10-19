@@ -22,7 +22,7 @@ func TestVocabularyDeckService_Update_Forbidden(t *testing.T) {
 	other := "user_2"
 	mockRepo := mocks.NewMockVocabularyDeckRepository(t)
 	mockRepo.On("GetByID", mock.Anything, deckID).Return(&models.VocabularyDeck{ID: deckID, UserID: owner, Name: "Core"}, nil)
-	svc := services.NewVocabularyDeckService(mockRepo)
+	svc := services.NewVocabularyDeckService(mockRepo, fakePremiumChecker{})
 
 	res, err := svc.Update(context.Background(), other, deckID, false, requests.UpdateVocabularyDeck{})
 
@@ -40,7 +40,7 @@ func TestVocabularyDeckService_ListByUser_ForwardsIsAdmin(t *testing.T) {
 	mockRepo.On("ListByUser", mock.Anything, admin, true, 20, 0).
 		Return([]*models.VocabularyDeck{}, nil)
 	mockRepo.On("CountByUser", mock.Anything, admin, true).Return(int64(0), nil)
-	svc := services.NewVocabularyDeckService(mockRepo)
+	svc := services.NewVocabularyDeckService(mockRepo, fakePremiumChecker{})
 
 	res, total, err := svc.ListByUser(context.Background(), admin, true, 20, 0)
 

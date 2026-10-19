@@ -2,6 +2,7 @@ import type { VocabularyDeckDetail } from "@engflex/contracts";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { Field, FieldError, FieldLabel } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
@@ -12,6 +13,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "#/components/ui/select";
+import { Switch } from "#/components/ui/switch";
 import { Textarea } from "#/components/ui/textarea";
 import { ConfirmDeleteDialog } from "#/features/admin/components/confirm-delete-dialog";
 import {
@@ -37,6 +39,7 @@ interface DeckFormState {
 	thumbnailUrl: string;
 	level: string;
 	status: "draft" | "published";
+	isPremium: boolean;
 }
 
 const EMPTY_FORM: DeckFormState = {
@@ -46,6 +49,7 @@ const EMPTY_FORM: DeckFormState = {
 	thumbnailUrl: "",
 	level: "",
 	status: "draft",
+	isPremium: false,
 };
 
 export function DecksPanel() {
@@ -84,6 +88,7 @@ export function DecksPanel() {
 			thumbnailUrl: deck.thumbnailUrl,
 			level: deck.level,
 			status: deck.status === "published" ? "published" : "draft",
+			isPremium: deck.isPremium,
 		});
 		setError(null);
 		setDialogOpen(true);
@@ -105,6 +110,7 @@ export function DecksPanel() {
 						thumbnailUrl: form.thumbnailUrl,
 						level: form.level,
 						status: form.status,
+						isPremium: form.isPremium,
 					},
 				},
 				{
@@ -123,6 +129,7 @@ export function DecksPanel() {
 					description: form.description,
 					thumbnailUrl: form.thumbnailUrl,
 					level: form.level,
+					isPremium: form.isPremium,
 				},
 				{
 					onSuccess: () => {
@@ -174,9 +181,14 @@ export function DecksPanel() {
 			id: "status",
 			header: m["admin.table.status"](),
 			cell: (row) => (
-				<StatusBadge
-					status={row.status === "published" ? "published" : "draft"}
-				/>
+				<div className="flex items-center gap-1.5">
+					<StatusBadge
+						status={row.status === "published" ? "published" : "draft"}
+					/>
+					{row.isPremium && (
+						<Badge variant="default">{m["admin.content.premiumBadge"]()}</Badge>
+					)}
+				</div>
 			),
 		},
 		{
@@ -321,6 +333,18 @@ export function DecksPanel() {
 								...current,
 								thumbnailUrl: event.target.value,
 							}))
+						}
+					/>
+				</Field>
+				<Field className="flex-row items-center justify-between">
+					<FieldLabel htmlFor="deck-premium">
+						{m["admin.content.isPremium"]()}
+					</FieldLabel>
+					<Switch
+						id="deck-premium"
+						checked={form.isPremium}
+						onCheckedChange={(checked) =>
+							setForm((current) => ({ ...current, isPremium: checked }))
 						}
 					/>
 				</Field>

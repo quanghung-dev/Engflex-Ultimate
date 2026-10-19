@@ -24,6 +24,7 @@ export interface VideoExerciseResponse {
   cefrLevel?: CEFR;
   duration: number /* float64 */;
   status: PublishStatus;
+  isPremium: boolean;
   createdAt: string /* RFC3339 */;
   updatedAt: string /* RFC3339 */;
   category?: VideoCategoryResponse;

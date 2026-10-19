@@ -4,17 +4,20 @@ import "engflex-api/internal/common/enums"
 
 // CreateVocabularyDeck creates a flashcard deck (personal via
 // /vocabulary-decks, or system-curated via the admin endpoint — the service
-// method called decides which).
+// method called decides which). IsPremium is only ever honored on the
+// system-deck path (service-enforced); a personal deck ignores it.
 type CreateVocabularyDeck struct {
 	CategoryID   *string `json:"categoryId" binding:"omitempty,uuid"`
 	Name         string  `json:"name" binding:"required,max=200"`
 	Description  string  `json:"description"`
 	ThumbnailURL string  `json:"thumbnailUrl"`
 	Level        string  `json:"level"`
+	IsPremium    bool    `json:"isPremium"`
 }
 
-// UpdateVocabularyDeck renames or re-categorises a deck. Status only takes
-// effect for a system deck updated by an admin (service-enforced).
+// UpdateVocabularyDeck renames or re-categorises a deck. Status and
+// IsPremium only take effect for a system deck updated by an admin
+// (service-enforced).
 type UpdateVocabularyDeck struct {
 	CategoryID   *string              `json:"categoryId" binding:"omitempty,uuid"`
 	Name         *string              `json:"name" binding:"omitempty,max=200"`
@@ -22,6 +25,7 @@ type UpdateVocabularyDeck struct {
 	ThumbnailURL *string              `json:"thumbnailUrl"`
 	Level        *string              `json:"level"`
 	Status       *enums.PublishStatus `json:"status" binding:"omitempty,oneof=draft published"`
+	IsPremium    *bool                `json:"isPremium"`
 }
 
 // CreateVocabularyDeckItem adds one flashcard row to a deck.
@@ -44,11 +48,14 @@ type UpdateVocabularyDeckItem struct {
 }
 
 // CreateVocabularyItem adds a shared dictionary entry or a custom word.
+// IsPremium is only ever honored on the admin system-entry path
+// (service-enforced); a personal custom word ignores it.
 type CreateVocabularyItem struct {
 	Term       string  `json:"term" binding:"required"`
 	Definition string  `json:"definition"`
 	CEFR       string  `json:"cefr" binding:"required,oneof=A1 A2 B1 B2 C1 C2"`
 	Domain     *string `json:"domain"`
+	IsPremium  bool    `json:"isPremium"`
 }
 
 // UpdateVocabularyItem edits a shared dictionary entry (admin-only, and
@@ -60,6 +67,7 @@ type UpdateVocabularyItem struct {
 	CEFR       *string              `json:"cefr" binding:"omitempty,oneof=A1 A2 B1 B2 C1 C2"`
 	Domain     *string              `json:"domain"`
 	Status     *enums.PublishStatus `json:"status" binding:"omitempty,oneof=draft published"`
+	IsPremium  *bool                `json:"isPremium"`
 }
 
 // SaveUserVocabulary saves per-user state over a shared item (idempotent).

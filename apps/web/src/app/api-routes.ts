@@ -38,6 +38,10 @@ export const API_ROUTES = {
 		LIST: "/vocabulary-categories",
 		BY_ID: (id: ApiId) => `/vocabulary-categories/${id}`,
 	},
+	USER_VOCABULARY: {
+		LIST: "/user-vocabulary",
+		BY_ITEM_ID: (itemId: ApiId) => `/user-vocabulary/${itemId}`,
+	},
 	VIDEO_EXERCISES: {
 		LIST: "/video-exercises",
 		BY_ID: (id: ApiId) => `/video-exercises/${id}`,
@@ -60,6 +64,17 @@ export const API_ROUTES = {
 		LESSON_ACTIVITY: (id: ApiId) => `/admin/lesson-activities/${id}`,
 		USERS: "/admin/users",
 		USER_ROLE: (id: ApiId) => `/admin/users/${id}/role`,
+		USER_SUBSCRIPTIONS: (id: ApiId) => `/admin/users/${id}/subscriptions`,
+		PREMIUM_PLANS: "/admin/premium/plans",
+		PREMIUM_PLAN: (plan: ApiId) => `/admin/premium/plans/${plan}`,
+		PREMIUM_FEATURES: "/admin/premium/features",
+		PREMIUM_FEATURE: (id: ApiId) => `/admin/premium/features/${id}`,
+		PREMIUM_SUBSCRIPTIONS: "/admin/premium/subscriptions",
+	},
+	PAYMENTS: {
+		PLANS: "/payments/vnpay/plans",
+		CHECKOUT: "/payments/vnpay/checkout",
+		ME: "/premium/me",
 	},
 	PERSONAS: {
 		LIST: "/personas",

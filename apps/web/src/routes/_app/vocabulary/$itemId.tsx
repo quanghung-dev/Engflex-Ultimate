@@ -1,6 +1,6 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
-import { useStore } from "@tanstack/react-store";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { PageLayout } from "#/components/common/page-layout";
@@ -12,24 +12,29 @@ import { MorphologyCard } from "#/features/vocabulary/components/morphology-card
 import { PersonalNoteCard } from "#/features/vocabulary/components/personal-note-card";
 import { WordHeroCard } from "#/features/vocabulary/components/word-hero-card";
 import {
-	getVocabularyItem,
-	vocabularyStore,
-} from "#/features/vocabulary/store";
+	useSaveUserVocabulary,
+	useVocabularyItemDetail,
+	vocabularyItemQueryOptions,
+} from "#/features/vocabulary/queries";
+import { loadOr404 } from "#/lib/route-loader";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/vocabulary/$itemId")({
-	beforeLoad: ({ params }) => {
-		if (!getVocabularyItem(params.itemId)) {
-			throw redirect({ to: APP_ROUTES.VOCABULARY.LIST });
-		}
-	},
+	// Preload here: a draft/unpublished word 404s, a premium-gated word 403s
+	// (RouteErrorFallback renders the upgrade prompt), both via loadOr404's
+	// shared routing — the component below never special-cases either.
+	loader: ({ context: { queryClient }, params: { itemId } }) =>
+		loadOr404(queryClient, vocabularyItemQueryOptions(itemId)),
 	component: WordDetailPage,
 });
 
 function WordDetailPage() {
 	const { itemId } = Route.useParams();
-	useStore(vocabularyStore); // subscribe to mastered/note changes
-	const item = getVocabularyItem(itemId);
+	const itemQuery = useVocabularyItemDetail(itemId);
+	const saveState = useSaveUserVocabulary();
+
+	if (itemQuery.isError) throw itemQuery.error;
+	const item = itemQuery.data;
 	useBreadcrumbs(
 		item
 			? [
@@ -38,9 +43,38 @@ function WordDetailPage() {
 				]
 			: [],
 	);
-
 	if (!item) return null;
 	const details = item.details;
+
+	const userState = item.userState;
+
+	function toggleMastered() {
+		if (!userState) return;
+		saveState.mutate(
+			{
+				itemId,
+				sourceType: userState.sourceType,
+				sourceId: userState.sourceId,
+				note: userState.note,
+				mastered: !userState.mastered,
+			},
+			{ onError: () => toast.error(m["common.toast.error"]()) },
+		);
+	}
+
+	function saveNote(note: string) {
+		if (!userState) return;
+		saveState.mutate(
+			{
+				itemId,
+				sourceType: userState.sourceType,
+				sourceId: userState.sourceId,
+				mastered: userState.mastered,
+				note,
+			},
+			{ onError: () => toast.error(m["common.toast.error"]()) },
+		);
+	}
 
 	return (
 		<PageLayout
@@ -53,7 +87,7 @@ function WordDetailPage() {
 				</Button>
 			}
 		>
-			<WordHeroCard item={item} />
+			<WordHeroCard item={item} onToggleMastered={toggleMastered} />
 
 			{details ? (
 				<>
@@ -85,9 +119,9 @@ function WordDetailPage() {
 
 			{item.userState ? (
 				<PersonalNoteCard
-					itemId={item.id}
 					note={item.userState.note}
 					createdAt={item.userState.createdAt}
+					onSave={saveNote}
 				/>
 			) : null}
 		</PageLayout>

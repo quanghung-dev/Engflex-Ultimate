@@ -17,11 +17,13 @@ import (
 type ScenarioService struct {
 	scenarios repositories.ScenarioRepository
 	topics    repositories.ScenarioTopicRepository
+	premium   common.PremiumChecker
 }
 
-// NewScenarioService builds the service over the repository interfaces.
-func NewScenarioService(scenarios repositories.ScenarioRepository, topics repositories.ScenarioTopicRepository) *ScenarioService {
-	return &ScenarioService{scenarios: scenarios, topics: topics}
+// NewScenarioService builds the service over the repository interfaces and
+// the premium checker.
+func NewScenarioService(scenarios repositories.ScenarioRepository, topics repositories.ScenarioTopicRepository, premium common.PremiumChecker) *ScenarioService {
+	return &ScenarioService{scenarios: scenarios, topics: topics, premium: premium}
 }
 
 // List pages catalog scenarios, optionally topic-filtered. isAdmin widens
@@ -78,7 +80,7 @@ func (s *ScenarioService) ListTopicsWithPreview(ctx context.Context, previewK in
 // persona comes back nil (generic partner label) rather than failing. A
 // draft scenario is invisible to non-admins (404, existence not disclosed),
 // same rule as vocabulary items/decks and video exercises.
-func (s *ScenarioService) GetDetail(ctx context.Context, id string, isAdmin bool) (*models.Scenario, error) {
+func (s *ScenarioService) GetDetail(ctx context.Context, id, userID string, isAdmin bool) (*models.Scenario, error) {
 	m, err := s.scenarios.GetDetail(ctx, id)
 	if err != nil {
 		appErr := common.FromDBError(err, "scenario")
@@ -87,6 +89,9 @@ func (s *ScenarioService) GetDetail(ctx context.Context, id string, isAdmin bool
 	}
 	if m.Status != enums.PublishStatusPublished && !isAdmin {
 		return nil, common.NotFound("scenario not found")
+	}
+	if err := common.RequirePremiumAccess(ctx, s.premium, userID, isAdmin, m.IsPremium); err != nil {
+		return nil, err
 	}
 	slog.InfoContext(ctx, "scenario detail found", "scenarioID", m.ID)
 	return m, nil

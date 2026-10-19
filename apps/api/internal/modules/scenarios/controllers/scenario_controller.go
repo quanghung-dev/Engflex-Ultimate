@@ -102,7 +102,7 @@ func (h *ScenarioController) TopicsWithPreview(c *gin.Context) {
 // @Success      200 {object} common.ApiResponse{data=responses.Scenario}
 // @Router       /scenarios/{id} [get]
 func (h *ScenarioController) GetByID(c *gin.Context) {
-	m, err := h.service.GetDetail(c.Request.Context(), c.Param("id"), middleware.Role(c) == enums.UserRoleAdmin)
+	m, err := h.service.GetDetail(c.Request.Context(), c.Param("id"), middleware.UserID(c), middleware.Role(c) == enums.UserRoleAdmin)
 	if err != nil {
 		common.Fail(c, err)
 		return

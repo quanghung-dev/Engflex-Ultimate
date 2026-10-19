@@ -171,6 +171,20 @@ export const LevelAdvanced = "advanced";
 export type Level = typeof LevelBeginner | typeof LevelIntermediate | typeof LevelAdvanced;
 
 //////////
+// source: payment_transaction_status.go
+
+/**
+ * PaymentTransactionStatus is one VNPay checkout attempt's own lifecycle —
+ * separate from SubscriptionStatus because a user can retry a failed or
+ * abandoned attempt, and the transaction row is the idempotency key for
+ * VNPay's IPN callback (one attempt, one vnp_TxnRef).
+ */
+export const PaymentTransactionStatusPending = "pending";
+export const PaymentTransactionStatusSucceeded = "succeeded";
+export const PaymentTransactionStatusFailed = "failed";
+export type PaymentTransactionStatus = typeof PaymentTransactionStatusPending | typeof PaymentTransactionStatusSucceeded | typeof PaymentTransactionStatusFailed;
+
+//////////
 // source: publish_status.go
 
 /**
@@ -216,6 +230,36 @@ export type ScenarioDifficulty = typeof ScenarioDifficultyB1Plus | typeof Scenar
 export const SpanStatusIncorrect = "incorrect";
 export const SpanStatusAwkward = "awkward";
 export type SpanStatus = typeof SpanStatusIncorrect | typeof SpanStatusAwkward;
+
+//////////
+// source: subscription_plan.go
+
+/**
+ * SubscriptionPlan is a fixed-duration premium package. Pricing per plan
+ * lives in services.PlanCatalog (Go, not a DB table) — no admin UI to edit
+ * prices in this pass.
+ */
+export const SubscriptionPlanOneMonth = "1m";
+export const SubscriptionPlanThreeMonth = "3m";
+export const SubscriptionPlanTwelveMonth = "12m";
+export type SubscriptionPlan = typeof SubscriptionPlanOneMonth | typeof SubscriptionPlanThreeMonth | typeof SubscriptionPlanTwelveMonth;
+
+//////////
+// source: subscription_status.go
+
+/**
+ * SubscriptionStatus is the premium-subscription lifecycle. A row starts
+ * pending (checkout created, payment not yet confirmed) and moves to
+ * active on a successful VNPay IPN, or failed if the payment didn't go
+ * through. expired/cancelled are reached later (expiry sweep, support
+ * action) — nothing in this pass sets them yet.
+ */
+export const SubscriptionStatusPending = "pending";
+export const SubscriptionStatusActive = "active";
+export const SubscriptionStatusExpired = "expired";
+export const SubscriptionStatusCancelled = "cancelled";
+export const SubscriptionStatusFailed = "failed";
+export type SubscriptionStatus = typeof SubscriptionStatusPending | typeof SubscriptionStatusActive | typeof SubscriptionStatusExpired | typeof SubscriptionStatusCancelled | typeof SubscriptionStatusFailed;
 
 //////////
 // source: turn_role.go

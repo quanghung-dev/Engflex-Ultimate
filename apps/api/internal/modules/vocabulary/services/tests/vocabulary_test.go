@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"context"
 	"testing"
 
 	"engflex-api/internal/common"
@@ -10,10 +11,25 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// fakePremiumChecker defaults to "not premium" — most tests exercise
+// free-content behavior and don't care about the subscription lookup.
+type fakePremiumChecker struct {
+	isPremium bool
+}
+
+func (f fakePremiumChecker) IsPremium(ctx context.Context, userID string) (bool, error) {
+	return f.isPremium, nil
+}
+
 func setupDeck(t *testing.T) (services.VocabularyDeckService, *mocks.MockVocabularyDeckRepository) {
 	t.Helper()
+	return setupDeckWithPremium(t, false)
+}
+
+func setupDeckWithPremium(t *testing.T, isPremium bool) (services.VocabularyDeckService, *mocks.MockVocabularyDeckRepository) {
+	t.Helper()
 	mockRepo := mocks.NewMockVocabularyDeckRepository(t)
-	svc := services.NewVocabularyDeckService(mockRepo)
+	svc := services.NewVocabularyDeckService(mockRepo, fakePremiumChecker{isPremium: isPremium})
 	return svc, mockRepo
 }
 

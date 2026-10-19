@@ -38,6 +38,7 @@ type Lesson struct {
 	Description string              `json:"description"`
 	Details     LessonDetails       `json:"details"`
 	Status      enums.PublishStatus `json:"status"`
+	IsPremium   bool                `json:"isPremium"`
 }
 
 // UnitSection mirrors models.LessonSection field for field, with Units
@@ -63,6 +64,7 @@ type LessonDetail struct {
 	Description string              `json:"description"`
 	Details     LessonDetails       `json:"details"`
 	Status      enums.PublishStatus `json:"status"`
+	IsPremium   bool                `json:"isPremium"`
 	Activities  []Activity          `json:"activities"`
 }
 

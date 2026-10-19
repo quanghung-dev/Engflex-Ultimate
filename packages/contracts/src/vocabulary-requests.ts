@@ -34,7 +34,8 @@ export interface UpdateVocabularyCategory {
 /**
  * CreateVocabularyDeck creates a flashcard deck (personal via
  * /vocabulary-decks, or system-curated via the admin endpoint — the service
- * method called decides which).
+ * method called decides which). IsPremium is only ever honored on the
+ * system-deck path (service-enforced); a personal deck ignores it.
  */
 export interface CreateVocabularyDeck {
   categoryId?: string;
@@ -42,10 +43,12 @@ export interface CreateVocabularyDeck {
   description: string;
   thumbnailUrl: string;
   level: string;
+  isPremium: boolean;
 }
 /**
- * UpdateVocabularyDeck renames or re-categorises a deck. Status only takes
- * effect for a system deck updated by an admin (service-enforced).
+ * UpdateVocabularyDeck renames or re-categorises a deck. Status and
+ * IsPremium only take effect for a system deck updated by an admin
+ * (service-enforced).
  */
 export interface UpdateVocabularyDeck {
   categoryId?: string;
@@ -54,6 +57,7 @@ export interface UpdateVocabularyDeck {
   thumbnailUrl?: string;
   level?: string;
   status?: PublishStatus;
+  isPremium?: boolean;
 }
 /**
  * CreateVocabularyDeckItem adds one flashcard row to a deck.
@@ -78,12 +82,15 @@ export interface UpdateVocabularyDeckItem {
 }
 /**
  * CreateVocabularyItem adds a shared dictionary entry or a custom word.
+ * IsPremium is only ever honored on the admin system-entry path
+ * (service-enforced); a personal custom word ignores it.
  */
 export interface CreateVocabularyItem {
   term: string;
   definition: string;
   cefr: string;
   domain?: string;
+  isPremium: boolean;
 }
 /**
  * UpdateVocabularyItem edits a shared dictionary entry (admin-only, and
@@ -96,6 +103,7 @@ export interface UpdateVocabularyItem {
   cefr?: string;
   domain?: string;
   status?: PublishStatus;
+  isPremium?: boolean;
 }
 /**
  * SaveUserVocabulary saves per-user state over a shared item (idempotent).

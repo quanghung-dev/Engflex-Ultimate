@@ -16,6 +16,7 @@ type VideoExerciseResponse struct {
 	CEFRLevel    *enums.CEFR         `json:"cefrLevel"`
 	Duration     float64             `json:"duration"`
 	Status       enums.PublishStatus `json:"status"`
+	IsPremium    bool                `json:"isPremium"`
 	CreatedAt    time.Time           `json:"createdAt"`
 	UpdatedAt    time.Time           `json:"updatedAt"`
 

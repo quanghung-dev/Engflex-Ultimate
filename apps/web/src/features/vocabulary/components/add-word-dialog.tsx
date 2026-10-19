@@ -1,4 +1,4 @@
-import type { CEFR } from "@engflex/contracts";
+import type { CEFR, VocabularyDomain } from "@engflex/contracts";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -26,7 +26,7 @@ import {
 	SelectValue,
 } from "#/components/ui/select";
 import { Textarea } from "#/components/ui/textarea";
-import { addCustomWord } from "#/features/vocabulary/store";
+import { useCreateCustomWord } from "#/features/vocabulary/queries";
 import { m } from "#/paraglide/messages";
 
 const CEFR_OPTIONS: Array<{ value: CEFR; label: () => string }> = [
@@ -35,37 +35,62 @@ const CEFR_OPTIONS: Array<{ value: CEFR; label: () => string }> = [
 	{ value: "C1", label: () => m["vocabulary.addWord.cefrOptions.c1"]() },
 ];
 
-const POS_OPTIONS = ["noun", "verb", "adj", "idiom / phrase"];
+const DOMAIN_OPTIONS: Array<{ value: VocabularyDomain; label: () => string }> =
+	[
+		{
+			value: "backend_db",
+			label: () => m["vocabulary.filter.domain.backendDb"](),
+		},
+		{
+			value: "distributed_systems",
+			label: () => m["vocabulary.filter.domain.distributedSystems"](),
+		},
+		{
+			value: "devops_cloud",
+			label: () => m["vocabulary.filter.domain.devopsCloud"](),
+		},
+		{
+			value: "frontend_ui",
+			label: () => m["vocabulary.filter.domain.frontendUi"](),
+		},
+		{ value: "ai_ml", label: () => m["vocabulary.filter.domain.aiMl"]() },
+	];
 
 const EMPTY_FORM = {
 	term: "",
 	cefr: "B2" as CEFR,
-	partOfSpeech: "noun",
+	domain: "" as VocabularyDomain | "",
 	definition: "",
-	example: "",
 };
 
 export function AddWordDialog() {
 	const [open, setOpen] = useState(false);
 	const [form, setForm] = useState(EMPTY_FORM);
 	const [error, setError] = useState<string | null>(null);
+	const createCustomWord = useCreateCustomWord();
 
 	function submit() {
 		if (!form.term.trim() || !form.definition.trim()) {
 			setError(m["vocabulary.addWord.required"]());
 			return;
 		}
-		addCustomWord({
-			term: form.term.trim(),
-			cefr: form.cefr,
-			partOfSpeech: form.partOfSpeech,
-			definition: form.definition.trim(),
-			example: form.example.trim(),
-		});
-		toast.success(m["common.toast.addedToVocabulary"]());
-		setOpen(false);
-		setForm(EMPTY_FORM);
-		setError(null);
+		createCustomWord.mutate(
+			{
+				term: form.term.trim(),
+				cefr: form.cefr,
+				definition: form.definition.trim(),
+				domain: form.domain || undefined,
+			},
+			{
+				onSuccess: () => {
+					toast.success(m["common.toast.addedToVocabulary"]());
+					setOpen(false);
+					setForm(EMPTY_FORM);
+					setError(null);
+				},
+				onError: () => toast.error(m["common.toast.error"]()),
+			},
+		);
 	}
 
 	return (
@@ -120,13 +145,14 @@ export function AddWordDialog() {
 								</Select>
 							</Field>
 							<Field>
-								<FieldLabel>{m["vocabulary.addWord.posLabel"]()}</FieldLabel>
+								<FieldLabel>{m["vocabulary.filter.domainLabel"]()}</FieldLabel>
 								<Select
-									value={form.partOfSpeech}
+									value={form.domain || "none"}
 									onValueChange={(value) =>
 										setForm((current) => ({
 											...current,
-											partOfSpeech: value,
+											domain:
+												value === "none" ? "" : (value as VocabularyDomain),
 										}))
 									}
 								>
@@ -134,9 +160,10 @@ export function AddWordDialog() {
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
-										{POS_OPTIONS.map((pos) => (
-											<SelectItem key={pos} value={pos}>
-												{pos}
+										<SelectItem value="none">—</SelectItem>
+										{DOMAIN_OPTIONS.map((option) => (
+											<SelectItem key={option.value} value={option.value}>
+												{option.label()}
 											</SelectItem>
 										))}
 									</SelectContent>
@@ -159,22 +186,6 @@ export function AddWordDialog() {
 								}
 							/>
 						</Field>
-						<Field>
-							<FieldLabel htmlFor="word-example">
-								{m["vocabulary.addWord.exampleLabel"]()}
-							</FieldLabel>
-							<Textarea
-								id="word-example"
-								rows={2}
-								value={form.example}
-								onChange={(event) =>
-									setForm((current) => ({
-										...current,
-										example: event.target.value,
-									}))
-								}
-							/>
-						</Field>
 						{error ? <FieldError>{error}</FieldError> : null}
 					</FieldGroup>
 					<DialogFooter>
@@ -185,7 +196,11 @@ export function AddWordDialog() {
 						>
 							{m["common.actions.cancel"]()}
 						</Button>
-						<Button type="button" onClick={submit}>
+						<Button
+							type="button"
+							onClick={submit}
+							disabled={createCustomWord.isPending}
+						>
 							{m["vocabulary.addWord.save"]()}
 						</Button>
 					</DialogFooter>

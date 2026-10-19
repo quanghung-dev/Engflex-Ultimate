@@ -60,7 +60,7 @@ func TestLessonService_ListSections(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			secMock := mocks.NewMockLessonSectionRepository(t)
 			tt.setupMock(secMock)
-			svc := services.NewLessonService(secMock, mocks.NewMockLessonRepository(t))
+			svc := services.NewLessonService(secMock, mocks.NewMockLessonRepository(t), fakePremiumChecker{})
 
 			got, err := svc.ListSections(context.Background(), tt.req, false)
 

@@ -11,6 +11,7 @@ type CreateVideoExercise struct {
 	ThumbnailURL string      `json:"thumbnailUrl"`
 	CEFRLevel    *enums.CEFR `json:"cefrLevel" binding:"omitempty,oneof=A1 A2 B1 B2 C1 C2"`
 	Duration     float64     `json:"duration"`
+	IsPremium    bool        `json:"isPremium"`
 }
 
 // UpdateVideoExercise replaces every field below Status. Status is the one
@@ -26,4 +27,5 @@ type UpdateVideoExercise struct {
 	CEFRLevel    *enums.CEFR          `json:"cefrLevel" binding:"omitempty,oneof=A1 A2 B1 B2 C1 C2"`
 	Duration     float64              `json:"duration"`
 	Status       *enums.PublishStatus `json:"status" binding:"omitempty,oneof=draft published"`
+	IsPremium    *bool                `json:"isPremium"`
 }

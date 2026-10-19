@@ -63,6 +63,18 @@ func TestVocabAdminDecksItemsRoutesRequireAuth(t *testing.T) {
 		{http.MethodGet, "/api/v1/admin/lesson-activities/" + uuid},
 		{http.MethodGet, "/api/v1/admin/users"},
 		{http.MethodPatch, "/api/v1/admin/users/" + uuid + "/role"},
+		{http.MethodPost, "/api/v1/payments/vnpay/checkout"},
+		{http.MethodGet, "/api/v1/admin/users/" + uuid + "/subscriptions"},
+		{http.MethodPost, "/api/v1/admin/users/" + uuid + "/subscriptions"},
+		{http.MethodDelete, "/api/v1/admin/users/" + uuid + "/subscriptions"},
+		{http.MethodGet, "/api/v1/admin/premium/plans"},
+		{http.MethodPut, "/api/v1/admin/premium/plans/1m"},
+		{http.MethodGet, "/api/v1/admin/premium/features"},
+		{http.MethodPost, "/api/v1/admin/premium/features"},
+		{http.MethodPut, "/api/v1/admin/premium/features/" + uuid},
+		{http.MethodDelete, "/api/v1/admin/premium/features/" + uuid},
+		{http.MethodGet, "/api/v1/admin/premium/subscriptions"},
+		{http.MethodGet, "/api/v1/premium/me"},
 	}
 
 	for _, tt := range tests {

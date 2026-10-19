@@ -27,7 +27,7 @@ func TestLessonService_Create_MapsDetailsAndStartsDraft(t *testing.T) {
 			m.Details.CoverImageURL == "https://example.com/cover.png" &&
 			m.Details.EstimatedDurationMin != nil && *m.Details.EstimatedDurationMin == 12
 	})).Return(nil).Once()
-	svc := services.NewLessonService(secMock, lessonMock)
+	svc := services.NewLessonService(secMock, lessonMock, fakePremiumChecker{})
 
 	_, err := svc.Create(context.Background(), requests.CreateLesson{
 		Slug: "unit-1", Title: "Unit 1",
@@ -50,7 +50,7 @@ func TestLessonService_Update_PublishesOnExplicitStatus(t *testing.T) {
 	lessonMock.On("Update", mock.Anything, mock.MatchedBy(func(m *models.Lesson) bool {
 		return m.Status == enums.PublishStatusPublished
 	})).Return(nil).Once()
-	svc := services.NewLessonService(secMock, lessonMock)
+	svc := services.NewLessonService(secMock, lessonMock, fakePremiumChecker{})
 
 	published := enums.PublishStatusPublished
 	_, err := svc.Update(context.Background(), lessonID, requests.UpdateLesson{Status: &published})

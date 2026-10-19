@@ -20,7 +20,7 @@ import (
 // custom word is never reachable through them.
 type VocabularyItemService interface {
 	List(ctx context.Context, limit, offset int, isAdmin bool) ([]*models.VocabularyItem, int64, error)
-	GetByID(ctx context.Context, id string, isAdmin bool) (*models.VocabularyItem, error)
+	GetByID(ctx context.Context, id, userID string, isAdmin bool) (*models.VocabularyItem, error)
 	Create(ctx context.Context, userID string, req requests.CreateVocabularyItem) (*models.VocabularyItem, error)
 	CreateSystemEntry(ctx context.Context, req requests.CreateVocabularyItem) (*models.VocabularyItem, error)
 	Update(ctx context.Context, id string, req requests.UpdateVocabularyItem) (*models.VocabularyItem, error)
@@ -28,12 +28,14 @@ type VocabularyItemService interface {
 }
 
 type vocabularyItemService struct {
-	repo repositories.VocabularyItemRepository
+	repo    repositories.VocabularyItemRepository
+	premium common.PremiumChecker
 }
 
-// NewVocabularyItemService builds the service over the repository interface.
-func NewVocabularyItemService(repo repositories.VocabularyItemRepository) VocabularyItemService {
-	return &vocabularyItemService{repo: repo}
+// NewVocabularyItemService builds the service over the repository
+// interface and the premium checker.
+func NewVocabularyItemService(repo repositories.VocabularyItemRepository, premium common.PremiumChecker) VocabularyItemService {
+	return &vocabularyItemService{repo: repo, premium: premium}
 }
 
 func (s *vocabularyItemService) List(ctx context.Context, limit, offset int, isAdmin bool) ([]*models.VocabularyItem, int64, error) {
@@ -56,7 +58,7 @@ func (s *vocabularyItemService) List(ctx context.Context, limit, offset int, isA
 // GetByID: a draft entry is invisible to non-admins (404, not just hidden
 // from lists) — its existence isn't disclosed either, same rule as a draft
 // system deck.
-func (s *vocabularyItemService) GetByID(ctx context.Context, id string, isAdmin bool) (*models.VocabularyItem, error) {
+func (s *vocabularyItemService) GetByID(ctx context.Context, id, userID string, isAdmin bool) (*models.VocabularyItem, error) {
 	m, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		appErr := common.FromDBError(err, "vocabulary item")
@@ -65,6 +67,9 @@ func (s *vocabularyItemService) GetByID(ctx context.Context, id string, isAdmin 
 	}
 	if m.Status != enums.PublishStatusPublished && !isAdmin {
 		return nil, common.NotFound("vocabulary item not found")
+	}
+	if err := common.RequirePremiumAccess(ctx, s.premium, userID, isAdmin, m.IsPremium); err != nil {
+		return nil, err
 	}
 	slog.InfoContext(ctx, "vocabulary item found", "id", m.ID)
 	return m, nil
@@ -88,6 +93,9 @@ func (s *vocabularyItemService) Create(ctx context.Context, userID string, req r
 		i.CreatedByUserID = &uid
 	}
 	i.Status = enums.PublishStatusPublished
+	// Personal words are never premium-gated, regardless of what the
+	// shared DTO carried — IsPremium is an admin-only concept.
+	i.IsPremium = false
 	if err := s.repo.Create(ctx, i); err != nil {
 		appErr := common.FromDBError(err, "vocabulary item")
 		logger.Report(ctx, "create vocabulary item failed", appErr)
@@ -149,6 +157,9 @@ func (s *vocabularyItemService) Update(ctx context.Context, id string, req reque
 	}
 	if req.Status != nil {
 		i.Status = *req.Status
+	}
+	if req.IsPremium != nil {
+		i.IsPremium = *req.IsPremium
 	}
 	if err := s.repo.Update(ctx, i); err != nil {
 		appErr := common.FromDBError(err, "vocabulary item")

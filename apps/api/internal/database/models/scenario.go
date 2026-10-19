@@ -26,6 +26,7 @@ type Scenario struct {
 	MaxDuration int                      `gorm:"column:max_duration;not null" json:"maxDuration"`
 	Details     ScenarioDetail           `gorm:"type:jsonb;not null" json:"details"`
 	Status      enums.PublishStatus      `gorm:"not null;default:draft" json:"status"`
+	IsPremium   bool                     `gorm:"not null;default:false" json:"isPremium"`
 	Topic       *ScenarioTopic           `json:"topic,omitempty"`
 	Persona     *Persona                 `json:"persona,omitempty"`
 	CreatedAt   time.Time                `gorm:"autoCreateTime" json:"createdAt"`

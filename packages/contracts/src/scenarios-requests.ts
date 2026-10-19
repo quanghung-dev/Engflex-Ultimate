@@ -52,6 +52,7 @@ export interface CreateScenario {
   cefrLevel: ScenarioDifficulty;
   maxDuration: number /* int */;
   details: ScenarioDetailInput;
+  isPremium: boolean;
 }
 /**
  * UpdateScenario edits a scenario. Status only takes effect for the
@@ -67,6 +68,7 @@ export interface UpdateScenario {
   maxDuration?: number /* int */;
   details?: ScenarioDetailInput;
   status?: PublishStatus;
+  isPremium?: boolean;
 }
 /**
  * CreateScenarioTopic / UpdateScenarioTopic manage the fixed banner

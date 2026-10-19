@@ -6,6 +6,7 @@ import type {
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { Field, FieldError, FieldLabel } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
@@ -16,6 +17,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "#/components/ui/select";
+import { Switch } from "#/components/ui/switch";
 import { Textarea } from "#/components/ui/textarea";
 import { ConfirmDeleteDialog } from "#/features/admin/components/confirm-delete-dialog";
 import {
@@ -51,6 +53,7 @@ interface ItemFormState {
 	cefr: CEFR;
 	domain: VocabularyDomain | "";
 	status: "draft" | "published";
+	isPremium: boolean;
 }
 
 const EMPTY_FORM: ItemFormState = {
@@ -59,6 +62,7 @@ const EMPTY_FORM: ItemFormState = {
 	cefr: "B1",
 	domain: "",
 	status: "draft",
+	isPremium: false,
 };
 
 export function DictionaryItemsPanel() {
@@ -90,6 +94,7 @@ export function DictionaryItemsPanel() {
 			cefr: item.cefr,
 			domain: item.domain ?? "",
 			status: item.status === "published" ? "published" : "draft",
+			isPremium: item.isPremium,
 		});
 		setError(null);
 		setDialogOpen(true);
@@ -110,6 +115,7 @@ export function DictionaryItemsPanel() {
 						cefr: form.cefr,
 						domain: form.domain || undefined,
 						status: form.status,
+						isPremium: form.isPremium,
 					},
 				},
 				{
@@ -127,6 +133,7 @@ export function DictionaryItemsPanel() {
 					definition: form.definition.trim(),
 					cefr: form.cefr,
 					domain: form.domain || undefined,
+					isPremium: form.isPremium,
 				},
 				{
 					onSuccess: () => {
@@ -178,9 +185,14 @@ export function DictionaryItemsPanel() {
 			id: "status",
 			header: m["admin.table.status"](),
 			cell: (row) => (
-				<StatusBadge
-					status={row.status === "published" ? "published" : "draft"}
-				/>
+				<div className="flex items-center gap-1.5">
+					<StatusBadge
+						status={row.status === "published" ? "published" : "draft"}
+					/>
+					{row.isPremium && (
+						<Badge variant="default">{m["admin.content.premiumBadge"]()}</Badge>
+					)}
+				</div>
 			),
 		},
 		{
@@ -311,6 +323,18 @@ export function DictionaryItemsPanel() {
 								...current,
 								definition: event.target.value,
 							}))
+						}
+					/>
+				</Field>
+				<Field className="flex-row items-center justify-between">
+					<FieldLabel htmlFor="item-premium">
+						{m["admin.content.isPremium"]()}
+					</FieldLabel>
+					<Switch
+						id="item-premium"
+						checked={form.isPremium}
+						onCheckedChange={(checked) =>
+							setForm((current) => ({ ...current, isPremium: checked }))
 						}
 					/>
 				</Field>

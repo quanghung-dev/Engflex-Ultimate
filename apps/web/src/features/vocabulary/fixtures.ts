@@ -52,6 +52,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 		partOfSpeech: "adj",
 		cefr: "C1",
 		status: "published",
+		isPremium: false,
 		domain: "backend_db",
 		definition:
 			"Denoting an operation or API request that can be applied multiple times without changing the result beyond the initial execution.",
@@ -133,6 +134,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 		partOfSpeech: "noun",
 		cefr: "B2",
 		status: "published",
+		isPremium: false,
 		domain: "distributed_systems",
 		definition:
 			"The resistance or opposing force exerted opposite to the desired flow of data in a software pipeline when a downstream consumer cannot handle the ingress rate.",
@@ -159,6 +161,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 		partOfSpeech: "noun",
 		cefr: "B1",
 		status: "published",
+		isPremium: false,
 		domain: "backend_db",
 		definition:
 			"A point of congestion in a production system that occurs when workloads arrive too quickly for the designated computing process to handle.",
@@ -185,6 +188,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 		partOfSpeech: "noun",
 		cefr: "C1",
 		status: "published",
+		isPremium: false,
 		domain: "distributed_systems",
 		definition:
 			"The property of a computer program or routine allowing it to be safely executed concurrently or interrupted and called again before its previous invocation finishes.",
@@ -212,6 +216,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 		partOfSpeech: "noun",
 		cefr: "B1",
 		status: "published",
+		isPremium: false,
 		domain: "frontend_ui",
 		definition:
 			"A situational decision that involves diminishing or losing one desirable quality or aspect of a software system in return for gaining qualities in another aspect.",
@@ -238,6 +243,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 		partOfSpeech: "noun",
 		cefr: "B2",
 		status: "published",
+		isPremium: false,
 		domain: "distributed_systems",
 		definition:
 			"Not parallelism. The composition of independently executing computations.",
@@ -264,6 +270,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 		partOfSpeech: "noun",
 		cefr: "C1",
 		status: "published",
+		isPremium: false,
 		domain: "ai_ml",
 		definition:
 			"Practical rule-of-thumb method not guaranteed to be optimal, but sufficient for immediate goals.",
@@ -290,6 +297,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 		partOfSpeech: "noun",
 		cefr: "B1",
 		status: "published",
+		isPremium: false,
 		domain: "devops_cloud",
 		definition:
 			"Enabling a system to continue operating properly in the event of the failure of one or more components.",

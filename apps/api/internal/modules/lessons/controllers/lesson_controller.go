@@ -59,7 +59,7 @@ func (h *LessonController) List(c *gin.Context) {
 // @Success      200 {object} common.ApiResponse{data=responses.LessonDetail}
 // @Router       /lessons/{id} [get]
 func (h *LessonController) GetByID(c *gin.Context) {
-	m, err := h.lessons.GetDetail(c.Request.Context(), c.Param("id"), middleware.Role(c) == enums.UserRoleAdmin)
+	m, err := h.lessons.GetDetail(c.Request.Context(), c.Param("id"), middleware.UserID(c), middleware.Role(c) == enums.UserRoleAdmin)
 	if err != nil {
 		common.Fail(c, err)
 		return
@@ -235,7 +235,7 @@ func (h *LessonController) DeleteSection(c *gin.Context) {
 // @Success      200 {object} common.ApiResponse{data=responses.LessonDetail}
 // @Router       /lessons/by-slug/{slug} [get]
 func (h *LessonController) GetBySlug(c *gin.Context) {
-	m, err := h.lessons.GetDetailBySlug(c.Request.Context(), c.Param("slug"), middleware.Role(c) == enums.UserRoleAdmin)
+	m, err := h.lessons.GetDetailBySlug(c.Request.Context(), c.Param("slug"), middleware.UserID(c), middleware.Role(c) == enums.UserRoleAdmin)
 	if err != nil {
 		common.Fail(c, err)
 		return

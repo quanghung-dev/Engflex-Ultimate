@@ -21,7 +21,7 @@ func TestVocabularyDeckService_Update_PreservesCategoryWhenOmitted(t *testing.T)
 	repo.On("GetByID", mock.Anything, deckID).
 		Return(&models.VocabularyDeck{ID: deckID, UserID: owner, CategoryID: &catID, Name: "Core"}, nil)
 	repo.On("Update", mock.Anything, mock.Anything).Return(nil)
-	svc := services.NewVocabularyDeckService(repo)
+	svc := services.NewVocabularyDeckService(repo, fakePremiumChecker{})
 
 	got, err := svc.Update(context.Background(), owner, deckID, false, requests.UpdateVocabularyDeck{})
 

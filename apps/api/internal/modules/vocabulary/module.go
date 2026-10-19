@@ -9,6 +9,7 @@ import (
 	"gorm.io/gorm"
 
 	"engflex-api/internal/database/repositories"
+	paymentservices "engflex-api/internal/modules/payments/services"
 	"engflex-api/internal/modules/vocabulary/controllers"
 	"engflex-api/internal/modules/vocabulary/services"
 	"engflex-api/internal/server/middleware"
@@ -16,17 +17,20 @@ import (
 
 // RegisterRoutes mounts the vocabulary endpoints under /api/v1.
 func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
+	premiumSvc := paymentservices.NewSubscriptionService(
+		repositories.NewSubscriptionRepository(db), repositories.NewPlanRepository(db))
+
 	categorySvc := services.NewVocabularyCategoryService(repositories.NewVocabularyCategoryRepository(db))
 	categoryCtl := controllers.NewVocabularyCategoryController(categorySvc)
 
-	deckSvc := services.NewVocabularyDeckService(repositories.NewVocabularyDeckRepository(db))
+	deckSvc := services.NewVocabularyDeckService(repositories.NewVocabularyDeckRepository(db), premiumSvc)
 	deckCtl := controllers.NewVocabularyDeckController(deckSvc)
 
 	itemSvc := services.NewVocabularyDeckItemService(repositories.NewVocabularyDeckItemRepository(db), repositories.NewVocabularyDeckRepository(db))
 	itemCtl := controllers.NewVocabularyDeckItemController(itemSvc)
 
 	itemRepo := repositories.NewVocabularyItemRepository(db)
-	dictSvc := services.NewVocabularyItemService(itemRepo)
+	dictSvc := services.NewVocabularyItemService(itemRepo, premiumSvc)
 	dictCtl := controllers.NewVocabularyItemController(dictSvc)
 
 	stateSvc := services.NewUserVocabularyService(repositories.NewUserVocabularyRepository(db), itemRepo)

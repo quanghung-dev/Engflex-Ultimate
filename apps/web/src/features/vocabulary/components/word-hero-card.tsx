@@ -6,10 +6,15 @@ import { AudioButton } from "#/components/common/audio-button";
 import { CefrBadge } from "#/components/common/cefr-badge";
 import { SourcePill } from "#/components/common/source-pill";
 import { Button } from "#/components/ui/button";
-import { toggleMastered } from "#/features/vocabulary/store";
 import { m } from "#/paraglide/messages";
 
-export function WordHeroCard({ item }: { item: VocabularyItem }) {
+export function WordHeroCard({
+	item,
+	onToggleMastered,
+}: {
+	item: VocabularyItem;
+	onToggleMastered: () => void;
+}) {
 	const state = item.userState;
 	const mastered = state?.mastered ?? false;
 
@@ -27,9 +32,11 @@ export function WordHeroCard({ item }: { item: VocabularyItem }) {
 			<div className="flex flex-wrap items-center gap-2">
 				<h1 className="text-2xl font-bold text-foreground">{item.term}</h1>
 				<CefrBadge value={item.cefr} />
-				<span className="chip px-1.5 py-0.5 text-[11px]">
-					{item.partOfSpeech}
-				</span>
+				{item.partOfSpeech ? (
+					<span className="chip px-1.5 py-0.5 text-[11px]">
+						{item.partOfSpeech}
+					</span>
+				) : null}
 				{state ? (
 					<SourcePill source={state.sourceType} suffix={state.sourceId} />
 				) : null}
@@ -49,7 +56,7 @@ export function WordHeroCard({ item }: { item: VocabularyItem }) {
 				<Button
 					type="button"
 					variant={mastered ? "outline" : "default"}
-					onClick={() => toggleMastered(item.id)}
+					onClick={onToggleMastered}
 					className={cn(
 						"btn",
 						mastered ? "btn-outline" : "btn-primary",

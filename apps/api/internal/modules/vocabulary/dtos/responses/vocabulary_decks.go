@@ -17,6 +17,7 @@ type VocabularyDeckDetail struct {
 	Level        string                      `json:"level"`
 	IsDefault    bool                        `json:"isDefault"`
 	Status       enums.PublishStatus         `json:"status"`
+	IsPremium    bool                        `json:"isPremium"`
 	Category     *VocabularyCategoryResponse `json:"category"`
 	CreatedAt    time.Time                   `json:"createdAt"`
 	UpdatedAt    time.Time                   `json:"updatedAt"`

@@ -25,6 +25,7 @@ type CreateLesson struct {
 	CEFRLevel   enums.CEFR         `json:"cefrLevel" binding:"required,oneof=A1 A2 B1 B2 C1 C2"`
 	Description string             `json:"description"`
 	Details     LessonDetailsInput `json:"details"`
+	IsPremium   bool               `json:"isPremium"`
 }
 
 // UpdateLesson edits a unit. Status only takes effect for the explicit
@@ -37,6 +38,7 @@ type UpdateLesson struct {
 	Description *string              `json:"description"`
 	Details     *LessonDetailsInput  `json:"details"`
 	Status      *enums.PublishStatus `json:"status" binding:"omitempty,oneof=draft published"`
+	IsPremium   *bool                `json:"isPremium"`
 }
 
 // CreateLessonSection / UpdateLessonSection manage the path's ordered

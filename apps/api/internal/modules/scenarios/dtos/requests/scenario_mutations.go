@@ -30,6 +30,7 @@ type CreateScenario struct {
 	CEFRLevel   enums.ScenarioDifficulty `json:"cefrLevel" binding:"required,oneof=B1+ B2 C1"`
 	MaxDuration int                      `json:"maxDuration" binding:"required,min=1"`
 	Details     ScenarioDetailInput      `json:"details"`
+	IsPremium   bool                     `json:"isPremium"`
 }
 
 // UpdateScenario edits a scenario. Status only takes effect for the
@@ -44,6 +45,7 @@ type UpdateScenario struct {
 	MaxDuration *int                      `json:"maxDuration" binding:"omitempty,min=1"`
 	Details     *ScenarioDetailInput      `json:"details"`
 	Status      *enums.PublishStatus      `json:"status" binding:"omitempty,oneof=draft published"`
+	IsPremium   *bool                     `json:"isPremium"`
 }
 
 // CreateScenarioTopic / UpdateScenarioTopic manage the fixed banner

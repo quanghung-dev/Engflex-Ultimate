@@ -66,6 +66,7 @@ export interface VocabularyItem {
   domain?: VocabularyDomain;
   definition: string;
   status: PublishStatus;
+  isPremium: boolean;
   details?: VocabularyDetails;
   userState?: UserVocabularyState;
 }
@@ -109,6 +110,7 @@ export interface VocabularyDeckDetail {
   level: string;
   isDefault: boolean;
   status: PublishStatus;
+  isPremium: boolean;
   category?: VocabularyCategoryResponse;
   createdAt: string /* RFC3339 */;
   updatedAt: string /* RFC3339 */;

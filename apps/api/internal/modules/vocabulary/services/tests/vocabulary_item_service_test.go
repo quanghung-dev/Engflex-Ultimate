@@ -20,8 +20,13 @@ const itemID = "33333333-3333-3333-3333-333333333333"
 
 func setupItem(t *testing.T) (services.VocabularyItemService, *mocks.MockVocabularyItemRepository) {
 	t.Helper()
+	return setupItemWithPremium(t, false)
+}
+
+func setupItemWithPremium(t *testing.T, isPremium bool) (services.VocabularyItemService, *mocks.MockVocabularyItemRepository) {
+	t.Helper()
 	mockRepo := mocks.NewMockVocabularyItemRepository(t)
-	svc := services.NewVocabularyItemService(mockRepo)
+	svc := services.NewVocabularyItemService(mockRepo, fakePremiumChecker{isPremium: isPremium})
 	return svc, mockRepo
 }
 
@@ -65,7 +70,7 @@ func TestVocabularyItemService_GetByID(t *testing.T) {
 			svc, mockRepo := setupItem(t)
 			mockRepo.On("GetByID", mock.Anything, itemID).Return(tt.item, nil)
 
-			res, err := svc.GetByID(context.Background(), itemID, tt.isAdmin)
+			res, err := svc.GetByID(context.Background(), itemID, "user_1", tt.isAdmin)
 
 			if tt.wantErr {
 				requireAppError(t, err, tt.wantStatus)
@@ -76,6 +81,42 @@ func TestVocabularyItemService_GetByID(t *testing.T) {
 			}
 		})
 	}
+}
+
+// A published premium entry stays visible as far as existence goes, but is
+// blocked (403) for a non-premium, non-admin caller.
+func TestVocabularyItemService_GetByID_PremiumGating(t *testing.T) {
+	premium := &models.VocabularyItem{ID: itemID, Status: enums.PublishStatusPublished, IsPremium: true}
+
+	t.Run("blocked for non-premium caller", func(t *testing.T) {
+		svc, mockRepo := setupItemWithPremium(t, false)
+		mockRepo.On("GetByID", mock.Anything, itemID).Return(premium, nil)
+
+		res, err := svc.GetByID(context.Background(), itemID, "user_1", false)
+		requireAppError(t, err, http.StatusForbidden)
+		assert.Nil(t, res)
+	})
+
+	t.Run("allowed for premium caller", func(t *testing.T) {
+		svc, mockRepo := setupItemWithPremium(t, true)
+		mockRepo.On("GetByID", mock.Anything, itemID).Return(premium, nil)
+
+		res, err := svc.GetByID(context.Background(), itemID, "user_1", false)
+		require.NoError(t, err)
+		require.NotNil(t, res)
+	})
+}
+
+// A personal custom word is never premium-gated, even if the request body
+// somehow carried isPremium=true — the service forces it to false.
+func TestVocabularyItemService_Create_NeverPremium(t *testing.T) {
+	svc, mockRepo := setupItem(t)
+	mockRepo.On("Create", mock.Anything, mock.MatchedBy(func(i *models.VocabularyItem) bool {
+		return !i.IsPremium
+	})).Return(nil)
+
+	_, err := svc.Create(context.Background(), "user_1", requests.CreateVocabularyItem{Term: "x", CEFR: "C1", IsPremium: true})
+	require.NoError(t, err)
 }
 
 func TestVocabularyItemService_Create_CustomWordAlwaysPublished(t *testing.T) {

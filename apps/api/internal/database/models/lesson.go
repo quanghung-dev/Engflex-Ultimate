@@ -19,6 +19,7 @@ type Lesson struct {
 	Description string              `gorm:"not null;default:''" json:"description"`
 	Details     LessonDetails       `gorm:"type:jsonb;not null;default:'{}'" json:"details"`
 	Status      enums.PublishStatus `gorm:"not null;default:draft" json:"status"`
+	IsPremium   bool                `gorm:"not null;default:false" json:"isPremium"`
 	Section     *LessonSection      `gorm:"->;foreignKey:SectionID;references:ID" json:"section,omitempty"`
 	Activities  []*LessonActivity   `gorm:"->;foreignKey:LessonID;references:ID" json:"activities,omitempty"`
 	CreatedAt   time.Time           `gorm:"autoCreateTime" json:"createdAt"`

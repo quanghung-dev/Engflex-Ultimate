@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 
 	"engflex-api/internal/database/repositories"
+	paymentservices "engflex-api/internal/modules/payments/services"
 	"engflex-api/internal/modules/videos/controllers"
 	"engflex-api/internal/modules/videos/services"
 	"engflex-api/internal/server/middleware"
@@ -15,7 +16,9 @@ import (
 
 // RegisterRoutes mounts the video endpoints under /api/v1.
 func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
-	exerciseSvc := services.NewVideoExerciseService(repositories.NewVideoExerciseRepository(db))
+	premiumSvc := paymentservices.NewSubscriptionService(
+		repositories.NewSubscriptionRepository(db), repositories.NewPlanRepository(db))
+	exerciseSvc := services.NewVideoExerciseService(repositories.NewVideoExerciseRepository(db), premiumSvc)
 	exerciseCtl := controllers.NewVideoExerciseController(exerciseSvc)
 
 	transcriptSvc := services.NewVideoTranscriptService(repositories.NewVideoTranscriptRepository(db))

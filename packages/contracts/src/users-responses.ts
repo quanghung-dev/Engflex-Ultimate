@@ -17,4 +17,6 @@ export interface User {
   banned: boolean;
   createdAt: string /* RFC3339 */;
   lastActiveAt?: string /* RFC3339 */;
+  premium: boolean;
+  premiumExpiresAt?: string /* RFC3339 */;
 }

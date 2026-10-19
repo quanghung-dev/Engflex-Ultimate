@@ -14,18 +14,19 @@ import (
 
 type VideoExerciseService interface {
 	List(ctx context.Context, limit int, offset int, isAdmin bool) ([]*models.VideoExercise, int64, error)
-	GetByID(ctx context.Context, id string, isAdmin bool) (*models.VideoExercise, error)
+	GetByID(ctx context.Context, id, userID string, isAdmin bool) (*models.VideoExercise, error)
 	Create(ctx context.Context, req requests.CreateVideoExercise) (*models.VideoExercise, error)
 	Update(ctx context.Context, id string, req requests.UpdateVideoExercise) (*models.VideoExercise, error)
 	Delete(ctx context.Context, id string) error
 }
 
 type videoExerciseService struct {
-	repo repositories.VideoExerciseRepository
+	repo    repositories.VideoExerciseRepository
+	premium common.PremiumChecker
 }
 
-func NewVideoExerciseService(repo repositories.VideoExerciseRepository) VideoExerciseService {
-	return &videoExerciseService{repo: repo}
+func NewVideoExerciseService(repo repositories.VideoExerciseRepository, premium common.PremiumChecker) VideoExerciseService {
+	return &videoExerciseService{repo: repo, premium: premium}
 }
 
 func (s *videoExerciseService) List(ctx context.Context, limit, offset int, isAdmin bool) ([]*models.VideoExercise, int64, error) {
@@ -47,7 +48,7 @@ func (s *videoExerciseService) List(ctx context.Context, limit, offset int, isAd
 
 // GetByID: a draft exercise is invisible to non-admins (404, existence not
 // disclosed), same rule as vocabulary items/decks.
-func (s *videoExerciseService) GetByID(ctx context.Context, id string, isAdmin bool) (*models.VideoExercise, error) {
+func (s *videoExerciseService) GetByID(ctx context.Context, id, userID string, isAdmin bool) (*models.VideoExercise, error) {
 	lesson, err := s.repo.GetDetail(ctx, id)
 	if err != nil {
 		appErr := common.FromDBError(err, "video exercise")
@@ -56,6 +57,9 @@ func (s *videoExerciseService) GetByID(ctx context.Context, id string, isAdmin b
 	}
 	if lesson.Status != enums.PublishStatusPublished && !isAdmin {
 		return nil, common.NotFound("video exercise not found")
+	}
+	if err := common.RequirePremiumAccess(ctx, s.premium, userID, isAdmin, lesson.IsPremium); err != nil {
+		return nil, err
 	}
 	slog.InfoContext(ctx, "video exercise found", "video_exercise_id", lesson.ID)
 	return lesson, nil
@@ -93,6 +97,9 @@ func (s *videoExerciseService) Update(ctx context.Context, id string, req reques
 	}
 	if req.Status != nil {
 		lesson.Status = *req.Status
+	}
+	if req.IsPremium != nil {
+		lesson.IsPremium = *req.IsPremium
 	}
 	if err := s.repo.Update(ctx, lesson); err != nil {
 		appErr := common.FromDBError(err, "video exercise")
