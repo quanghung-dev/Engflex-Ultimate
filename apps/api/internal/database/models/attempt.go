@@ -17,6 +17,7 @@ type Attempt struct {
 	ID          string              `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
 	UserID      string              `gorm:"not null" json:"userId"`
 	LessonID    *string             `gorm:"type:uuid" json:"lessonId"`
+	VideoExerciseID *string             `gorm:"type:uuid" json:"videoExerciseId"`
 	Type        enums.AttemptType   `gorm:"not null" json:"type"`
 	Status      enums.AttemptStatus `gorm:"not null;default:in_progress" json:"status"`
 	Score       *float64            `gorm:"type:numeric(5,2)" json:"score"`
@@ -24,6 +25,8 @@ type Attempt struct {
 	DurationSec *int                `json:"durationSec"`
 	CreatedAt   time.Time           `gorm:"autoCreateTime" json:"createdAt"`
 	UpdatedAt   time.Time           `gorm:"autoUpdateTime" json:"updatedAt"`
+
+	VideoExercise   *VideoExercise  `gorm:"->;foreignKey:VideoExerciseID;references:ID" json:"videoExercise,omitempty"`
 }
 
 func (Attempt) TableName() string { return "attempts" }
