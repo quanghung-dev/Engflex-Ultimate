@@ -1,7 +1,14 @@
 package requests
 
+import "engflex-api/internal/common/enums"
+
 type StartVideoAttempt struct {
-	ForceNew bool `json:"forceNew"`
+	Type     enums.AttemptType `json:"type" binding:"required,oneof=dictation shadowing"`
+	ForceNew bool              `json:"forceNew"`
+}
+
+type GetOpenVideoAttempt struct {
+	Type enums.AttemptType `form:"type" binding:"required,oneof=dictation shadowing"`
 }
 
 type SaveVideoProgress struct {

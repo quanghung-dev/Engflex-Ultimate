@@ -73,7 +73,11 @@ export interface UpdateVideoTranscript {
 // source: video_attempt.go
 
 export interface StartVideoAttempt {
+  type: AttemptType;
   forceNew: boolean;
+}
+export interface GetOpenVideoAttempt {
+  type: AttemptType;
 }
 export interface SaveVideoProgress {
   activeSequence: number /* int */;

@@ -84,6 +84,9 @@ func (s *videoAttemptService) GetOpenAttempt(ctx context.Context, userID, videoE
 	if _, err := uuid.Parse(videoExerciseID); err != nil {
 		return nil, common.BadRequest("invalid video exercise id")
 	}
+	if attemptType != enums.AttemptTypeDictation && attemptType != enums.AttemptTypeShadowing {
+		return nil, common.BadRequest("invalid video practice type")
+	}
 	m, err := s.attempts.GetVideoAttempt(ctx, userID, videoExerciseID, attemptType)
 	if err != nil {
 		appErr := common.FromDBError(err, "attempt")
