@@ -68,3 +68,21 @@ export interface UpdateVideoTranscript {
   startTimestamp?: number /* float64 */;
   endTimestamp?: number /* float64 */;
 }
+
+//////////
+// source: video_attempt.go
+
+export interface StartVideoAttempt {
+  forceNew: boolean;
+}
+export interface SaveVideoProgress {
+  activeSequence: number /* int */;
+  activeTranscriptId?: string;
+  level?: string;
+  completedTranscriptIds: string[];
+  transcripts: { [key: string]: unknown };
+}
+export interface CompleteVideoAttempt {
+  score?: number /* float64 */;
+  durationSec?: number /* int */;
+}

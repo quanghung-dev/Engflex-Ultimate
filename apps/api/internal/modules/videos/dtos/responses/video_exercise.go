@@ -6,6 +6,11 @@ import (
 	"engflex-api/internal/common/enums"
 )
 
+type VideoPracticeStatus struct {
+	Dictation bool `json:"dictation"`
+	Shadowing bool `json:"shadowing"`
+}
+
 type VideoExerciseResponse struct {
 	ID           string      `json:"id"`
 	CategoryID   *string     `json:"categoryId"`
@@ -20,4 +25,5 @@ type VideoExerciseResponse struct {
 
 	Category    *VideoCategoryResponse    `json:"category,omitempty"`
 	Transcripts []VideoTranscriptResponse `json:"transcripts,omitempty"`
+	Practice    *VideoPracticeStatus      `json:"practice,omitempty"`
 }

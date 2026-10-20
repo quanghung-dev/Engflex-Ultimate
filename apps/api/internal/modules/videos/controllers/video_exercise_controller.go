@@ -5,17 +5,19 @@ import (
 	"engflex-api/internal/modules/videos/dtos/requests"
 	"engflex-api/internal/modules/videos/dtos/responses"
 	"engflex-api/internal/modules/videos/services"
+	"engflex-api/internal/server/middleware"
 	"engflex-api/internal/utils"
 
 	"github.com/gin-gonic/gin"
 )
 
 type VideoExerciseController struct {
-	service services.VideoExerciseService
+	service  services.VideoExerciseService
+	attempts services.VideoAttemptService
 }
 
-func NewVideoExerciseController(service services.VideoExerciseService) *VideoExerciseController {
-	return &VideoExerciseController{service: service}
+func NewVideoExerciseController(service services.VideoExerciseService, attempts services.VideoAttemptService) *VideoExerciseController {
+	return &VideoExerciseController{service: service, attempts: attempts}
 }
 
 // Create godoc
@@ -125,6 +127,12 @@ func (h *VideoExerciseController) GetByID(c *gin.Context) {
 	}
 	var dto responses.VideoExerciseResponse
 	_ = utils.Map(&dto, m)
+	if h.attempts != nil {
+		userID := middleware.UserID(c)
+		if userID != "" {
+			_ = h.attempts.AttachPracticeStatus(c.Request.Context(), userID, []*responses.VideoExerciseResponse{&dto})
+		}
+	}
 	common.OK(c, "video exercise found", dto)
 }
 
@@ -162,7 +170,13 @@ func (h *VideoExerciseController) List(c *gin.Context) {
 	// Non-nil so an empty page encodes as `"data": []`: a nil slice inside
 	// the `any` Data field encodes as `null`, which the typed web client
 	// would read as a missing array.
-	dtos := make([]responses.VideoExerciseResponse, 0, len(lessons))
+	dtos := make([]*responses.VideoExerciseResponse, 0, len(lessons))
 	_ = utils.MapSlice(&dtos, lessons)
+	if h.attempts != nil {
+		userID := middleware.UserID(c)
+		if userID != "" {
+			_ = h.attempts.AttachPracticeStatus(c.Request.Context(), userID, dtos)
+		}
+	}
 	common.Paginated(c, "video exercises retrieved", dtos, page, pageSize, total)
 }

@@ -21,6 +21,11 @@ export interface VideoCategoryPreview {
 //////////
 // source: video_exercise.go
 
+export interface VideoPracticeStatus {
+  dictation: boolean;
+  shadowing: boolean;
+}
+
 export interface VideoExerciseResponse {
   id: string;
   categoryId?: string;
@@ -34,6 +39,7 @@ export interface VideoExerciseResponse {
   updatedAt: string /* RFC3339 */;
   category?: VideoCategoryResponse;
   transcripts?: VideoTranscriptResponse[];
+  practice?: VideoPracticeStatus;
 }
 
 //////////
@@ -48,6 +54,25 @@ export interface VideoTranscriptResponse {
   vietnamese: string;
   startTimestamp: number /* float64 */;
   endTimestamp: number /* float64 */;
+  createdAt: string /* RFC3339 */;
+  updatedAt: string /* RFC3339 */;
+}
+
+//////////
+// source: video_attempt.go
+
+export interface VideoAttemptProgressResponse {
+  attemptId: string;
+  videoExerciseId: string;
+  type: AttemptType;
+  status: AttemptStatus;
+  activeSequence: number /* int */;
+  activeTranscriptId?: string;
+  level?: string;
+  completedTranscriptIds: string[];
+  transcripts: { [key: string]: unknown };
+  score?: number /* float64 */;
+  durationSec?: number /* int */;
   createdAt: string /* RFC3339 */;
   updatedAt: string /* RFC3339 */;
 }

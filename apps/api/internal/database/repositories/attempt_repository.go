@@ -10,25 +10,16 @@ import (
 	"engflex-api/internal/database/models"
 )
 
-// AttemptRepository is the DB access layer for the attempts table.
-//
-// The read surface arrives with the module that needs it: StartAttempt and
-// AttachPartResult are the first callers, so Create/GetByID/GetOpenAttempt/
-// Update are declared now. WithTx scopes multi-write flows later.
 type AttemptRepository interface {
 	Create(ctx context.Context, m *models.Attempt) error
 	GetByID(ctx context.Context, id string) (*models.Attempt, error)
 	GetOpenAttempt(ctx context.Context, userID, lessonID string) (*models.Attempt, error)
 	Update(ctx context.Context, m *models.Attempt) error
-	// ListCompletedDays returns the distinct UTC dates (YYYY-MM-DD) on which
-	// the caller completed an attempt, at or after since. Progress input.
 	ListCompletedDays(ctx context.Context, userID string, since time.Time) ([]string, error)
-	// CountCompleted returns the caller's total completed attempts.
 	CountCompleted(ctx context.Context, userID string) (int64, error)
-	// ListLessonAttempts returns the caller's lesson attempts (open or
-	// completed), newest first — the hub progress rollup's input. Non-lesson
-	// attempt types and abandoned runs are excluded.
 	ListLessonAttempts(ctx context.Context, userID string) ([]*models.Attempt, error)
+	ListCompletedVideo(ctx context.Context, userID string, videoExerciseIDs []string) ([]*models.Attempt, error)
+	GetVideoAttempt(ctx context.Context, userID, videoExerciseID string, attemptType enums.AttemptType) (*models.Attempt, error)
 	WithTx(tx *gorm.DB) AttemptRepository
 }
 
@@ -66,9 +57,6 @@ func (r *attemptRepository) Update(ctx context.Context, m *models.Attempt) error
 	return r.db.WithContext(ctx).Save(m).Error
 }
 
-// ListCompletedDays returns distinct UTC calendar dates as text, forcing UTC
-// so the result never depends on the server's TimeZone setting. The streak
-// walk in the service consumes the strings directly.
 func (r *attemptRepository) ListCompletedDays(ctx context.Context, userID string, since time.Time) ([]string, error) {
 	var days []string
 	err := r.db.WithContext(ctx).Model(&models.Attempt{}).
@@ -96,7 +84,29 @@ func (r *attemptRepository) ListLessonAttempts(ctx context.Context, userID strin
 	return rows, err
 }
 
-// WithTx returns the repository bound to the given transaction handle.
 func (r *attemptRepository) WithTx(tx *gorm.DB) AttemptRepository {
 	return &attemptRepository{db: tx}
+}
+
+func (r *attemptRepository) ListCompletedVideo(ctx context.Context, userID string, videoExerciseIDs []string) ([]*models.Attempt, error) {
+	if len(videoExerciseIDs) == 0 {
+		return nil, nil
+	}
+	var attempts []*models.Attempt
+	err := r.db.WithContext(ctx).Where("user_id = ? AND video_exercise_id IN ? AND status = ?", userID, videoExerciseIDs, enums.AttemptStatusCompleted).Find(&attempts).Error
+	if err != nil {
+		return nil, err
+	}
+	return attempts, err
+}
+
+func (r *attemptRepository) GetVideoAttempt(ctx context.Context, userID, videoExerciseID string, attemptType enums.AttemptType) (*models.Attempt, error) {
+	var m models.Attempt
+	if err := r.db.WithContext(ctx).
+		Where("user_id = ? AND video_exercise_id = ? AND type = ? AND status = ?",
+			userID, videoExerciseID, attemptType, enums.AttemptStatusInProgress).
+		Order("created_at DESC").First(&m).Error; err != nil {
+		return nil, err
+	}
+	return &m, nil
 }

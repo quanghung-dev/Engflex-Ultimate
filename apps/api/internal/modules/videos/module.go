@@ -15,8 +15,11 @@ import (
 
 // RegisterRoutes mounts the video endpoints under /api/v1.
 func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
+	attemptSvc := services.NewVideoAttemptService(repositories.NewAttemptRepository(db), repositories.NewVideoExerciseRepository(db))
+	attemptCtl := controllers.NewVideoAttemptController(attemptSvc)
+
 	exerciseSvc := services.NewVideoExerciseService(repositories.NewVideoExerciseRepository(db))
-	exerciseCtl := controllers.NewVideoExerciseController(exerciseSvc)
+	exerciseCtl := controllers.NewVideoExerciseController(exerciseSvc, attemptSvc)
 
 	transcriptSvc := services.NewVideoTranscriptService(repositories.NewVideoTranscriptRepository(db))
 	transcriptCtl := controllers.NewVideoTranscriptController(transcriptSvc)
@@ -30,6 +33,10 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 	e.POST("", middleware.RequireAuth(), middleware.RequireAdmin(), exerciseCtl.Create)
 	e.PUT("/:id", middleware.RequireAuth(), middleware.RequireAdmin(), exerciseCtl.Update)
 	e.DELETE("/:id", middleware.RequireAuth(), middleware.RequireAdmin(), exerciseCtl.Delete)
+	e.POST("/:id/attempts/:type", middleware.RequireAuth(), attemptCtl.StartAttempt)
+	e.GET("/:id/attempts/:type/open", middleware.RequireAuth(), attemptCtl.GetOpenAttempt)
+	e.PUT("/:id/attempts/:attemptId/progress", middleware.RequireAuth(), attemptCtl.SaveProgress)
+	e.POST("/:id/attempts/:attemptId/complete", middleware.RequireAuth(), attemptCtl.CompleteAttempt)
 
 	t := rg.Group("/video-transcripts")
 	t.GET("", middleware.RequireAuth(), transcriptCtl.List)

@@ -8,16 +8,10 @@ import (
 	"gorm.io/gorm"
 )
 
-// VocabularyDeckRepository is the DB access layer for the vocabulary_decks table.
-// Decks are curated (user_id NULL) or private; ListVisible returns both for a
-// caller. GetDetail joins the category in one round trip and attaches Items by
-// a second query (a deck with many cards must not cartesian-duplicate the
-// parent into a join).
 type VocabularyDeckRepository interface {
 	ListVisible(ctx context.Context, userID string, limit, offset int) ([]*models.VocabularyDeck, error)
 	CountVisible(ctx context.Context, userID string) (int64, error)
-	// CountByUser counts the caller's own decks only (curated decks are not
-	// theirs and never count toward the per-user cap).
+
 	CountByUser(ctx context.Context, userID string) (int64, error)
 	GetByID(ctx context.Context, id string) (*models.VocabularyDeck, error)
 	GetDetail(ctx context.Context, userID, id string) (*models.VocabularyDeck, error)
@@ -31,12 +25,10 @@ type vocabularyDeckRepository struct {
 	db *gorm.DB
 }
 
-// NewVocabularyDeckRepository builds the repository over the shared DB handle.
 func NewVocabularyDeckRepository(db *gorm.DB) VocabularyDeckRepository {
 	return &vocabularyDeckRepository{db: db}
 }
 
-// WithTx returns the repository bound to the given transaction handle.
 func (r *vocabularyDeckRepository) WithTx(tx *gorm.DB) VocabularyDeckRepository {
 	return &vocabularyDeckRepository{db: tx}
 }
@@ -59,7 +51,6 @@ func (r *vocabularyDeckRepository) CountVisible(ctx context.Context, userID stri
 	return n, err
 }
 
-// CountByUser counts the caller's own decks (user_id = ?), never curated ones.
 func (r *vocabularyDeckRepository) CountByUser(ctx context.Context, userID string) (int64, error) {
 	var n int64
 	err := r.db.WithContext(ctx).Model(&models.VocabularyDeck{}).
@@ -86,11 +77,7 @@ func (r *vocabularyDeckRepository) GetDetail(ctx context.Context, userID, id str
 	if err := r.db.WithContext(ctx).Joins("Category").First(&m, "vocabulary_decks.id = ?", id).Error; err != nil {
 		return nil, err
 	}
-	// Has-many: a Joins("Items") would cartesian-duplicate the deck row.
-	// Second constant query, attached in Go — same shape as
-	// VideoExerciseRepository.GetDetail attaching Transcripts. The caller's
-	// review state rides on each item (attachUserState), so the deck page can
-	// show mastery and due counts instead of zeros.
+
 	items := make([]*models.VocabularyDeckItem, 0)
 	if err := r.db.WithContext(ctx).
 		Joins("Item").

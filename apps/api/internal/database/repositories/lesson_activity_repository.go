@@ -8,7 +8,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// LessonActivityRepository is the DB access layer for the lesson_activities table.
 type LessonActivityRepository interface {
 	ListByLesson(ctx context.Context, lessonID string) ([]*models.LessonActivity, error)
 	GetByID(ctx context.Context, id string) (*models.LessonActivity, error)
@@ -19,12 +18,10 @@ type lessonActivityRepository struct {
 	db *gorm.DB
 }
 
-// NewLessonActivityRepository builds the repository over the shared DB handle.
 func NewLessonActivityRepository(db *gorm.DB) LessonActivityRepository {
 	return &lessonActivityRepository{db: db}
 }
 
-// WithTx returns the repository bound to the given transaction handle.
 func (r *lessonActivityRepository) WithTx(tx *gorm.DB) LessonActivityRepository {
 	return &lessonActivityRepository{db: tx}
 }
