@@ -20,7 +20,7 @@ import (
 
 type VideoAttemptService interface {
 	StartAttempt(ctx context.Context, userID, videoExerciseID string, attemptType enums.AttemptType, req requests.StartVideoAttempt) (*models.Attempt, error)
-	GetOpenAttempt(ctx context.Context, userID, videoExerciseID string, attemptType enums.AttemptType) (*responses.VideoAttemptProgressResponse, error)
+	GetOpenAttempt(ctx context.Context, userID, videoExerciseID string, attemptType enums.AttemptType) (*models.Attempt, error)
 	SaveProgress(ctx context.Context, userID, videoExerciseID, attemptID string, req requests.SaveVideoProgress) (*models.Attempt, error)
 	CompleteAttempt(ctx context.Context, userID, videoExerciseID, attemptID string, req requests.CompleteVideoAttempt) (*models.Attempt, error)
 	AttachPracticeStatus(ctx context.Context, userID string, videos []*responses.VideoExerciseResponse) error
@@ -48,20 +48,13 @@ func (s *videoAttemptService) StartAttempt(ctx context.Context, userID, videoExe
 		return nil, common.BadRequest("invalid video practice type")
 	}
 
-	if !req.ForceNew {
-		if open, err := s.attempts.GetVideoAttempt(ctx, userID, videoExerciseID, attemptType); err == nil {
-			slog.InfoContext(ctx, "open video attempt reused", "attemptID", open.ID, "type", attemptType)
-			return open, nil
-		} else if !errors.Is(err, gorm.ErrRecordNotFound) {
-			appErr := common.FromDBError(err, "attempt")
-			logger.Report(ctx, "find open video attempt failed", appErr, "videoExerciseID", videoExerciseID)
-			return nil, appErr
-		}
-	} else {
-		if open, err := s.attempts.GetVideoAttempt(ctx, userID, videoExerciseID, attemptType); err == nil {
-			open.Status = enums.AttemptStatusAbandoned
-			_ = s.attempts.Update(ctx, open)
-		}
+	if open, err := s.attempts.GetVideoAttempt(ctx, userID, videoExerciseID, attemptType); err == nil {
+		slog.InfoContext(ctx, "open video attempt reused", "attemptID", open.ID, "type", attemptType)
+		return open, nil
+	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+		appErr := common.FromDBError(err, "attempt")
+		logger.Report(ctx, "find open video attempt failed", appErr, "videoExerciseID", videoExerciseID)
+		return nil, appErr
 	}
 
 	m := &models.Attempt{
@@ -80,7 +73,7 @@ func (s *videoAttemptService) StartAttempt(ctx context.Context, userID, videoExe
 	return m, nil
 }
 
-func (s *videoAttemptService) GetOpenAttempt(ctx context.Context, userID, videoExerciseID string, attemptType enums.AttemptType) (*responses.VideoAttemptProgressResponse, error) {
+func (s *videoAttemptService) GetOpenAttempt(ctx context.Context, userID, videoExerciseID string, attemptType enums.AttemptType) (*models.Attempt, error) {
 	if _, err := uuid.Parse(videoExerciseID); err != nil {
 		return nil, common.BadRequest("invalid video exercise id")
 	}
@@ -95,42 +88,8 @@ func (s *videoAttemptService) GetOpenAttempt(ctx context.Context, userID, videoE
 		}
 		return nil, appErr
 	}
-
-	type progressPayload struct {
-		ActiveSequence         int            `json:"activeSequence"`
-		ActiveTranscriptID     *string        `json:"activeTranscriptId"`
-		Level                  string         `json:"level"`
-		CompletedTranscriptIDs []string       `json:"completedTranscriptIds"`
-		Transcripts            map[string]any `json:"transcripts"`
-	}
-	var payload progressPayload
-	if len(m.Result) > 0 {
-		_ = json.Unmarshal(m.Result, &payload)
-	}
-
-	res := &responses.VideoAttemptProgressResponse{
-		AttemptID:              m.ID,
-		VideoExerciseID:        videoExerciseID,
-		Type:                   m.Type,
-		Status:                 m.Status,
-		ActiveSequence:         payload.ActiveSequence,
-		ActiveTranscriptID:     payload.ActiveTranscriptID,
-		Level:                  payload.Level,
-		CompletedTranscriptIDs: payload.CompletedTranscriptIDs,
-		Transcripts:            payload.Transcripts,
-		Score:                  m.Score,
-		DurationSec:            m.DurationSec,
-		CreatedAt:              m.CreatedAt,
-		UpdatedAt:              m.UpdatedAt,
-	}
-	if res.CompletedTranscriptIDs == nil {
-		res.CompletedTranscriptIDs = []string{}
-	}
-	if res.Transcripts == nil {
-		res.Transcripts = map[string]any{}
-	}
 	slog.InfoContext(ctx, "open video attempt loaded", "attemptID", m.ID, "type", attemptType)
-	return res, nil
+	return m, nil
 }
 
 func (s *videoAttemptService) loadOwnedAttempt(ctx context.Context, userID, attemptID string) (*models.Attempt, error) {

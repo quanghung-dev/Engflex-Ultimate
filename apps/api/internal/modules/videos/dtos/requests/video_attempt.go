@@ -3,12 +3,7 @@ package requests
 import "engflex-api/internal/common/enums"
 
 type StartVideoAttempt struct {
-	Type     enums.AttemptType `json:"type" binding:"required,oneof=dictation shadowing"`
-	ForceNew bool              `json:"forceNew"`
-}
-
-type GetOpenVideoAttempt struct {
-	Type enums.AttemptType `form:"type" binding:"required,oneof=dictation shadowing"`
+	Type enums.AttemptType `json:"type" form:"type" binding:"required,oneof=dictation shadowing"`
 }
 
 type SaveVideoProgress struct {

@@ -2,7 +2,7 @@
 import type * as Enums from "./enums.ts";
 
 export const ACTIVITY_TYPE_VALUES = ["reading", "listening", "writing", "speaking"] as const satisfies readonly Enums.ActivityType[];
-export const ATTEMPT_STATUS_VALUES = ["in_progress", "completed", "abandoned"] as const satisfies readonly Enums.AttemptStatus[];
+export const ATTEMPT_STATUS_VALUES = ["in_progress", "completed"] as const satisfies readonly Enums.AttemptStatus[];
 export const ATTEMPT_TYPE_VALUES = ["reading", "listening", "writing", "speaking", "shadowing", "flashcard", "benchmark", "dictation", "lesson"] as const satisfies readonly Enums.AttemptType[];
 export const CEFR_VALUES = ["A1", "A2", "B1", "B2", "C1", "C2"] as const satisfies readonly Enums.CEFR[];
 export const CONVERSATION_MODE_VALUES = ["free_talk", "roleplay"] as const satisfies readonly Enums.ConversationMode[];
