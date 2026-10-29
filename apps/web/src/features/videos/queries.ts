@@ -60,7 +60,7 @@ export function openVideoAttemptQueryOptions(id: string, type: AttemptType) {
 export function useStartVideoAttempt() {
 	return useMutation({
 		mutationFn: (input: { videoId: string; type: AttemptType }) =>
-		startVideoAttempt(input.videoId, input.type),
+			startVideoAttempt(input.videoId, input.type),
 	});
 }
 
@@ -81,7 +81,7 @@ export function useCompleteVideoAttempt() {
 			attemptId: string;
 			req: CompleteVideoAttempt;
 		}) => completeVideoAttempt(input.videoId, input.attemptId, input.req),
-	});	
+	});
 }
 
 export function useVideoPreview(previewK: number) {
