@@ -24,9 +24,11 @@ export interface YouTubePlayerRef {
 
 export interface YouTubePlayerProps {
 	videoId: string;
+	activeSegment?: { start: number; end: number } | null;
 	onReady?: () => void;
 	onTimeUpdate?: (currentTime: number) => void;
 	onSegmentEnd?: () => void;
+	onPlayPastEnd?: () => void;
 	className?: string;
 }
 
@@ -70,19 +72,48 @@ declare global {
 
 export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(
 	function YouTubePlayer(
-		{ videoId, onReady, onTimeUpdate, onSegmentEnd, className },
+		{
+			videoId,
+			activeSegment,
+			onReady,
+			onTimeUpdate,
+			onSegmentEnd,
+			onPlayPastEnd,
+			className,
+		},
 		ref,
 	) {
-		const containerRef = useRef<HTMLDivElement>(null);
+		const wrapperRef = useRef<HTMLDivElement>(null);
 		const playerInstanceRef = useRef<YTPlayerInstance | null>(null);
+		const segmentStartRef = useRef<number | null>(null);
 		const segmentEndRef = useRef<number | null>(null);
+		const isSeekingRef = useRef<boolean>(false);
 		const intervalRef = useRef<number | null>(null);
+
+		const callbacksRef = useRef({
+			onReady,
+			onTimeUpdate,
+			onSegmentEnd,
+			onPlayPastEnd,
+			activeSegment,
+		});
+		useEffect(() => {
+			callbacksRef.current = {
+				onReady,
+				onTimeUpdate,
+				onSegmentEnd,
+				onPlayPastEnd,
+				activeSegment,
+			};
+		});
 
 		useImperativeHandle(
 			ref,
 			() => ({
 				playSegment: (start: number, end?: number) => {
+					segmentStartRef.current = start;
 					segmentEndRef.current = end !== undefined ? end : null;
+					isSeekingRef.current = true;
 					const player = playerInstanceRef.current;
 					if (player) {
 						player.seekTo(start, true);
@@ -94,6 +125,8 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(
 				},
 				pause: () => {
 					segmentEndRef.current = null;
+					segmentStartRef.current = null;
+					isSeekingRef.current = false;
 					playerInstanceRef.current?.pauseVideo();
 				},
 				seekTo: (seconds: number) => {
@@ -118,14 +151,28 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(
 					const player = playerInstanceRef.current;
 					if (!player) return;
 					const current = player.getCurrentTime();
-					onTimeUpdate?.(current);
+					callbacksRef.current.onTimeUpdate?.(current);
+
+					if (isSeekingRef.current && segmentStartRef.current !== null) {
+						if (current >= segmentStartRef.current - 0.2) {
+							isSeekingRef.current = false;
+						}
+					}
+
+					const effectiveEnd =
+						segmentEndRef.current ??
+						callbacksRef.current.activeSegment?.end ??
+						null;
+
 					if (
-						segmentEndRef.current !== null &&
-						current >= segmentEndRef.current
+						!isSeekingRef.current &&
+						effectiveEnd !== null &&
+						current >= effectiveEnd
 					) {
 						segmentEndRef.current = null;
+						segmentStartRef.current = null;
 						player.pauseVideo();
-						onSegmentEnd?.();
+						callbacksRef.current.onSegmentEnd?.();
 					}
 				}, 100);
 			};
@@ -138,10 +185,16 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(
 			};
 
 			const initPlayer = () => {
-				if (!containerRef.current || !window.YT?.Player) return;
+				if (!wrapperRef.current || !window.YT?.Player) return;
 				playerInstanceRef.current?.destroy();
+				playerInstanceRef.current = null;
 
-				const player = new window.YT.Player(containerRef.current, {
+				wrapperRef.current.innerHTML = "";
+				const targetDiv = document.createElement("div");
+				targetDiv.className = "size-full";
+				wrapperRef.current.appendChild(targetDiv);
+
+				const player = new window.YT.Player(targetDiv, {
 					videoId,
 					playerVars: {
 						autoplay: 0,
@@ -154,11 +207,28 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(
 					events: {
 						onReady: () => {
 							if (!isMounted) return;
-							onReady?.();
+							callbacksRef.current.onReady?.();
 						},
 						onStateChange: (event) => {
 							if (!isMounted) return;
 							if (event.data === window.YT?.PlayerState?.PLAYING) {
+								const current =
+									playerInstanceRef.current?.getCurrentTime() ?? 0;
+								const seg = callbacksRef.current.activeSegment;
+								if (seg) {
+									if (current >= seg.end - 0.3) {
+										playerInstanceRef.current?.pauseVideo();
+										callbacksRef.current.onPlayPastEnd?.();
+										return;
+									}
+									if (
+										segmentEndRef.current === null ||
+										segmentEndRef.current > seg.end
+									) {
+										segmentEndRef.current = seg.end;
+										segmentStartRef.current = seg.start;
+									}
+								}
 								startTracking();
 							} else {
 								stopTracking();
@@ -195,17 +265,16 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(
 				playerInstanceRef.current?.destroy();
 				playerInstanceRef.current = null;
 			};
-		}, [videoId, onReady, onTimeUpdate, onSegmentEnd]);
+		}, [videoId]);
 
 		return (
 			<div
+				ref={wrapperRef}
 				className={cn(
 					"relative aspect-video w-full overflow-hidden bg-black",
 					className,
 				)}
-			>
-				<div ref={containerRef} className="size-full" />
-			</div>
+			/>
 		);
 	},
 );

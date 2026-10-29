@@ -1,7 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { cn } from "cn";
 import { Clock3, Eye, EyeOff, Mic, MonitorPlay } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { APP_ROUTES } from "#/app/app-route";
 import { type CrumbItem, useBreadcrumbs } from "#/app/breadcrumbs";
 import { PageLayout } from "#/components/common/page-layout";
@@ -10,7 +10,8 @@ import { Toggle } from "#/components/ui/toggle";
 import { ToggleGroup, ToggleGroupItem } from "#/components/ui/toggle-group";
 import { ShadowingPanel } from "#/features/videos/components/shadowing/shadowing-panel";
 import { TranscriptPanel } from "#/features/videos/components/transcript-panel";
-import { pairWords } from "#/features/videos/dictation";
+import type { YouTubePlayerRef } from "#/features/videos/components/youtube-player";
+import { extractYouTubeId, pairWords } from "#/features/videos/dictation";
 import { formatDuration } from "#/features/videos/format";
 import { videoDetailQueryOptions } from "#/features/videos/queries";
 import { DockGuide } from "#/features/vocabulary/components/dock-guide";
@@ -38,9 +39,14 @@ const VIEW_TOGGLE_ITEM = cn(
 const LINE_TOGGLE =
 	"h-8 gap-1.5 px-2 text-xs font-semibold text-muted-foreground data-[state=on]:bg-transparent data-[state=on]:text-foreground";
 
+const SPEEDS = [0.75, 1, 1.25, 1.5];
+
 function ShadowingPage() {
 	const video = Route.useLoaderData();
 	const transcripts = video?.transcripts ?? [];
+
+	const playerRef = useRef<YouTubePlayerRef>(null);
+	const youtubeId = extractYouTubeId(video?.videoUrl ?? "");
 
 	const [view, setView] = useState<View>("practice");
 	const [showTranscript, setShowTranscript] = useState(true);
@@ -49,6 +55,9 @@ function ShadowingPage() {
 	const [autoPause, setAutoPause] = useState(true);
 	const [largeVideo, setLargeVideo] = useState(false);
 	const [activeIndex, setActiveIndex] = useState(0);
+	const [speed, setSpeed] = useState(1);
+	const [currentTime, setCurrentTime] = useState(0);
+	const lastTimeUpdateRef = useRef(0);
 
 	const crumbs: CrumbItem[] = [
 		{ label: m["nav.item.videos"](), to: APP_ROUTES.VIDEOS.LIST },
@@ -69,8 +78,75 @@ function ShadowingPage() {
 
 	const line = transcripts[activeIndex];
 	const words = line ? pairWords(line.content, line.phonetic) : [];
-	const time = formatDuration(0);
+
+	const handleTimeUpdate = (t: number) => {
+		const now = Date.now();
+		if (now - lastTimeUpdateRef.current >= 500) {
+			lastTimeUpdateRef.current = now;
+			setCurrentTime(Math.floor(t));
+		}
+	};
+
+	const time = formatDuration(currentTime);
 	const twoColumns = showTranscript && !largeVideo;
+
+	const handlePlayerReady = () => {
+		if (activeIndex > 0 && line) {
+			playerRef.current?.seekTo(line.startTimestamp);
+		}
+	};
+
+	const selectLine = (newIndex: number) => {
+		setActiveIndex(newIndex);
+		const targetLine = transcripts[newIndex];
+		if (targetLine) {
+			if (autoPause) {
+				playerRef.current?.playSegment(
+					targetLine.startTimestamp,
+					targetLine.endTimestamp,
+				);
+			} else {
+				playerRef.current?.seekTo(targetLine.startTimestamp);
+				playerRef.current?.play();
+			}
+		}
+	};
+
+	const handleNextSentence = () => {
+		if (activeIndex < transcripts.length - 1) {
+			selectLine(activeIndex + 1);
+		}
+	};
+
+	const handlePlaySentence = () => {
+		if (!line) return;
+		const current = playerRef.current?.getCurrentTime() ?? 0;
+		if (autoPause && current >= line.endTimestamp - 0.3) {
+			handleNextSentence();
+			return;
+		}
+		if (current < line.startTimestamp - 0.5) {
+			if (autoPause) {
+				playerRef.current?.playSegment(line.startTimestamp, line.endTimestamp);
+			} else {
+				playerRef.current?.seekTo(line.startTimestamp);
+				playerRef.current?.play();
+			}
+			return;
+		}
+		if (autoPause) {
+			playerRef.current?.playSegment(current, line.endTimestamp);
+		} else {
+			playerRef.current?.play();
+		}
+	};
+
+	const handleSpeedCycle = () => {
+		const nextIndex = (SPEEDS.indexOf(speed) + 1) % SPEEDS.length;
+		const nextSpeed = SPEEDS[nextIndex];
+		setSpeed(nextSpeed);
+		playerRef.current?.setSpeed(nextSpeed);
+	};
 
 	return (
 		<PageLayout>
@@ -130,13 +206,28 @@ function ShadowingPage() {
 				>
 					<ShadowingPanel
 						video={video}
+						youtubeId={youtubeId}
+						playerRef={playerRef}
+						activeSegment={
+							line
+								? {
+										start: line.startTimestamp,
+										end: line.endTimestamp,
+									}
+								: null
+						}
+						onPlayerReady={handlePlayerReady}
+						onTimeUpdate={handleTimeUpdate}
+						onPlayPastEnd={handleNextSentence}
 						practice={view === "practice"}
 						words={words}
 						autoPause={autoPause}
 						onAutoPauseChange={setAutoPause}
 						largeVideo={largeVideo}
 						onLargeVideoChange={setLargeVideo}
-						speed={1}
+						speed={speed}
+						onSpeed={handleSpeedCycle}
+						onStart={handlePlaySentence}
 						recording={false}
 						hasRecording={false}
 					/>
@@ -148,7 +239,7 @@ function ShadowingPage() {
 							masked={false}
 							showPhonetic={showPhonetic}
 							showTranslation={showTranslation}
-							onSelect={setActiveIndex}
+							onSelect={selectLine}
 							actions={
 								<>
 									<Toggle

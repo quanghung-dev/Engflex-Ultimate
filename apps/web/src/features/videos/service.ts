@@ -1,5 +1,10 @@
 import type {
+	AttemptType,
+	CompleteVideoAttempt,
 	ListVideoExercises,
+	SaveVideoProgress,
+	StartVideoAttempt,
+	VideoAttemptResponse,
 	VideoCategoryPreview,
 	VideoExerciseResponse,
 } from "@engflex/contracts";
@@ -30,4 +35,53 @@ export function listVideos(params: Partial<ListVideoExercises>) {
 
 export function getVideo(id: string): Promise<VideoExerciseResponse> {
 	return api<VideoExerciseResponse>(API_ROUTES.VIDEOS.BY_ID(id));
+}
+
+export function startVideoAttempt(
+	videoId: string,
+	type: AttemptType,
+): Promise<VideoAttemptResponse> {
+	return api<VideoAttemptResponse>(API_ROUTES.VIDEOS.ATTEMPTS.START(videoId), {
+		method: "POST",
+		body: JSON.stringify({ type } satisfies StartVideoAttempt),
+	});
+}
+
+export function getOpenVideoAttempt(
+	videoId: string,
+	type: AttemptType,
+): Promise<VideoAttemptResponse> {
+	return api<VideoAttemptResponse>(
+		API_ROUTES.VIDEOS.ATTEMPTS.OPEN(videoId),
+		undefined,
+		{ query: { type } },
+	);
+}
+
+export function saveVideoProgress(
+	videoId: string,
+	attemptId: string,
+	req: SaveVideoProgress,
+): Promise<VideoAttemptResponse> {
+	return api<VideoAttemptResponse>(
+		API_ROUTES.VIDEOS.ATTEMPTS.SAVE_PROGRESS(videoId, attemptId),
+		{
+			method: "PUT",
+			body: JSON.stringify(req),
+		},
+	);
+}
+
+export function completeVideoAttempt(
+	videoId: string,
+	attemptId: string,
+	req: CompleteVideoAttempt,
+): Promise<VideoAttemptResponse> {
+	return api<VideoAttemptResponse>(
+		API_ROUTES.VIDEOS.ATTEMPTS.COMPLETE(videoId, attemptId),
+		{
+			method: "POST",
+			body: JSON.stringify(req),
+		},
+	);
 }
