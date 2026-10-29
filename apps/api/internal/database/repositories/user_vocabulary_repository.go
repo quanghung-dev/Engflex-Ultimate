@@ -10,10 +10,6 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-// UserVocabularyRepository is the DB access layer for the user_vocabulary table.
-//
-// The personal library is keyed (user_id, item_id): Upsert saves state without
-// resetting the review schedule, and UpdateSchedule advances it after a review.
 type UserVocabularyRepository interface {
 	Get(ctx context.Context, userID, itemID string) (*models.UserVocabulary, error)
 	Upsert(ctx context.Context, u *models.UserVocabulary, updateMastered bool) error
@@ -23,8 +19,7 @@ type UserVocabularyRepository interface {
 	CountByUser(ctx context.Context, userID string) (int64, error)
 	CountMastered(ctx context.Context, userID string) (int64, error)
 	CountDue(ctx context.Context, userID string, now time.Time) (int64, error)
-	// CountSavedBetween counts enrolments created in [from, to) — the caller's
-	// local day, so "saved today" is not UTC's today.
+
 	CountSavedBetween(ctx context.Context, userID string, from, to time.Time) (int64, error)
 	WithTx(tx *gorm.DB) UserVocabularyRepository
 }
@@ -33,12 +28,10 @@ type userVocabularyRepository struct {
 	db *gorm.DB
 }
 
-// NewUserVocabularyRepository builds the repository over the shared DB handle.
 func NewUserVocabularyRepository(db *gorm.DB) UserVocabularyRepository {
 	return &userVocabularyRepository{db: db}
 }
 
-// WithTx returns the repository bound to the given transaction handle.
 func (r *userVocabularyRepository) WithTx(tx *gorm.DB) UserVocabularyRepository {
 	return &userVocabularyRepository{db: tx}
 }
@@ -54,11 +47,6 @@ func (r *userVocabularyRepository) Get(ctx context.Context, userID, itemID strin
 	return &m, nil
 }
 
-// Upsert saves per-user state over a shared item. The INSERT carries the fresh
-// schedule (first save sets srs_due_at = now); the conflict UPDATE deliberately
-// excludes srs_due_at, interval_days, review_count, last_reviewed_at, so a
-// re-save never resets progress. mastered is only updated when the caller
-// supplied it.
 func (r *userVocabularyRepository) Upsert(ctx context.Context, u *models.UserVocabulary, updateMastered bool) error {
 	if _, err := parseID(u.ItemID, "itemId"); err != nil {
 		return err
@@ -73,9 +61,6 @@ func (r *userVocabularyRepository) Upsert(ctx context.Context, u *models.UserVoc
 	}).Create(u).Error
 }
 
-// Patch updates only the supplied fields. A map is used (not a struct) so an
-// empty-string note is written as a clear rather than skipped as a zero value.
-// It never touches the schedule columns.
 func (r *userVocabularyRepository) Patch(ctx context.Context, userID, itemID string, mastered *bool, note *string) error {
 	if _, err := parseID(itemID, "itemId"); err != nil {
 		return err
@@ -88,8 +73,7 @@ func (r *userVocabularyRepository) Patch(ctx context.Context, userID, itemID str
 		updates["note"] = *note
 	}
 	if len(updates) == 0 {
-		// The service rejects an empty patch before reaching here; this is a
-		// guard so a future caller cannot issue a no-op UPDATE.
+
 		return nil
 	}
 	res := r.db.WithContext(ctx).Model(&models.UserVocabulary{}).
@@ -160,8 +144,6 @@ func (r *userVocabularyRepository) CountDue(ctx context.Context, userID string, 
 	return n, err
 }
 
-// CountSavedBetween counts the caller's enrolments created in [from, to). The
-// web sends its local midnight as `from`, so the window is the reader's day.
 func (r *userVocabularyRepository) CountSavedBetween(ctx context.Context, userID string, from, to time.Time) (int64, error) {
 	var n int64
 	err := r.db.WithContext(ctx).Model(&models.UserVocabulary{}).

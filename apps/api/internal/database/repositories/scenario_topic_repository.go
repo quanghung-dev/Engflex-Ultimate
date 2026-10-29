@@ -8,14 +8,6 @@ import (
 	"engflex-api/internal/database/models"
 )
 
-// ScenarioTopicRepository is the DB access layer for the scenario_topics table.
-// The scenarios themselves live in ScenarioRepository.
-//
-// ListTopicsWithPreview is the reason this file exists as its own repository:
-// it is the topic list the catalog page reads, and it fills each topic's
-// has-many Scenarios with a per-topic top-k cut. That cut is not expressible
-// as a single Joins, so the method reads scenarios (with their personas) as a
-// second constant query and groups in Go.
 type ScenarioTopicRepository interface {
 	GetByID(ctx context.Context, id string) (*models.ScenarioTopic, error)
 	GetBySlug(ctx context.Context, slug string) (*models.ScenarioTopic, error)
@@ -27,12 +19,10 @@ type scenarioTopicRepository struct {
 	db *gorm.DB
 }
 
-// NewScenarioTopicRepository builds the repository over the shared DB handle.
 func NewScenarioTopicRepository(db *gorm.DB) ScenarioTopicRepository {
 	return &scenarioTopicRepository{db: db}
 }
 
-// WithTx returns the repository bound to the given transaction handle.
 func (r *scenarioTopicRepository) WithTx(tx *gorm.DB) ScenarioTopicRepository {
 	return &scenarioTopicRepository{db: tx}
 }
@@ -56,13 +46,6 @@ func (r *scenarioTopicRepository) GetBySlug(ctx context.Context, slug string) (*
 	return &t, nil
 }
 
-// rankedIDs carries the per-topic window function: GORM has no builder for a
-// top-N-per-group cut, so the ranking is the one piece of SQL here (aggregates
-// belong in the repo per the layering rules).
-//
-// created_at alone is not a total order (one INSERT stamps every seed row with
-// the same now()), so the ranking falls back to id to stay stable across
-// requests.
 const rankedIDs = `
 SELECT ranked.id FROM (
     SELECT s2.id,
@@ -72,17 +55,6 @@ SELECT ranked.id FROM (
       AND (? = '' OR s2.title ILIKE '%' || ? || '%' OR s2.objective ILIKE '%' || ? || '%')
 ) AS ranked WHERE ranked.rn <= ?`
 
-// ListWithPreview returns every topic in position order, each with up to
-// previewK eligible scenarios attached — with their partner personas, in rank
-// order. A nil difficulty matches any CEFR level and an empty search matches
-// any title or objective; both filter which scenarios are eligible for the
-// top-k cut. A topic with no eligible scenario keeps an empty Scenarios, so
-// the filter chips never flicker.
-//
-// Deliberate exception to "one method = one query": a single GORM Joins cannot
-// fill the has-many (it panics on slice relations), and a Preload cannot limit
-// per topic. Two constant queries is not an N+1 — no query count here grows
-// with the number of topics.
 func (r *scenarioTopicRepository) ListWithPreview(ctx context.Context, previewK int, difficulty *string, search string) ([]*models.ScenarioTopic, error) {
 	var dif any
 	if difficulty != nil {

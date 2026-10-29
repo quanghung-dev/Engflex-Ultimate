@@ -8,15 +8,7 @@ import (
 	"engflex-api/internal/database/models"
 )
 
-// ScenarioRepository is the DB access layer for the scenarios table.
-// Topics live in ScenarioTopicRepository.
-//
-// GetDetail reads two more tables (Topic, Persona) in one query. It lives here
-// because it returns a scenario; the file is named for what comes back, not for
-// every table the SQL happens to touch.
 type ScenarioRepository interface {
-	// List returns scenarios newest-first, or in random() order when random is
-	// true (the home card's two surprises).
 	List(ctx context.Context, topicID *string, random bool, limit, offset int) ([]*models.Scenario, error)
 	Count(ctx context.Context, topicID *string) (int64, error)
 	GetByID(ctx context.Context, id string) (*models.Scenario, error)
@@ -28,12 +20,10 @@ type scenarioRepository struct {
 	db *gorm.DB
 }
 
-// NewScenarioRepository builds the repository over the shared DB handle.
 func NewScenarioRepository(db *gorm.DB) ScenarioRepository {
 	return &scenarioRepository{db: db}
 }
 
-// WithTx returns the repository bound to the given transaction handle.
 func (r *scenarioRepository) WithTx(tx *gorm.DB) ScenarioRepository {
 	return &scenarioRepository{db: tx}
 }
@@ -78,11 +68,6 @@ func (r *scenarioRepository) GetByID(ctx context.Context, id string) (*models.Sc
 	return &m, nil
 }
 
-// GetDetail returns the scenario with its topic and partner persona in a
-// single query. Joins (not Preload) issues one round trip: Preload fans out
-// to a query per association, which is exactly the N+1 this replaces. Both
-// joins are LEFT, so a scenario without a persona comes back with nil
-// Persona instead of vanishing.
 func (r *scenarioRepository) GetDetail(ctx context.Context, id string) (*models.Scenario, error) {
 	if _, err := parseID(id, "scenarioId"); err != nil {
 		return nil, err

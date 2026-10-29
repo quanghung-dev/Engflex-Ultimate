@@ -1,27 +1,43 @@
 import { Clock3, Play, RotateCcw } from "lucide-react";
+import { type RefObject, useState } from "react";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { Button } from "#/components/ui/button";
 import { Separator } from "#/components/ui/separator";
 import { VideoStage } from "#/features/videos/components/video-stage";
+import {
+	YouTubePlayer,
+	type YouTubePlayerRef,
+} from "#/features/videos/components/youtube-player";
 import { formatDuration } from "#/features/videos/format";
 import type { Video } from "#/features/videos/types";
 import { m } from "#/paraglide/messages";
 
-/** Left pane: video stage + start/replay controls. Playback is the caller's. */
 export function VideoPanel({
 	video,
-	currentTime,
+	youtubeId,
+	playerRef,
+	activeSegment,
 	onStart,
 	onReplay,
+	onPlayerReady,
+	onSegmentEnd,
+	onPlayPastEnd,
 	children,
 }: {
 	video: Video;
-	currentTime: number;
+	youtubeId?: string | null;
+	playerRef?: RefObject<YouTubePlayerRef | null>;
+	activeSegment?: { start: number; end: number } | null;
 	onStart?: () => void;
 	onReplay?: () => void;
+	onPlayerReady?: () => void;
+	onSegmentEnd?: () => void;
+	onPlayPastEnd?: () => void;
 	children?: React.ReactNode;
 }) {
+	const [currentTime, setCurrentTime] = useState(0);
 	const time = formatDuration(currentTime);
+
 	return (
 		<section className="surface-card flex flex-col gap-3 p-3">
 			<div className="flex items-center justify-between gap-2 px-1">
@@ -41,7 +57,18 @@ export function VideoPanel({
 			</div>
 
 			<VideoStage video={video} onPlay={onStart}>
-				{children}
+				{children ??
+					(youtubeId ? (
+						<YouTubePlayer
+							ref={playerRef}
+							videoId={youtubeId}
+							activeSegment={activeSegment}
+							onTimeUpdate={setCurrentTime}
+							onReady={onPlayerReady}
+							onSegmentEnd={onSegmentEnd}
+							onPlayPastEnd={onPlayPastEnd}
+						/>
+					) : null)}
 			</VideoStage>
 
 			<p className="text-sm font-extrabold tracking-wide text-muted-foreground uppercase">

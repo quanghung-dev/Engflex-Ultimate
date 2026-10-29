@@ -17,12 +17,11 @@ export type ActivityType = typeof ActivityTypeReading | typeof ActivityTypeListe
 // source: attempt_status.go
 
 /**
- * AttemptStatus is the lesson-attempt lifecycle (Moodle parity).
+ * AttemptStatus is the attempt lifecycle.
  */
 export const AttemptStatusInProgress = "in_progress";
 export const AttemptStatusCompleted = "completed";
-export const AttemptStatusAbandoned = "abandoned";
-export type AttemptStatus = typeof AttemptStatusInProgress | typeof AttemptStatusCompleted | typeof AttemptStatusAbandoned;
+export type AttemptStatus = typeof AttemptStatusInProgress | typeof AttemptStatusCompleted;
 
 //////////
 // source: attempt_type.go

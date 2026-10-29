@@ -1,19 +1,26 @@
 import { Mic, Play, Square } from "lucide-react";
+import type { RefObject } from "react";
 import { Button } from "#/components/ui/button";
 import { Label } from "#/components/ui/label";
 import { Switch } from "#/components/ui/switch";
 import { PlayerTools } from "#/features/videos/components/player-tools";
 import { VideoStage } from "#/features/videos/components/video-stage";
+import {
+	YouTubePlayer,
+	type YouTubePlayerRef,
+} from "#/features/videos/components/youtube-player";
 import type { Video } from "#/features/videos/types";
 import { m } from "#/paraglide/messages";
 import { WordIpaRow } from "./word-ipa-row";
 
-/**
- * Main shadowing pane: video, playback switches, the current sentence with
- * IPA and the record controls. Recording and playback are the caller's.
- */
 export function ShadowingPanel({
 	video,
+	youtubeId,
+	playerRef,
+	activeSegment,
+	onPlayerReady,
+	onTimeUpdate,
+	onPlayPastEnd,
 	practice,
 	words,
 	autoPause,
@@ -29,9 +36,15 @@ export function ShadowingPanel({
 	onSpeed,
 	onSettings,
 	onShortcuts,
+	children,
 }: {
 	video: Video;
-	/** false = watch-only view: the practice block is hidden. */
+	youtubeId?: string | null;
+	playerRef?: RefObject<YouTubePlayerRef | null>;
+	activeSegment?: { start: number; end: number } | null;
+	onPlayerReady?: () => void;
+	onTimeUpdate?: (time: number) => void;
+	onPlayPastEnd?: () => void;
 	practice: boolean;
 	words: { word: string; ipa?: string }[];
 	autoPause: boolean;
@@ -47,10 +60,23 @@ export function ShadowingPanel({
 	onSpeed?: () => void;
 	onSettings?: () => void;
 	onShortcuts?: () => void;
+	children?: React.ReactNode;
 }) {
 	return (
 		<section className="surface-card flex flex-col gap-4 p-3">
-			<VideoStage video={video} onPlay={onStart} />
+			<VideoStage video={video} onPlay={onStart}>
+				{children ??
+					(youtubeId ? (
+						<YouTubePlayer
+							ref={playerRef}
+							videoId={youtubeId}
+							activeSegment={autoPause ? activeSegment : null}
+							onTimeUpdate={onTimeUpdate}
+							onReady={onPlayerReady}
+							onPlayPastEnd={onPlayPastEnd}
+						/>
+					) : null)}
+			</VideoStage>
 
 			<div className="grid items-center gap-3 sm:grid-cols-[1fr_auto_1fr]">
 				<div className="flex flex-col gap-2 px-1">

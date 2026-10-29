@@ -1,3 +1,9 @@
+import { useAuth } from "@clerk/tanstack-react-start";
+import type {
+	VideoAttemptResponse,
+	VideoExerciseResponse,
+} from "@engflex/contracts";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	createFileRoute,
 	Link,
@@ -24,17 +30,21 @@ import type { WordSlotState } from "#/features/videos/components/dictation/dicta
 import { VideoPanel } from "#/features/videos/components/dictation/video-panel";
 import { TranscriptPanel } from "#/features/videos/components/transcript-panel";
 import { VideoHubSkeleton } from "#/features/videos/components/video-hub-skeleton";
-import {
-	YouTubePlayer,
-	type YouTubePlayerRef,
-} from "#/features/videos/components/youtube-player";
+import type { YouTubePlayerRef } from "#/features/videos/components/youtube-player";
 import {
 	cleanWordForComparison,
 	type DictationLevel,
 	extractYouTubeId,
 	splitWords,
 } from "#/features/videos/dictation";
-import { videoDetailQueryOptions } from "#/features/videos/queries";
+import {
+	openVideoAttemptQueryOptions,
+	useCompleteVideoAttempt,
+	useSaveVideoProgress,
+	useStartVideoAttempt,
+	videoDetailQueryOptions,
+	videoKeys,
+} from "#/features/videos/queries";
 import { DockGuide } from "#/features/vocabulary/components/dock-guide";
 import { TextActionDock } from "#/features/vocabulary/components/text-action-dock";
 import { m } from "#/paraglide/messages";
@@ -73,31 +83,210 @@ interface SentenceProgressState {
 	wordStates: WordSlotState[];
 }
 
+function parseInitialSentenceStates(
+	transcripts: { id: string }[],
+	result?: VideoAttemptResponse["result"],
+): Record<number, SentenceProgressState> {
+	if (!result?.transcripts) return {};
+	const map: Record<number, SentenceProgressState> = {};
+	transcripts.forEach((t, idx) => {
+		const raw = result.transcripts?.[t.id] as
+			| { completed?: boolean; wordStates?: WordSlotState[] }
+			| undefined;
+		if (raw) {
+			map[idx] = {
+				completed: raw.completed ?? false,
+				wordStates: raw.wordStates ?? [],
+			};
+		}
+	});
+	return map;
+}
+
 function DictationPage() {
-	const navigate = useNavigate();
 	const video = Route.useLoaderData();
-	const transcripts = video?.transcripts ?? [];
+	const { isLoaded } = useAuth();
+
+	const openQuery = useQuery({
+		...openVideoAttemptQueryOptions(video?.id ?? "", "dictation"),
+		enabled: isLoaded && !!video?.id,
+	});
+
+	if (!video) return null;
+
+	if (!isLoaded || openQuery.isPending) {
+		return <DictationPending />;
+	}
+
+	return (
+		<DictationWorkspace
+			key={video.id}
+			video={video}
+			initialAttempt={openQuery.data ?? null}
+		/>
+	);
+}
+
+function DictationWorkspace({
+	video,
+	initialAttempt,
+}: {
+	video: VideoExerciseResponse;
+	initialAttempt: VideoAttemptResponse | null;
+}) {
+	const navigate = useNavigate();
+	const queryClient = useQueryClient();
+	const transcripts = video.transcripts ?? [];
 
 	const playerRef = useRef<YouTubePlayerRef>(null);
 
+	const [currentAttemptId, setCurrentAttemptId] = useState<string | null>(
+		initialAttempt?.id ?? null,
+	);
 	const [showMedia, setShowMedia] = useState(true);
 	const [showTranscript, setShowTranscript] = useState(true);
-	const [level, setLevel] = useState<DictationLevel>("normal");
+	const [level, setLevel] = useState<DictationLevel>(() => {
+		const lvl = initialAttempt?.result?.level;
+		return lvl === "easy" || lvl === "hard" ? lvl : "normal";
+	});
 	const [speed, setSpeed] = useState(1);
-	const [currentTime, setCurrentTime] = useState(0);
 
-	const [activeIndex, setActiveIndex] = useState(0);
-	const [activeWordIndex, setActiveWordIndex] = useState(0);
-	const [currentInput, setCurrentInput] = useState("");
-	const [revealed, setRevealed] = useState<number[]>([]);
+	const [activeIndex, setActiveIndex] = useState(() => {
+		const seq = initialAttempt?.result?.activeSequence ?? 0;
+		return seq >= 0 && seq < transcripts.length ? seq : 0;
+	});
+
 	const [sentenceStates, setSentenceStates] = useState<
 		Record<number, SentenceProgressState>
-	>({});
+	>(() => parseInitialSentenceStates(transcripts, initialAttempt?.result));
+
+	const [activeWordIndex, setActiveWordIndex] = useState(() => {
+		const targetWords = splitWords(transcripts[activeIndex]?.content ?? "");
+		const targetState = sentenceStates[activeIndex];
+		if (targetState?.completed) {
+			return targetWords.length;
+		}
+		return targetState?.wordStates?.length ?? 0;
+	});
+
+	const [currentInput, setCurrentInput] = useState("");
+	const [revealed, setRevealed] = useState<number[]>([]);
 	const [showSummary, setShowSummary] = useState(false);
+
+	const startAttempt = useStartVideoAttempt();
+	const saveProgress = useSaveVideoProgress();
+	const completeAttempt = useCompleteVideoAttempt();
+
+	const persistProgress = async (
+		targetIndex: number,
+		statesToSave: Record<number, SentenceProgressState>,
+		currentLevel = level,
+	) => {
+		let attemptId = currentAttemptId;
+		if (!attemptId) {
+			try {
+				const res = await startAttempt.mutateAsync({
+					videoId: video.id,
+					type: "dictation",
+				});
+				attemptId = res.id;
+				setCurrentAttemptId(res.id);
+			} catch {
+				return;
+			}
+		}
+
+		const transcriptsPayload: Record<string, unknown> = {};
+		const completedIds: string[] = [];
+		transcripts.forEach((t, idx) => {
+			const st = statesToSave[idx];
+			if (st) {
+				transcriptsPayload[t.id] = {
+					completed: st.completed,
+					wordStates: st.wordStates,
+				};
+				if (st.completed) completedIds.push(t.id);
+			}
+		});
+
+		try {
+			await saveProgress.mutateAsync({
+				videoId: video.id,
+				attemptId,
+				req: {
+					activeSequence: targetIndex,
+					activeTranscriptId: transcripts[targetIndex]?.id,
+					level: currentLevel,
+					completedTranscriptIds: completedIds,
+					transcripts: transcriptsPayload,
+				},
+			});
+		} catch {}
+	};
+
+	const completedCount = Object.values(sentenceStates).filter(
+		(s) => s.completed,
+	).length;
+	const overallProgress =
+		transcripts.length > 0 ? (completedCount / transcripts.length) * 100 : 0;
+
+	let totalWordsInLesson = 0;
+	let totalCorrectWords = 0;
+	for (let i = 0; i < transcripts.length; i++) {
+		const sentenceWords = splitWords(transcripts[i]?.content ?? "");
+		totalWordsInLesson += sentenceWords.length;
+		const st = sentenceStates[i];
+		if (st) {
+			totalCorrectWords += st.wordStates.filter(
+				(ws) => ws.status === "correct",
+			).length;
+		}
+	}
+	const totalIncorrectWords = Math.max(
+		0,
+		totalWordsInLesson - totalCorrectWords,
+	);
+	const overallAccuracy =
+		totalWordsInLesson > 0 ? (totalCorrectWords / totalWordsInLesson) * 100 : 0;
+
+	const handleFinish = async () => {
+		setShowSummary(true);
+		let attemptId = currentAttemptId;
+		if (!attemptId) {
+			try {
+				const res = await startAttempt.mutateAsync({
+					videoId: video.id,
+					type: "dictation",
+				});
+				attemptId = res.id;
+				setCurrentAttemptId(res.id);
+			} catch {
+				return;
+			}
+		}
+
+		await persistProgress(activeIndex, sentenceStates);
+
+		try {
+			await completeAttempt.mutateAsync({
+				videoId: video.id,
+				attemptId,
+				req: {
+					score: Math.round(overallAccuracy),
+				},
+			});
+			void queryClient.invalidateQueries({
+				queryKey: videoKeys.detail(video.id),
+			});
+			void queryClient.invalidateQueries({
+				queryKey: videoKeys.all,
+			});
+		} catch {}
+	};
 
 	const crumbs: CrumbItem[] = [
 		{ label: m["nav.item.videos"](), to: APP_ROUTES.VIDEOS.LIST },
-		...(video?.category
+		...(video.category
 			? [
 					{
 						label: video.category.name,
@@ -106,11 +295,9 @@ function DictationPage() {
 					},
 				]
 			: []),
-		{ label: video?.title ?? "" },
+		{ label: video.title },
 	];
 	useBreadcrumbs(crumbs);
-
-	if (!video) return null;
 
 	if (transcripts.length === 0) {
 		return (
@@ -144,27 +331,10 @@ function DictationPage() {
 
 	const youtubeId = extractYouTubeId(video.videoUrl);
 
-	const handlePlaySentence = () => {
-		if (!currentLine) return;
-		playerRef.current?.playSegment(
-			currentLine.startTimestamp,
-			currentLine.endTimestamp,
-		);
-	};
-
-	const handleReplaySentence = () => {
-		if (!currentLine) return;
-		playerRef.current?.playSegment(
-			currentLine.startTimestamp,
-			currentLine.endTimestamp,
-		);
-	};
-
-	const handleSpeedCycle = () => {
-		const nextIndex = (SPEEDS.indexOf(speed) + 1) % SPEEDS.length;
-		const nextSpeed = SPEEDS[nextIndex];
-		setSpeed(nextSpeed);
-		playerRef.current?.setSpeed(nextSpeed);
+	const handlePlayerReady = () => {
+		if (activeIndex > 0 && currentLine) {
+			playerRef.current?.seekTo(currentLine.startTimestamp);
+		}
 	};
 
 	const selectLine = (newIndex: number) => {
@@ -183,8 +353,58 @@ function DictationPage() {
 
 		const targetLine = transcripts[newIndex];
 		if (targetLine) {
-			playerRef.current?.seekTo(targetLine.startTimestamp);
+			playerRef.current?.playSegment(
+				targetLine.startTimestamp,
+				targetLine.endTimestamp,
+			);
 		}
+		void persistProgress(newIndex, sentenceStates);
+	};
+
+	const handleNextSentence = () => {
+		if (activeIndex < transcripts.length - 1) {
+			selectLine(activeIndex + 1);
+		} else {
+			void handleFinish();
+		}
+	};
+
+	const handlePrevSentence = () => {
+		if (activeIndex > 0) {
+			selectLine(activeIndex - 1);
+		}
+	};
+
+	const handlePlaySentence = () => {
+		if (!currentLine) return;
+		const current = playerRef.current?.getCurrentTime() ?? 0;
+		if (current >= currentLine.endTimestamp - 0.3) {
+			handleNextSentence();
+			return;
+		}
+		if (current < currentLine.startTimestamp - 0.5) {
+			playerRef.current?.playSegment(
+				currentLine.startTimestamp,
+				currentLine.endTimestamp,
+			);
+			return;
+		}
+		playerRef.current?.playSegment(current, currentLine.endTimestamp);
+	};
+
+	const handleReplaySentence = () => {
+		if (!currentLine) return;
+		playerRef.current?.playSegment(
+			currentLine.startTimestamp,
+			currentLine.endTimestamp,
+		);
+	};
+
+	const handleSpeedCycle = () => {
+		const nextIndex = (SPEEDS.indexOf(speed) + 1) % SPEEDS.length;
+		const nextSpeed = SPEEDS[nextIndex];
+		setSpeed(nextSpeed);
+		playerRef.current?.setSpeed(nextSpeed);
 	};
 
 	const handleWordSubmit = (wordText: string) => {
@@ -202,16 +422,21 @@ function DictationPage() {
 		const nextWordIdx = activeWordIndex + 1;
 		const done = nextWordIdx >= words.length;
 
-		setSentenceStates((prev) => ({
-			...prev,
+		const nextStates = {
+			...sentenceStates,
 			[activeIndex]: {
 				completed: done,
 				wordStates: updatedWordStates,
 			},
-		}));
+		};
 
+		setSentenceStates(nextStates);
 		setActiveWordIndex(nextWordIdx);
 		setCurrentInput("");
+
+		if (done) {
+			void persistProgress(activeIndex, nextStates);
+		}
 	};
 
 	const handleWordBackspace = () => {
@@ -235,14 +460,16 @@ function DictationPage() {
 	};
 
 	const handleResetSentence = () => {
-		setSentenceStates((prev) => ({
-			...prev,
+		const nextStates = {
+			...sentenceStates,
 			[activeIndex]: { completed: false, wordStates: [] },
-		}));
+		};
+		setSentenceStates(nextStates);
 		setActiveWordIndex(0);
 		setCurrentInput("");
 		setRevealed([]);
 		handlePlaySentence();
+		void persistProgress(activeIndex, nextStates);
 	};
 
 	const handleReveal = (index: number) => {
@@ -265,16 +492,21 @@ function DictationPage() {
 
 		const done = nextIdx >= words.length;
 
-		setSentenceStates((prev) => ({
-			...prev,
+		const nextStates = {
+			...sentenceStates,
 			[activeIndex]: {
 				completed: done,
 				wordStates: updatedWordStates,
 			},
-		}));
+		};
 
+		setSentenceStates(nextStates);
 		setActiveWordIndex(nextIdx);
 		setCurrentInput("");
+
+		if (done) {
+			void persistProgress(activeIndex, nextStates);
+		}
 	};
 
 	const handleRevealAll = () => {
@@ -287,82 +519,44 @@ function DictationPage() {
 			return { status: "incorrect" as const, input: w };
 		});
 
-		setSentenceStates((prev) => ({
-			...prev,
+		const nextStates = {
+			...sentenceStates,
 			[activeIndex]: {
 				completed: true,
 				wordStates: updatedWordStates,
 			},
-		}));
+		};
 
+		setSentenceStates(nextStates);
 		setActiveWordIndex(words.length);
 		setCurrentInput("");
+		void persistProgress(activeIndex, nextStates);
 	};
 
-	const handleNextSentence = () => {
-		if (activeIndex < transcripts.length - 1) {
-			selectLine(activeIndex + 1);
-			const nextLine = transcripts[activeIndex + 1];
-			if (nextLine) {
-				playerRef.current?.playSegment(
-					nextLine.startTimestamp,
-					nextLine.endTimestamp,
-				);
-			}
-		} else {
-			setShowSummary(true);
-		}
-	};
-
-	const handlePrevSentence = () => {
-		if (activeIndex > 0) {
-			selectLine(activeIndex - 1);
-			const prevLine = transcripts[activeIndex - 1];
-			if (prevLine) {
-				playerRef.current?.playSegment(
-					prevLine.startTimestamp,
-					prevLine.endTimestamp,
-				);
-			}
-		}
-	};
-
-	const completedCount = Object.values(sentenceStates).filter(
-		(s) => s.completed,
-	).length;
-	const overallProgress =
-		transcripts.length > 0 ? (completedCount / transcripts.length) * 100 : 0;
-
-	let totalWordsInLesson = 0;
-	let totalCorrectWords = 0;
-	for (let i = 0; i < transcripts.length; i++) {
-		const sentenceWords = splitWords(transcripts[i]?.content ?? "");
-		totalWordsInLesson += sentenceWords.length;
-		const st = sentenceStates[i];
-		if (st) {
-			totalCorrectWords += st.wordStates.filter(
-				(ws) => ws.status === "correct",
-			).length;
-		}
-	}
-	const totalIncorrectWords = Math.max(
-		0,
-		totalWordsInLesson - totalCorrectWords,
-	);
-	const overallAccuracy =
-		totalWordsInLesson > 0 ? (totalCorrectWords / totalWordsInLesson) * 100 : 0;
-
-	const handleRestart = () => {
+	const handleRestart = async () => {
 		setSentenceStates({});
 		setActiveIndex(0);
 		setActiveWordIndex(0);
 		setCurrentInput("");
 		setRevealed([]);
 		setShowSummary(false);
+		setCurrentAttemptId(null);
 		const firstLine = transcripts[0];
 		if (firstLine) {
 			playerRef.current?.seekTo(firstLine.startTimestamp);
 		}
+		try {
+			const res = await startAttempt.mutateAsync({
+				videoId: video.id,
+				type: "dictation",
+			});
+			setCurrentAttemptId(res.id);
+		} catch {}
+	};
+
+	const handleLevelChange = (newLevel: DictationLevel) => {
+		setLevel(newLevel);
+		void persistProgress(activeIndex, sentenceStates, newLevel);
 	};
 
 	const layout =
@@ -414,28 +608,31 @@ function DictationPage() {
 				</Button>
 			</div>
 
-			<TextActionDock source={{ type: "video", id: video?.id }}>
+			<TextActionDock source={{ type: "video", id: video.id }}>
 				<div className={cn("grid items-start gap-3", layout)}>
 					{showMedia ? (
 						<VideoPanel
 							video={video}
-							currentTime={currentTime}
+							youtubeId={youtubeId}
+							playerRef={playerRef}
+							activeSegment={
+								currentLine
+									? {
+											start: currentLine.startTimestamp,
+											end: currentLine.endTimestamp,
+										}
+									: null
+							}
+							onPlayerReady={handlePlayerReady}
 							onStart={handlePlaySentence}
 							onReplay={handleReplaySentence}
-						>
-							{youtubeId ? (
-								<YouTubePlayer
-									ref={playerRef}
-									videoId={youtubeId}
-									onTimeUpdate={setCurrentTime}
-								/>
-							) : null}
-						</VideoPanel>
+							onPlayPastEnd={handleNextSentence}
+						/>
 					) : null}
 
 					<DictationPanel
 						level={level}
-						onLevelChange={setLevel}
+						onLevelChange={handleLevelChange}
 						speed={speed}
 						words={words}
 						revealed={revealed}

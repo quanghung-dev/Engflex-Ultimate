@@ -6,6 +6,7 @@ package mocks
 
 import (
 	"context"
+	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories"
 	"time"
@@ -315,6 +316,86 @@ func (_c *MockAttemptRepository_GetOpenAttempt_Call) RunAndReturn(run func(ctx c
 	return _c
 }
 
+// GetVideoAttempt provides a mock function for the type MockAttemptRepository
+func (_mock *MockAttemptRepository) GetVideoAttempt(ctx context.Context, userID string, videoExerciseID string, attemptType enums.AttemptType) (*models.Attempt, error) {
+	ret := _mock.Called(ctx, userID, videoExerciseID, attemptType)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetVideoAttempt")
+	}
+
+	var r0 *models.Attempt
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, enums.AttemptType) (*models.Attempt, error)); ok {
+		return returnFunc(ctx, userID, videoExerciseID, attemptType)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, enums.AttemptType) *models.Attempt); ok {
+		r0 = returnFunc(ctx, userID, videoExerciseID, attemptType)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Attempt)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string, enums.AttemptType) error); ok {
+		r1 = returnFunc(ctx, userID, videoExerciseID, attemptType)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAttemptRepository_GetVideoAttempt_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetVideoAttempt'
+type MockAttemptRepository_GetVideoAttempt_Call struct {
+	*mock.Call
+}
+
+// GetVideoAttempt is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - videoExerciseID string
+//   - attemptType enums.AttemptType
+func (_e *MockAttemptRepository_Expecter) GetVideoAttempt(ctx any, userID any, videoExerciseID any, attemptType any) *MockAttemptRepository_GetVideoAttempt_Call {
+	return &MockAttemptRepository_GetVideoAttempt_Call{Call: _e.mock.On("GetVideoAttempt", ctx, userID, videoExerciseID, attemptType)}
+}
+
+func (_c *MockAttemptRepository_GetVideoAttempt_Call) Run(run func(ctx context.Context, userID string, videoExerciseID string, attemptType enums.AttemptType)) *MockAttemptRepository_GetVideoAttempt_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 enums.AttemptType
+		if args[3] != nil {
+			arg3 = args[3].(enums.AttemptType)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAttemptRepository_GetVideoAttempt_Call) Return(attempt *models.Attempt, err error) *MockAttemptRepository_GetVideoAttempt_Call {
+	_c.Call.Return(attempt, err)
+	return _c
+}
+
+func (_c *MockAttemptRepository_GetVideoAttempt_Call) RunAndReturn(run func(ctx context.Context, userID string, videoExerciseID string, attemptType enums.AttemptType) (*models.Attempt, error)) *MockAttemptRepository_GetVideoAttempt_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ListCompletedDays provides a mock function for the type MockAttemptRepository
 func (_mock *MockAttemptRepository) ListCompletedDays(ctx context.Context, userID string, since time.Time) ([]string, error) {
 	ret := _mock.Called(ctx, userID, since)
@@ -385,6 +466,80 @@ func (_c *MockAttemptRepository_ListCompletedDays_Call) Return(strings []string,
 }
 
 func (_c *MockAttemptRepository_ListCompletedDays_Call) RunAndReturn(run func(ctx context.Context, userID string, since time.Time) ([]string, error)) *MockAttemptRepository_ListCompletedDays_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListCompletedVideo provides a mock function for the type MockAttemptRepository
+func (_mock *MockAttemptRepository) ListCompletedVideo(ctx context.Context, userID string, videoExerciseIDs []string) ([]*models.Attempt, error) {
+	ret := _mock.Called(ctx, userID, videoExerciseIDs)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListCompletedVideo")
+	}
+
+	var r0 []*models.Attempt
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []string) ([]*models.Attempt, error)); ok {
+		return returnFunc(ctx, userID, videoExerciseIDs)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []string) []*models.Attempt); ok {
+		r0 = returnFunc(ctx, userID, videoExerciseIDs)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Attempt)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, []string) error); ok {
+		r1 = returnFunc(ctx, userID, videoExerciseIDs)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAttemptRepository_ListCompletedVideo_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListCompletedVideo'
+type MockAttemptRepository_ListCompletedVideo_Call struct {
+	*mock.Call
+}
+
+// ListCompletedVideo is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - videoExerciseIDs []string
+func (_e *MockAttemptRepository_Expecter) ListCompletedVideo(ctx any, userID any, videoExerciseIDs any) *MockAttemptRepository_ListCompletedVideo_Call {
+	return &MockAttemptRepository_ListCompletedVideo_Call{Call: _e.mock.On("ListCompletedVideo", ctx, userID, videoExerciseIDs)}
+}
+
+func (_c *MockAttemptRepository_ListCompletedVideo_Call) Run(run func(ctx context.Context, userID string, videoExerciseIDs []string)) *MockAttemptRepository_ListCompletedVideo_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 []string
+		if args[2] != nil {
+			arg2 = args[2].([]string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAttemptRepository_ListCompletedVideo_Call) Return(attempts []*models.Attempt, err error) *MockAttemptRepository_ListCompletedVideo_Call {
+	_c.Call.Return(attempts, err)
+	return _c
+}
+
+func (_c *MockAttemptRepository_ListCompletedVideo_Call) RunAndReturn(run func(ctx context.Context, userID string, videoExerciseIDs []string) ([]*models.Attempt, error)) *MockAttemptRepository_ListCompletedVideo_Call {
 	_c.Call.Return(run)
 	return _c
 }

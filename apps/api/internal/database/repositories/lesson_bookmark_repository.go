@@ -9,7 +9,6 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-// LessonBookmarkRepository is the DB access layer for the lesson_bookmarks table.
 type LessonBookmarkRepository interface {
 	ListByUser(ctx context.Context, userID string) ([]*models.LessonBookmark, error)
 	Get(ctx context.Context, userID, lessonID string) (*models.LessonBookmark, error)
@@ -22,12 +21,10 @@ type lessonBookmarkRepository struct {
 	db *gorm.DB
 }
 
-// NewLessonBookmarkRepository builds the repository over the shared DB handle.
 func NewLessonBookmarkRepository(db *gorm.DB) LessonBookmarkRepository {
 	return &lessonBookmarkRepository{db: db}
 }
 
-// WithTx returns the repository bound to the given transaction handle.
 func (r *lessonBookmarkRepository) WithTx(tx *gorm.DB) LessonBookmarkRepository {
 	return &lessonBookmarkRepository{db: tx}
 }
@@ -51,8 +48,6 @@ func (r *lessonBookmarkRepository) Get(ctx context.Context, userID, lessonID str
 	return &m, nil
 }
 
-// Create saves a bookmark idempotently: a repeated save is a no-op, not a
-// duplicate row (composite PK would conflict).
 func (r *lessonBookmarkRepository) Create(ctx context.Context, b *models.LessonBookmark) error {
 	if _, err := parseID(b.LessonID, "lessonId"); err != nil {
 		return err
