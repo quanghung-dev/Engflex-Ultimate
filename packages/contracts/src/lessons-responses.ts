@@ -244,14 +244,6 @@ export interface LessonDetail {
   details: LessonDetails;
   activities: Activity[];
 }
-/**
- * Bookmark is one saved lesson for the caller. Go name CreatedAt matches
- * the model for copier; wire name savedAt is the product term.
- */
-export interface Bookmark {
-  lessonId: string;
-  savedAt: string /* RFC3339 */;
-}
 
 //////////
 // source: progress.go

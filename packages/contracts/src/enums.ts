@@ -61,6 +61,17 @@ export const CEFRC2 = "C2";
 export type CEFR = typeof CEFRA1 | typeof CEFRA2 | typeof CEFRB1 | typeof CEFRB2 | typeof CEFRC1 | typeof CEFRC2;
 
 //////////
+// source: content_type.go
+
+/**
+ * ContentType identifies the resource kind in polymorphic tables like bookmarks.
+ */
+export const ContentTypeLesson = "lesson";
+export const ContentTypeVideo = "video";
+export const ContentTypeStory = "story";
+export type ContentType = typeof ContentTypeLesson | typeof ContentTypeVideo | typeof ContentTypeStory;
+
+//////////
 // source: conversation_mode.go
 
 /**
@@ -263,4 +274,5 @@ export const VocabularySourceLesson = "lesson";
 export const VocabularySourceConversation = "conversation";
 export const VocabularySourceVideo = "video";
 export const VocabularySourceManual = "manual";
-export type VocabularySource = typeof VocabularySourceLesson | typeof VocabularySourceConversation | typeof VocabularySourceVideo | typeof VocabularySourceManual;
+export const VocabularySourceStory = "story";
+export type VocabularySource = typeof VocabularySourceLesson | typeof VocabularySourceConversation | typeof VocabularySourceVideo | typeof VocabularySourceManual | typeof VocabularySourceStory;

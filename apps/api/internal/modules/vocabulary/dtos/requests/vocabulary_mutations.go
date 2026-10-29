@@ -85,7 +85,7 @@ type UpdateVocabularyDeckItem struct {
 // SaveUserVocabulary saves per-user state over a shared item (idempotent).
 type SaveUserVocabulary struct {
 	ItemID     string  `json:"itemId" binding:"required,uuid"`
-	SourceType string  `json:"sourceType" binding:"required,oneof=lesson conversation video manual"`
+	SourceType string  `json:"sourceType" binding:"required,oneof=lesson conversation video manual story"`
 	SourceID   *string `json:"sourceId" binding:"omitempty,uuid"`
 	Note       *string `json:"note"`
 	Mastered   *bool   `json:"mastered"`
@@ -106,7 +106,7 @@ type AddUserVocabularyWord struct {
 	Details *VocabularyDetails `json:"details"`
 	// SourceType/SourceID record where the word came from when the save was
 	// started from content (the lesson/video context dock). Omitted = manual.
-	SourceType string  `json:"sourceType" binding:"omitempty,oneof=lesson conversation video manual"`
+	SourceType string  `json:"sourceType" binding:"omitempty,oneof=lesson conversation video manual story"`
 	SourceID   *string `json:"sourceId" binding:"omitempty,uuid"`
 }
 

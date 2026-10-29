@@ -106,7 +106,8 @@
         "lesson": "From lessons",
         "conversation": "From AI sparring",
         "video": "From video",
-        "manual": "Custom"
+        "manual": "Custom",
+        "story": "From stories"
       },
       "cefrLabel": "CEFR:",
       "cefrAll": "All",
@@ -121,7 +122,8 @@
       "lesson": "From lesson",
       "conversation": "From AI sparring",
       "video": "From video",
-      "manual": "Custom"
+      "manual": "Custom",
+      "story": "From story"
     },
     "pos": {
       "noun": "Noun",

@@ -11,6 +11,7 @@ const SOURCE = {
 	},
 	video: { label: () => m["vocabulary.source.video"](), icon: Clapperboard },
 	manual: { label: () => m["vocabulary.source.manual"](), icon: PenLine },
+	story: { label: () => m["vocabulary.source.story"](), icon: BookOpen },
 } as const;
 
 export function SourcePill({

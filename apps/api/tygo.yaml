@@ -26,6 +26,7 @@ type_mappings:
   "enums.VocabularySort": "VocabularySort"
   "enums.VocabularySource": "VocabularySource"
   "enums.VocabularyPartOfSpeech": "VocabularyPartOfSpeech"
+  "enums.ContentType": "ContentType"
   "enums.SpanStatus": "SpanStatus"
   "enums.RelevanceStatus": "RelevanceStatus"
   # embedded by list request DTOs tagged `tstype:",extends"`
@@ -108,4 +109,18 @@ packages:
     fallback_type: "unknown"
   - path: "engflex-api/internal/modules/videos/dtos/responses"
     output_path: "../../packages/contracts/src/videos-responses.ts"
+    fallback_type: "unknown"
+
+  - path: "engflex-api/internal/modules/bookmarks/dtos/requests"
+    output_path: "../../packages/contracts/src/bookmarks-requests.ts"
+    fallback_type: "unknown"
+  - path: "engflex-api/internal/modules/bookmarks/dtos/responses"
+    output_path: "../../packages/contracts/src/bookmarks-responses.ts"
+    fallback_type: "unknown"
+
+  - path: "engflex-api/internal/modules/stories/dtos/requests"
+    output_path: "../../packages/contracts/src/stories-requests.ts"
+    fallback_type: "unknown"
+  - path: "engflex-api/internal/modules/stories/dtos/responses"
+    output_path: "../../packages/contracts/src/stories-responses.ts"
     fallback_type: "unknown"

@@ -22,11 +22,6 @@ type ListActivities struct {
 	LessonID string `form:"lessonId" json:"lessonId" binding:"required,uuid"`
 }
 
-// SaveBookmark is the POST /lesson-bookmarks body.
-type SaveBookmark struct {
-	LessonID string `json:"lessonId" binding:"required,uuid"`
-}
-
 // CheckAnswer grades one reading/listening question. min=0, not required:
 // `required` rejects the zero value, and question 0 is valid.
 type CheckAnswer struct {
