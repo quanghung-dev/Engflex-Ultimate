@@ -1,179 +1,149 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import type { CEFR } from "@engflex/contracts";
+import { CEFR_VALUES } from "@engflex/contracts";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { EmptyList } from "#/components/common/empty-list";
 import { PageLayout } from "#/components/common/page-layout";
+import { Pager } from "#/components/common/pager";
 import {
 	StoryCard,
-	type StoryCardItem,
+	StoryCardSkeleton,
 } from "#/features/stories/components/story-card";
 import { StoryFilterBar } from "#/features/stories/components/story-filter-bar";
+import { useStories, useStoryTopics } from "#/features/stories/queries";
+import {
+	STORIES_PAGE_SIZE,
+	type StoriesSearch,
+} from "#/features/stories/types";
+import { parseFilterParam, parsePage } from "#/lib/router/search-params";
 import { m } from "#/paraglide/messages";
 
-const MOCK_STORIES: StoryCardItem[] = [
-	{
-		id: "11111111-1111-1111-1111-111111111111",
-		slug: "cinderella",
-		title: "Cinderella",
-		titleVietnamese: "Cô bé Lọ Lem",
-		cefrLevel: "B1",
-		topic: "Anh em Grimm",
-		thumbnailUrl:
-			"https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=80",
-		audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-		duration: 540,
-		views: 4667,
-		bookmarks: 31,
-		saved: true,
-		createdAt: "2026-10-01T00:00:00Z",
-	},
-	{
-		id: "22222222-2222-2222-2222-222222222222",
-		slug: "little-red-cap",
-		title: "Little Red Cap",
-		titleVietnamese: "Cô bé quàng khăn đỏ",
-		cefrLevel: "A1",
-		topic: "Anh em Grimm",
-		thumbnailUrl:
-			"https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&auto=format&fit=crop&q=80",
-		audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
-		duration: 300,
-		views: 3271,
-		bookmarks: 35,
-		saved: false,
-		createdAt: "2026-10-02T00:00:00Z",
-	},
-	{
-		id: "33333333-3333-3333-3333-333333333333",
-		slug: "snow-white",
-		title: "Snow-White",
-		titleVietnamese: "Nàng Bạch Tuyết",
-		cefrLevel: "B2",
-		topic: "Anh em Grimm",
-		thumbnailUrl:
-			"https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=800&auto=format&fit=crop&q=80",
-		audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
-		duration: 540,
-		views: 1668,
-		bookmarks: 9,
-		saved: false,
-		createdAt: "2026-10-03T00:00:00Z",
-	},
-	{
-		id: "44444444-4444-4444-4444-444444444444",
-		slug: "hansel-and-gretel",
-		title: "Hansel and Gretel",
-		titleVietnamese: "Hansel và Gretel",
-		cefrLevel: "A2",
-		topic: "Anh em Grimm",
-		thumbnailUrl:
-			"https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=800&auto=format&fit=crop&q=80",
-		audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
-		duration: 360,
-		views: 1476,
-		bookmarks: 7,
-		saved: false,
-		createdAt: "2026-10-04T00:00:00Z",
-	},
-	{
-		id: "55555555-5555-5555-5555-555555555555",
-		slug: "sleeping-beauty",
-		title: "Sleeping Beauty (Little Briar Rose)",
-		titleVietnamese: "Người đẹp ngủ trong rừng",
-		cefrLevel: "A1",
-		topic: "Anh em Grimm",
-		thumbnailUrl:
-			"https://images.unsplash.com/photo-1519751138087-5bf79df62d5b?w=800&auto=format&fit=crop&q=80",
-		audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3",
-		duration: 300,
-		views: 1448,
-		bookmarks: 10,
-		saved: false,
-		createdAt: "2026-10-05T00:00:00Z",
-	},
-	{
-		id: "66666666-6666-6666-6666-666666666666",
-		slug: "the-little-mermaid",
-		title: "The Little Mermaid",
-		titleVietnamese: "Nàng tiên cá",
-		cefrLevel: "C1",
-		topic: "H. C. Andersen",
-		thumbnailUrl:
-			"https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80",
-		audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3",
-		duration: 660,
-		views: 1433,
-		bookmarks: 11,
-		saved: false,
-		createdAt: "2026-10-06T00:00:00Z",
-	},
-];
+const SKELETON_KEYS = Array.from(
+	{ length: STORIES_PAGE_SIZE },
+	(_, i) => `story-skeleton-${i + 1}`,
+);
 
 export const Route = createFileRoute("/_app/stories/")({
+	validateSearch: (search: Record<string, unknown>): StoriesSearch => ({
+		page: parsePage(search.page),
+		cefr: parseFilterParam(CEFR_VALUES, search.cefr),
+		topic:
+			typeof search.topic === "string" && search.topic.trim() !== ""
+				? search.topic.trim()
+				: undefined,
+		search:
+			typeof search.search === "string" && search.search.trim() !== ""
+				? search.search.trim()
+				: undefined,
+	}),
 	component: StoriesListPage,
 });
 
 function StoriesListPage() {
 	useBreadcrumbs([{ label: m["stories.title"]() }]);
+	const navigate = useNavigate();
+	const searchParams = Route.useSearch();
 
-	const [tab, setTab] = useState<"all" | "saved">("all");
-	const [level, setLevel] = useState<string>("all");
-	const [selectedCategory, setSelectedCategory] = useState<string>("all");
-	const [search, setSearch] = useState<string>("");
+	const page = searchParams.page ?? 1;
+	const cefr = searchParams.cefr ?? "all";
+	const selectedCategory = searchParams.topic ?? "all";
+	const search = searchParams.search ?? "";
 
-	// Dynamically extract categories from the stories dataset
-	const categories = useMemo(() => {
-		return Array.from(
-			new Set(MOCK_STORIES.map((s) => s.topic).filter(Boolean)),
-		);
-	}, []);
+	const topicsQuery = useStoryTopics();
+	const categories = topicsQuery.data ?? [];
 
-	const filteredStories = useMemo(() => {
-		return MOCK_STORIES.filter((story) => {
-			if (tab === "saved" && !story.saved) return false;
-			if (level !== "all" && story.cefrLevel !== level) return false;
-			if (selectedCategory !== "all" && story.topic !== selectedCategory) {
-				return false;
-			}
-			if (search.trim()) {
-				const q = search.toLowerCase();
-				const matchEn = story.title.toLowerCase().includes(q);
-				const matchVi = (story.titleVietnamese ?? "").toLowerCase().includes(q);
-				if (!matchEn && !matchVi) return false;
-			}
-			return true;
-		}).sort((a, b) => (b.views ?? 0) - (a.views ?? 0));
-	}, [tab, level, selectedCategory, search]);
+	const storiesQuery = useStories({
+		page,
+		pageSize: STORIES_PAGE_SIZE,
+		cefr: cefr === "all" ? undefined : cefr,
+		topic: selectedCategory === "all" ? undefined : selectedCategory,
+		search: search.trim() || undefined,
+	});
+
+	const items = storiesQuery.data?.items ?? [];
+	const pagination = storiesQuery.data?.pagination;
+	const total = pagination?.total ?? 0;
+	const totalPages = pagination?.totalPages ?? 1;
+
+	const from = total === 0 ? 0 : (page - 1) * STORIES_PAGE_SIZE + 1;
+	const to = Math.min(page * STORIES_PAGE_SIZE, total);
+
+	function updateSearch(next: Partial<StoriesSearch>) {
+		void navigate({
+			to: APP_ROUTES.STORIES.LIST,
+			search: {
+				...searchParams,
+				...next,
+				page:
+					next.page !== undefined
+						? next.page <= 1
+							? undefined
+							: next.page
+						: undefined,
+			},
+		});
+	}
 
 	function handleReset() {
-		setTab("all");
-		setLevel("all");
-		setSelectedCategory("all");
-		setSearch("");
+		void navigate({
+			to: APP_ROUTES.STORIES.LIST,
+			search: {},
+		});
 	}
 
 	return (
 		<PageLayout>
 			<StoryFilterBar
-				tab={tab}
-				onTabChange={setTab}
-				level={level}
-				onLevelChange={setLevel}
+				tab="all"
+				onTabChange={() => {}}
+				level={cefr}
+				onLevelChange={(lvl) =>
+					updateSearch({ cefr: lvl === "all" ? undefined : (lvl as CEFR) })
+				}
 				categories={categories}
 				selectedCategory={selectedCategory}
-				onCategoryChange={setSelectedCategory}
+				onCategoryChange={(cat) =>
+					updateSearch({ topic: cat === "all" ? undefined : cat })
+				}
 				search={search}
-				onSearchChange={setSearch}
+				onSearchChange={(q) => updateSearch({ search: q ? q : undefined })}
 			/>
 
-			{filteredStories.length === 0 ? (
-				<EmptyList title={m["stories.empty"]()} onReset={handleReset} />
-			) : (
+			{storiesQuery.isPending ? (
 				<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-					{filteredStories.map((story) => (
-						<StoryCard key={story.id} story={story} />
+					{SKELETON_KEYS.map((key) => (
+						<StoryCardSkeleton key={key} />
 					))}
 				</div>
+			) : total === 0 ? (
+				<EmptyList title={m["stories.empty"]()} onReset={handleReset} />
+			) : (
+				<>
+					<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+						{items.map((story) => (
+							<StoryCard key={story.id} story={story} />
+						))}
+					</div>
+					<Pager
+						page={page}
+						totalPages={totalPages}
+						summary={
+							totalPages > 1
+								? m["stories.showingRange"]({ from, to, total })
+								: m["stories.showingAll"]({ total })
+						}
+						onPageChange={(next) =>
+							void navigate({
+								to: APP_ROUTES.STORIES.LIST,
+								search: {
+									...searchParams,
+									page: next <= 1 ? undefined : next,
+								},
+							})
+						}
+					/>
+				</>
 			)}
 		</PageLayout>
 	);

@@ -79,10 +79,10 @@ export const API_ROUTES = {
 		TOPICS: "/stories/topics",
 	},
 	BOOKMARKS: {
-    LIST: "/bookmarks",
-    CREATE: "/bookmarks",
-    DELETE: (contentType: string, contentId: ApiId) =>
-        `/bookmarks/${contentType}/${contentId}`,
+		LIST: "/bookmarks",
+		CREATE: "/bookmarks",
+		DELETE: (contentType: string, contentId: ApiId) =>
+			`/bookmarks/${contentType}/${contentId}`,
 	},
 } as const;
 

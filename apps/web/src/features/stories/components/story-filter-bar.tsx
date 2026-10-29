@@ -137,9 +137,20 @@ export function StoryFilterBar({
 	search: string;
 	onSearchChange: (search: string) => void;
 }) {
+	const [draft, setDraft] = useState(search);
+	const [seen, setSeen] = useState(search);
+	if (seen !== search) {
+		setSeen(search);
+		setDraft(search);
+	}
+
+	function handleSearchSubmit(e: React.FormEvent) {
+		e.preventDefault();
+		onSearchChange(draft.trim());
+	}
+
 	return (
 		<div className="flex flex-col gap-4 border-b border-border pb-5">
-			{/* Top Tabs */}
 			<div className="flex items-center gap-6 border-b border-border/60">
 				<button
 					type="button"
@@ -156,24 +167,19 @@ export function StoryFilterBar({
 				</button>
 				<button
 					type="button"
-					onClick={() => onTabChange("saved")}
-					className={cn(
-						"flex items-center gap-2 border-b-2 px-1 pb-3 text-sm font-bold transition-colors",
-						tab === "saved"
-							? "border-primary text-foreground"
-							: "border-transparent text-muted-foreground hover:text-foreground",
-					)}
+					disabled
+					className="flex cursor-not-allowed items-center gap-2 border-b-2 border-transparent px-1 pb-3 text-sm font-bold text-muted-foreground/50 opacity-60"
 				>
 					<Bookmark className="size-4" />
 					<span>{m["stories.tabs.saved"]()}</span>
+					<span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+						{m["stories.tabs.comingSoon"]()}
+					</span>
 				</button>
 			</div>
 
-			{/* Filters Row: Trình độ (trái) + Bộ truyện (trái) | Tìm truyện (phải) */}
 			<div className="flex flex-wrap items-center justify-between gap-4 pt-1">
-				{/* Left: Dropdown Trình độ + Dropdown Bộ truyện có search */}
 				<div className="flex flex-wrap items-center gap-3">
-					{/* Dropdown Trình độ */}
 					<Select value={level} onValueChange={onLevelChange}>
 						<SelectTrigger className="h-9 w-36 rounded-xl border-border bg-card px-3 text-xs font-semibold">
 							<SelectValue placeholder={m["stories.filter.allLevels"]()} />
@@ -187,7 +193,6 @@ export function StoryFilterBar({
 						</SelectContent>
 					</Select>
 
-					{/* Dropdown Bộ truyện có search */}
 					<CollectionSearchableSelect
 						categories={categories}
 						selectedCategory={selectedCategory}
@@ -195,16 +200,23 @@ export function StoryFilterBar({
 					/>
 				</div>
 
-				{/* Right: Thanh tìm truyện */}
-				<div className="relative w-full max-w-xs">
+				<form
+					onSubmit={handleSearchSubmit}
+					className="relative w-full max-w-xs"
+				>
 					<Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
 					<Input
-						value={search}
-						onChange={(e) => onSearchChange(e.target.value)}
+						value={draft}
+						onChange={(e) => setDraft(e.target.value)}
+						onBlur={() => {
+							if (draft.trim() !== search) {
+								onSearchChange(draft.trim());
+							}
+						}}
 						placeholder={m["stories.filter.searchPlaceholder"]()}
 						className="h-9 rounded-xl pl-9 text-xs"
 					/>
-				</div>
+				</form>
 			</div>
 		</div>
 	);

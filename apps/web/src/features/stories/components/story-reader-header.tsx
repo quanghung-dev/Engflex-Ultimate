@@ -25,8 +25,8 @@ export function StoryReaderHeader({
 	onModeChange,
 	showTranslation,
 	onToggleTranslation,
-	saved,
-	bookmarkCount,
+	saved = false,
+	bookmarkCount = 0,
 	onToggleSave,
 }: {
 	story: StoryReaderHeaderItem;
@@ -34,13 +34,12 @@ export function StoryReaderHeader({
 	onModeChange: (m: "listen" | "read") => void;
 	showTranslation: boolean;
 	onToggleTranslation: () => void;
-	saved: boolean;
-	bookmarkCount: number;
-	onToggleSave: () => void;
+	saved?: boolean;
+	bookmarkCount?: number;
+	onToggleSave?: () => void;
 }) {
 	return (
 		<header className="flex flex-wrap items-center justify-between gap-4 border-b border-border bg-card px-4 py-3">
-			{/* Left: Back + Title & Badge */}
 			<div className="flex items-center gap-3">
 				<Link
 					to={APP_ROUTES.STORIES.LIST}
@@ -65,9 +64,7 @@ export function StoryReaderHeader({
 				</div>
 			</div>
 
-			{/* Right: Controls & Actions */}
 			<div className="flex flex-wrap items-center gap-2">
-				{/* Mode toggle */}
 				<div className="flex items-center rounded-xl border border-border bg-muted/50 p-1">
 					<button
 						type="button"
@@ -98,7 +95,6 @@ export function StoryReaderHeader({
 					</button>
 				</div>
 
-				{/* Translation toggle button */}
 				<Button
 					variant="outline"
 					size="sm"
@@ -118,7 +114,6 @@ export function StoryReaderHeader({
 					</span>
 				</Button>
 
-				{/* Settings button */}
 				<Button
 					variant="outline"
 					size="icon"
@@ -128,26 +123,32 @@ export function StoryReaderHeader({
 					<Settings className="size-4" />
 				</Button>
 
-				{/* Save / Bookmark toggle button */}
-				<Button
-					variant="outline"
-					size="sm"
-					onClick={onToggleSave}
-					className={cn(
-						"gap-1.5 rounded-xl border-border font-bold text-xs transition-colors",
-						saved
-							? "border-primary/40 bg-primary/10 text-primary hover:bg-primary/20"
-							: "text-muted-foreground hover:text-foreground",
-					)}
-				>
-					<Bookmark
-						className={cn("size-3.5", saved ? "fill-primary text-primary" : "")}
-					/>
-					<span>
-						{saved ? m["stories.reader.saved"]() : m["stories.reader.save"]()}
-					</span>
-					<span className="font-semibold">{bookmarkCount}</span>
-				</Button>
+				{onToggleSave ? (
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={onToggleSave}
+						className={cn(
+							"gap-1.5 rounded-xl border-border font-bold text-xs transition-colors",
+							saved
+								? "border-primary/40 bg-primary/10 text-primary hover:bg-primary/20"
+								: "text-muted-foreground hover:text-foreground",
+						)}
+					>
+						<Bookmark
+							className={cn(
+								"size-3.5",
+								saved ? "fill-primary text-primary" : "",
+							)}
+						/>
+						<span>
+							{saved ? m["stories.reader.saved"]() : m["stories.reader.save"]()}
+						</span>
+						{bookmarkCount > 0 ? (
+							<span className="font-semibold">{bookmarkCount}</span>
+						) : null}
+					</Button>
+				) : null}
 			</div>
 		</header>
 	);

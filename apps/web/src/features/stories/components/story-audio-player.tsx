@@ -29,11 +29,10 @@ export function StoryAudioPlayer({
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [duration, setDuration] = useState(fallbackDuration);
-	const [speedIndex, setSpeedIndex] = useState(1); // default 1x
+	const [speedIndex, setSpeedIndex] = useState(1);
 
 	const currentSpeed = SPEEDS[speedIndex];
 
-	// Handle play/pause
 	function togglePlay() {
 		const audio = audioRef.current;
 		if (!audio) return;
@@ -45,7 +44,6 @@ export function StoryAudioPlayer({
 				.play()
 				.then(() => setIsPlaying(true))
 				.catch(() => {
-					// Fallback if browser blocks or mock url fails: simulate time progression
 					setIsPlaying(true);
 				});
 		}
@@ -84,7 +82,6 @@ export function StoryAudioPlayer({
 		}
 	}
 
-	// Sync currentTime from external seek (e.g. clicking a sentence)
 	useEffect(() => {
 		if (
 			audioRef.current &&
@@ -94,7 +91,6 @@ export function StoryAudioPlayer({
 		}
 	}, [currentTime]);
 
-	// Fallback interval if audio fails or is mocked
 	useEffect(() => {
 		let timer: NodeJS.Timeout | null = null;
 		if (isPlaying) {
@@ -111,7 +107,7 @@ export function StoryAudioPlayer({
 
 	return (
 		<div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 px-6 py-3 shadow-xl backdrop-blur-md">
-			{/* biome-ignore lint/a11y/useMediaCaption: story narration audio — full transcript is displayed as interactive text on page */}
+			{/* biome-ignore lint/a11y/useMediaCaption: story narration audio */}
 			<audio
 				ref={audioRef}
 				src={audioUrl}
@@ -130,7 +126,6 @@ export function StoryAudioPlayer({
 			/>
 
 			<div className="mx-auto flex max-w-4xl flex-col gap-2">
-				{/* Top: Progress Slider */}
 				<Slider
 					value={[currentTime]}
 					max={duration || 100}
@@ -139,16 +134,13 @@ export function StoryAudioPlayer({
 					className="cursor-pointer"
 				/>
 
-				{/* Bottom Controls Row */}
 				<div className="flex items-center justify-between text-xs">
-					{/* Left: Time indicator */}
 					<div className="w-28 font-mono font-bold text-muted-foreground">
 						<span>{formatTime(currentTime)}</span>
 						<span className="mx-1">/</span>
 						<span>{formatTime(duration)}</span>
 					</div>
 
-					{/* Center: Play/Pause and Skip buttons */}
 					<div className="flex items-center gap-3">
 						<button
 							type="button"
@@ -185,7 +177,6 @@ export function StoryAudioPlayer({
 						</button>
 					</div>
 
-					{/* Right: Speed toggle */}
 					<div className="flex w-28 justify-end">
 						<Button
 							variant="ghost"

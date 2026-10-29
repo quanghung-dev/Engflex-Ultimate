@@ -25,7 +25,6 @@ export function StoryCard({ story }: { story: StoryCardItem }) {
 				"hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5",
 			)}
 		>
-			{/* Book Cover Container */}
 			<div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl border border-border/80 bg-muted">
 				{story.thumbnailUrl ? (
 					<img
@@ -40,17 +39,14 @@ export function StoryCard({ story }: { story: StoryCardItem }) {
 					</div>
 				)}
 
-				{/* Vintage vignette / border overlay */}
 				<div className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset ring-black/10" />
 
-				{/* Level Badge on top-left */}
 				{story.cefrLevel ? (
 					<div className="absolute top-2 left-2">
 						<CefrBadge value={story.cefrLevel} className="shadow-xs" />
 					</div>
 				) : null}
 
-				{/* Has Audio indicator on bottom-right */}
 				{hasAudio ? (
 					<div className="absolute right-2 bottom-2 flex items-center gap-1 rounded-full bg-black/75 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-xs backdrop-blur-xs">
 						<Headphones className="size-3" />
@@ -59,7 +55,6 @@ export function StoryCard({ story }: { story: StoryCardItem }) {
 				) : null}
 			</div>
 
-			{/* Info section */}
 			<div className="flex flex-1 flex-col pt-2.5 pb-1">
 				<h3 className="line-clamp-1 font-bold text-foreground text-sm tracking-tight group-hover:text-primary">
 					{story.title}
@@ -73,7 +68,6 @@ export function StoryCard({ story }: { story: StoryCardItem }) {
 					{story.topic}
 				</p>
 
-				{/* Bottom meta stats */}
 				<div className="mt-auto flex items-center justify-between pt-2.5 text-[11px] text-muted-foreground">
 					<span className="flex items-center gap-1">
 						<Clock3 className="size-3 text-muted-foreground/70" />
@@ -101,5 +95,21 @@ export function StoryCard({ story }: { story: StoryCardItem }) {
 				</div>
 			</div>
 		</Link>
+	);
+}
+
+export function StoryCardSkeleton() {
+	return (
+		<div className="flex flex-col overflow-hidden rounded-2xl border-2 border-border bg-card p-2 text-left">
+			<div className="relative aspect-[3/4] w-full animate-pulse rounded-xl bg-muted" />
+			<div className="flex flex-1 flex-col pt-2.5 pb-1">
+				<div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
+				<div className="mt-1.5 h-3 w-1/2 animate-pulse rounded bg-muted/80" />
+				<div className="mt-2 h-3 w-1/3 animate-pulse rounded bg-muted/60" />
+				<div className="mt-auto flex items-center justify-between pt-2.5">
+					<div className="h-3 w-10 animate-pulse rounded bg-muted" />
+				</div>
+			</div>
+		</div>
 	);
 }

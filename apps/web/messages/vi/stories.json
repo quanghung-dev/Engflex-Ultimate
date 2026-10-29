@@ -4,7 +4,8 @@
     "title": "Truyện tiếng Anh",
     "tabs": {
       "all": "Tất cả truyện",
-      "saved": "Đã lưu"
+      "saved": "Đã lưu",
+      "comingSoon": "Sắp ra mắt"
     },
     "filter": {
       "allLevels": "Mọi trình độ",
@@ -17,6 +18,8 @@
       "minutes": "{count} phút"
     },
     "empty": "Không tìm thấy truyện phù hợp",
+    "showingRange": "Hiển thị {from}-{to} trên tổng số {total} truyện",
+    "showingAll": "Hiển thị tất cả {total} truyện",
     "reader": {
       "listenAndRead": "NGHE & ĐỌC",
       "readOnly": "CHỈ ĐỌC",

@@ -4,7 +4,8 @@
     "title": "Stories",
     "tabs": {
       "all": "All stories",
-      "saved": "Saved"
+      "saved": "Saved",
+      "comingSoon": "Coming soon"
     },
     "filter": {
       "allLevels": "All levels",
@@ -17,6 +18,8 @@
       "minutes": "{count} min"
     },
     "empty": "No stories found",
+    "showingRange": "Showing {from}-{to} of {total} stories",
+    "showingAll": "Showing {total} stories",
     "reader": {
       "listenAndRead": "LISTEN & READ",
       "readOnly": "READ ONLY",
