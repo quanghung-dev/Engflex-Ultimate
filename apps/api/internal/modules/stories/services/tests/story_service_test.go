@@ -140,3 +140,43 @@ func TestStoryService_GetBySlug(t *testing.T) {
 		})
 	}
 }
+
+func TestStoryService_ListTopics(t *testing.T) {
+	tests := []struct {
+		name       string
+		mockReturn []string
+		mockErr    error
+		wantErr    bool
+		wantStatus int
+	}{
+		{
+			name:       "success",
+			mockReturn: []string{"andersen", "grimm"},
+			wantErr:    false,
+		},
+		{
+			name:       "db error returns 500",
+			mockReturn: nil,
+			mockErr:    gorm.ErrInvalidDB,
+			wantErr:    true,
+			wantStatus: http.StatusInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			repo := mocks.NewMockStoryRepository(t)
+			repo.On("ListTopics", mock.Anything).Return(tt.mockReturn, tt.mockErr)
+			svc := services.NewStoryService(repo)
+
+			got, err := svc.ListTopics(context.Background())
+			if tt.wantErr {
+				requireAppError(t, err, tt.wantStatus)
+				assert.Nil(t, got)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, tt.mockReturn, got)
+		})
+	}
+}

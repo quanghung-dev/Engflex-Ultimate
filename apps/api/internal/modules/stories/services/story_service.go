@@ -15,6 +15,7 @@ type StoryService interface {
 	ListStories(ctx context.Context, req requests.ListStories, limit, offset int) ([]*models.Story, int64, error)
 	GetByID(ctx context.Context, id string) (*models.Story, error)
 	GetBySlug(ctx context.Context, slug string) (*models.Story, error)
+	ListTopics(ctx context.Context) ([]string, error)
 }
 
 type storyService struct {
@@ -69,4 +70,15 @@ func (s *storyService) GetBySlug(ctx context.Context, slug string) (*models.Stor
 	}
 	slog.InfoContext(ctx, "story retrieved by slug", "slug", slug)
 	return m, nil
+}
+
+func (s *storyService) ListTopics(ctx context.Context) ([]string, error) {
+	topics, err := s.repo.ListTopics(ctx)
+	if err != nil {
+		appErr := common.FromDBError(err, "story")
+		logger.Report(ctx, "list story topics failed", appErr)
+		return nil, appErr
+	}
+	slog.InfoContext(ctx, "story topics listed", "count", len(topics))
+	return topics, nil
 }

@@ -15,6 +15,7 @@ CREATE TABLE stories (
 );
 CREATE INDEX idx_stories_cefr ON stories (cefr_level);
 CREATE INDEX idx_stories_slug ON stories (slug);
+CREATE INDEX idx_stories_topic ON stories (topic);
 
 -- +goose Down
 DROP TABLE IF EXISTS stories;

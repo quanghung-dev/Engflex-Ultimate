@@ -20,6 +20,8 @@ import { Route as AppHomeRouteImport } from './routes/_app/home'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
 import { Route as AppLessonsIndexRouteImport } from './routes/_app/lessons/index'
+import { Route as AppStoriesIndexRouteImport } from './routes/_app/stories/index'
+import { Route as AppStoriesSlugRouteImport } from './routes/_app/stories/$slug'
 import { Route as AppVideosIndexRouteImport } from './routes/_app/videos/index'
 import { Route as AppVoiceIndexRouteImport } from './routes/_app/voice/index'
 import { Route as AppVoicePreviewRouteImport } from './routes/_app/voice/preview'
@@ -94,6 +96,16 @@ const SignUpSplatRoute = SignUpSplatRouteImport.update({
 const AppLessonsIndexRoute = AppLessonsIndexRouteImport.update({
   id: '/lessons/',
   path: '/lessons/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppStoriesIndexRoute = AppStoriesIndexRouteImport.update({
+  id: '/stories/',
+  path: '/stories/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppStoriesSlugRoute = AppStoriesSlugRouteImport.update({
+  id: '/stories/$slug',
+  path: '/stories/$slug',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppVideosIndexRoute = AppVideosIndexRouteImport.update({
@@ -223,9 +235,11 @@ export interface FileRoutesByFullPath {
   '/home': typeof AppHomeRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/stories/$slug': typeof AppStoriesSlugRoute
   '/voice/preview': typeof AppVoicePreviewRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/lessons/': typeof AppLessonsIndexRoute
+  '/stories/': typeof AppStoriesIndexRoute
   '/videos/': typeof AppVideosIndexRoute
   '/voice/': typeof AppVoiceIndexRoute
   '/lessons/$slug/practice': typeof AppLessonsSlugPracticeRoute
@@ -256,9 +270,11 @@ export interface FileRoutesByTo {
   '/home': typeof AppHomeRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/stories/$slug': typeof AppStoriesSlugRoute
   '/voice/preview': typeof AppVoicePreviewRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/lessons': typeof AppLessonsIndexRoute
+  '/stories': typeof AppStoriesIndexRoute
   '/videos': typeof AppVideosIndexRoute
   '/voice': typeof AppVoiceIndexRoute
   '/lessons/$slug/practice': typeof AppLessonsSlugPracticeRoute
@@ -291,9 +307,11 @@ export interface FileRoutesById {
   '/_app/home': typeof AppHomeRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/_app/stories/$slug': typeof AppStoriesSlugRoute
   '/_app/voice/preview': typeof AppVoicePreviewRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/_app/lessons/': typeof AppLessonsIndexRoute
+  '/_app/stories/': typeof AppStoriesIndexRoute
   '/_app/videos/': typeof AppVideosIndexRoute
   '/_app/voice/': typeof AppVoiceIndexRoute
   '/_app/lessons/$slug/practice': typeof AppLessonsSlugPracticeRoute
@@ -326,9 +344,11 @@ export interface FileRouteTypes {
     | '/home'
     | '/sign-in/$'
     | '/sign-up/$'
+    | '/stories/$slug'
     | '/voice/preview'
     | '/api/media/$'
     | '/lessons/'
+    | '/stories/'
     | '/videos/'
     | '/voice/'
     | '/lessons/$slug/practice'
@@ -359,9 +379,11 @@ export interface FileRouteTypes {
     | '/home'
     | '/sign-in/$'
     | '/sign-up/$'
+    | '/stories/$slug'
     | '/voice/preview'
     | '/api/media/$'
     | '/lessons'
+    | '/stories'
     | '/videos'
     | '/voice'
     | '/lessons/$slug/practice'
@@ -393,9 +415,11 @@ export interface FileRouteTypes {
     | '/_app/home'
     | '/sign-in/$'
     | '/sign-up/$'
+    | '/_app/stories/$slug'
     | '/_app/voice/preview'
     | '/api/media/$'
     | '/_app/lessons/'
+    | '/_app/stories/'
     | '/_app/videos/'
     | '/_app/voice/'
     | '/_app/lessons/$slug/practice'
@@ -509,6 +533,20 @@ declare module '@tanstack/react-router' {
       path: '/lessons'
       fullPath: '/lessons/'
       preLoaderRoute: typeof AppLessonsIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/stories/': {
+      id: '/_app/stories/'
+      path: '/stories'
+      fullPath: '/stories/'
+      preLoaderRoute: typeof AppStoriesIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/stories/$slug': {
+      id: '/_app/stories/$slug'
+      path: '/stories/$slug'
+      fullPath: '/stories/$slug'
+      preLoaderRoute: typeof AppStoriesSlugRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/_app/videos/': {
@@ -663,8 +701,10 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteRouteChildren {
   AppHomeRoute: typeof AppHomeRoute
+  AppStoriesSlugRoute: typeof AppStoriesSlugRoute
   AppVoicePreviewRoute: typeof AppVoicePreviewRoute
   AppLessonsIndexRoute: typeof AppLessonsIndexRoute
+  AppStoriesIndexRoute: typeof AppStoriesIndexRoute
   AppVideosIndexRoute: typeof AppVideosIndexRoute
   AppVoiceIndexRoute: typeof AppVoiceIndexRoute
   AppLessonsSlugPracticeRoute: typeof AppLessonsSlugPracticeRoute
@@ -686,8 +726,10 @@ interface AppRouteRouteChildren {
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppHomeRoute: AppHomeRoute,
+  AppStoriesSlugRoute: AppStoriesSlugRoute,
   AppVoicePreviewRoute: AppVoicePreviewRoute,
   AppLessonsIndexRoute: AppLessonsIndexRoute,
+  AppStoriesIndexRoute: AppStoriesIndexRoute,
   AppVideosIndexRoute: AppVideosIndexRoute,
   AppVoiceIndexRoute: AppVoiceIndexRoute,
   AppLessonsSlugPracticeRoute: AppLessonsSlugPracticeRoute,

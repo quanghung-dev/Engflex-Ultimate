@@ -22,6 +22,7 @@ type StoryRepository interface {
 	GetByID(ctx context.Context, id string) (*models.Story, error)
 	GetBySlug(ctx context.Context, slug string) (*models.Story, error)
 	Create(ctx context.Context, s *models.Story) error
+	ListTopics(ctx context.Context) ([]string, error)
 	WithTx(tx *gorm.DB) StoryRepository
 }
 
@@ -104,4 +105,12 @@ func (r *storyRepository) GetBySlug(ctx context.Context, slug string) (*models.S
 
 func (r *storyRepository) Create(ctx context.Context, s *models.Story) error {
 	return r.db.WithContext(ctx).Create(s).Error
+}
+
+func (r *storyRepository) ListTopics(ctx context.Context) ([]string, error) {
+	var topics []string
+	if err := r.db.WithContext(ctx).Model(&models.Story{}).Where("topic != ''").Distinct().Order("topic ASC").Pluck("topic", &topics).Error; err != nil {
+		return nil, err
+	}
+	return topics, nil
 }

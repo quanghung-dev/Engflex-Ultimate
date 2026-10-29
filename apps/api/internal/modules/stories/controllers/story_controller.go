@@ -86,3 +86,19 @@ func (h *StoryController) GetBySlug(c *gin.Context) {
 	_ = utils.Map(&dto, m)
 	common.OK(c, "story", dto)
 }
+
+// ListTopics godoc
+// @Summary      List story topics
+// @Tags         stories
+// @Security     BearerAuth
+// @Produce      json
+// @Success      200 {object} common.ApiResponse{data=[]string}
+// @Router       /stories/topics [get]
+func (h *StoryController) ListTopics(c *gin.Context) {
+	topics, err := h.service.ListTopics(c.Request.Context())
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	common.OK(c, "story topics retrieved", topics)
+}
