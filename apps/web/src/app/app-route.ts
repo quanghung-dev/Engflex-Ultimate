@@ -44,6 +44,10 @@ export const APP_ROUTES = {
 		SHADOWING: "/videos/$videoId/shadowing",
 		CATEGORY: "/videos/categories/$categorySlug",
 	},
+	STORIES: {
+		LIST: "/stories",
+		DETAIL: "/stories/$slug",
+	},
 	/**
 	 * Clerk's catch-all pages. The file routes are `/sign-in/$` splats, so a
 	 * typed `to` needs the splat id — but `redirect({ href })` bypasses route

@@ -40,7 +40,10 @@ export function SourceRef({
 	if (type === "lesson") {
 		return <LessonRef id={id} showLabel={showLabel} className={className} />;
 	}
-	return <VideoRef id={id} showLabel={showLabel} className={className} />;
+	if (type === "video") {
+		return <VideoRef id={id} showLabel={showLabel} className={className} />;
+	}
+	return null;
 }
 
 function LessonRef({ id, showLabel, className }: RefProps) {

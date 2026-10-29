@@ -37,6 +37,7 @@ const SOURCE_TABS = [
 		conversation: () => m["vocabulary.filter.source.conversation"](),
 		video: () => m["vocabulary.filter.source.video"](),
 		manual: () => m["vocabulary.filter.source.manual"](),
+		story: () => m["vocabulary.filter.source.story"](),
 	}),
 ];
 

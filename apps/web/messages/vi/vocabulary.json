@@ -106,7 +106,8 @@
         "lesson": "Từ bài học",
         "conversation": "Từ hội thoại AI",
         "video": "Từ video",
-        "manual": "Tùy chỉnh"
+        "manual": "Tùy chỉnh",
+        "story": "Từ truyện"
       },
       "cefrLabel": "CEFR:",
       "cefrAll": "Tất cả",
@@ -121,7 +122,8 @@
       "lesson": "Từ bài học",
       "conversation": "Từ hội thoại AI",
       "video": "Từ video",
-      "manual": "Tùy chỉnh"
+      "manual": "Tùy chỉnh",
+      "story": "Từ truyện"
     },
     "pos": {
       "noun": "Danh từ",

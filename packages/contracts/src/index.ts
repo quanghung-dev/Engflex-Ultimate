@@ -35,6 +35,7 @@ declare global {
   type VocabularySort = Enums.VocabularySort;
   type VocabularySource = Enums.VocabularySource;
   type VocabularyPartOfSpeech = Enums.VocabularyPartOfSpeech;
+  type ContentType = Enums.ContentType;
 }
 
 export * from './common.ts';
@@ -55,6 +56,10 @@ export * from './attempts-requests.ts';
 export * from './attempts-responses.ts';
 export * from './videos-requests.ts';
 export * from './videos-responses.ts';
+export * from './bookmarks-requests.ts';
+export * from './bookmarks-responses.ts';
+export * from './stories-requests.ts';
+export * from './stories-responses.ts';
 // Both conversations and lessons responses declare structurally identical
 // MispronouncedWord/PhoneDetail/Prosody/ReferencePhone copies; an explicit
 // re-export resolves the star-export ambiguity (TS2308). Structural typing

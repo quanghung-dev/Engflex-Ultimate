@@ -3,7 +3,7 @@ CREATE TABLE user_vocabulary (
     user_id          text NOT NULL,
     item_id          uuid NOT NULL REFERENCES vocabulary_items (id) ON DELETE CASCADE,
     source_type      text NOT NULL CONSTRAINT chk_user_vocabulary_source_type
-        CHECK (source_type IN ('lesson', 'conversation', 'video', 'manual')),
+        CHECK (source_type IN ('lesson', 'conversation', 'video', 'manual', 'story')),
     source_id        uuid,
     note             text,
     mastered         boolean NOT NULL DEFAULT false,

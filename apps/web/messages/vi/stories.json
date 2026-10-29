@@ -1,0 +1,33 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "stories": {
+    "title": "Truyện tiếng Anh",
+    "tabs": {
+      "all": "Tất cả truyện",
+      "saved": "Đã lưu",
+      "comingSoon": "Sắp ra mắt"
+    },
+    "filter": {
+      "allLevels": "Mọi trình độ",
+      "allCollections": "Tất cả bộ truyện",
+      "searchCollectionPlaceholder": "Tìm bộ truyện...",
+      "searchPlaceholder": "Tìm truyện..."
+    },
+    "card": {
+      "hasAudio": "Có audio",
+      "minutes": "{count} phút"
+    },
+    "empty": "Không tìm thấy truyện phù hợp",
+    "showingRange": "Hiển thị {from}-{to} trên tổng số {total} truyện",
+    "showingAll": "Hiển thị tất cả {total} truyện",
+    "reader": {
+      "listenAndRead": "NGHE & ĐỌC",
+      "readOnly": "CHỈ ĐỌC",
+      "hideTranslation": "ẨN BẢN DỊCH",
+      "showTranslation": "HIỆN BẢN DỊCH",
+      "save": "LƯU",
+      "saved": "ĐÃ LƯU",
+      "disclaimer": "Nội dung bài học được biên soạn bởi team Parroto và thuộc sở hữu trí tuệ của Parroto. Vui lòng không sao chép hoặc tái phân phối dưới mọi hình thức."
+    }
+  }
+}

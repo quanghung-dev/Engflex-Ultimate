@@ -9,4 +9,5 @@ const (
 	VocabularySourceConversation VocabularySource = "conversation"
 	VocabularySourceVideo        VocabularySource = "video"
 	VocabularySourceManual       VocabularySource = "manual"
+	VocabularySourceStory        VocabularySource = "story"
 )

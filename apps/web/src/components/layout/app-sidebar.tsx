@@ -3,6 +3,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { cn } from "cn";
 import {
 	AudioWaveform,
+	BookMarked,
 	BookmarkCheck,
 	BookOpen,
 	ChevronRight,
@@ -66,6 +67,12 @@ const NAV_GROUPS = [
 				to: APP_ROUTES.LESSONS.LIST,
 				icon: BookOpen,
 				tile: "bg-nav-lessons",
+			},
+			{
+				title: () => m["nav.item.stories"](),
+				to: APP_ROUTES.STORIES.LIST,
+				icon: BookMarked,
+				tile: "bg-[#0284c7]",
 			},
 			{
 				title: () => m["nav.item.voice"](),

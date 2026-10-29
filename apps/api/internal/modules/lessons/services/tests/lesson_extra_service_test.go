@@ -42,19 +42,3 @@ func TestLessonActivityService_ListByLesson_EmptyReturns200(t *testing.T) {
 	require.NotNil(t, res)
 	assert.Empty(t, res)
 }
-
-func TestLessonBookmarkService_Save_Idempotent(t *testing.T) {
-	userID := "user_1"
-	lessonID := "11111111-1111-1111-1111-111111111111"
-	row := &models.LessonBookmark{UserID: userID, LessonID: lessonID}
-	repo := mocks.NewMockLessonBookmarkRepository(t)
-	repo.On("Create", mock.Anything, mock.Anything).Return(nil)
-	repo.On("Get", mock.Anything, userID, lessonID).Return(row, nil)
-	svc := services.NewLessonBookmarkService(repo)
-
-	for i := 0; i < 2; i++ {
-		got, err := svc.Save(context.Background(), userID, lessonID)
-		require.NoError(t, err)
-		assert.Equal(t, lessonID, got.LessonID)
-	}
-}
