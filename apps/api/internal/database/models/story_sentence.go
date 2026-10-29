@@ -8,6 +8,7 @@ type StorySentence struct {
 	Sequence       int       `gorm:"not null" json:"sequence"`
 	EnglishText    string    `gorm:"not null" json:"englishText"`
 	VietnameseText string    `gorm:"not null;default:''" json:"vietnameseText"`
+	ImageURL       *string   `gorm:"type:text" json:"imageUrl,omitempty"`
 	StartTimestamp float64   `gorm:"not null;default:0" json:"startTimestamp"`
 	EndTimestamp   float64   `gorm:"not null;default:0" json:"endTimestamp"`
 	CreatedAt      time.Time `gorm:"autoCreateTime" json:"createdAt"`

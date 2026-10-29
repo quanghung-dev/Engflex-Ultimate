@@ -9,6 +9,7 @@ export interface StorySentence {
   sequence: number /* int */;
   englishText: string;
   vietnameseText: string;
+  imageUrl?: string;
   startTimestamp: number /* float64 */;
   endTimestamp: number /* float64 */;
 }

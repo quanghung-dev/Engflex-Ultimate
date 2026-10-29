@@ -12,6 +12,7 @@ type StorySentence struct {
 	Sequence       int     `json:"sequence"`
 	EnglishText    string  `json:"englishText"`
 	VietnameseText string  `json:"vietnameseText"`
+	ImageURL       *string `json:"imageUrl,omitempty"`
 	StartTimestamp float64 `json:"startTimestamp"`
 	EndTimestamp   float64 `json:"endTimestamp"`
 }

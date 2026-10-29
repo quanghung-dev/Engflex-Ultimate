@@ -78,6 +78,12 @@ export const API_ROUTES = {
 		BY_SLUG: (slug: string) => `/stories/by-slug/${slug}`,
 		TOPICS: "/stories/topics",
 	},
+	BOOKMARKS: {
+    LIST: "/bookmarks",
+    CREATE: "/bookmarks",
+    DELETE: (contentType: string, contentId: ApiId) =>
+        `/bookmarks/${contentType}/${contentId}`,
+	},
 } as const;
 
 /**

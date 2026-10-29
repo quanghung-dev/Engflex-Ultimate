@@ -5,6 +5,7 @@ CREATE TABLE story_sentences (
     sequence        int NOT NULL,
     english_text    text NOT NULL,
     vietnamese_text text NOT NULL DEFAULT '',
+    image_url       text,
     start_timestamp double precision NOT NULL DEFAULT 0,
     end_timestamp   double precision NOT NULL DEFAULT 0,
     created_at      timestamptz NOT NULL DEFAULT now(),
