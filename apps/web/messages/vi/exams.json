@@ -1,0 +1,80 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "exams": {
+    "toeic": {
+      "hub": {
+        "title": "Luyện thi TOEIC",
+        "description": "Luyện thi TOEIC online miễn phí với các đề thi thử đầy đủ theo chuẩn TOEIC. Mỗi đề gồm đủ 7 phần Nghe và Đọc, tự động chấm điểm, kèm giải thích đáp án chi tiết và theo dõi tiến độ để giúp bạn nâng điểm nhanh hơn.",
+        "historyButton": "Lịch sử làm bài",
+        "analyticsButton": "Phân tích kết quả",
+        "startPractice": "Vào luyện",
+        "testsCount": "{count} đề",
+        "attemptsCount": "{count} lượt làm",
+        "analytics": {
+          "title": "Phân tích kết quả",
+          "viewAll": "Xem tất cả",
+          "completedTests": "SỐ BÀI ĐÃ LÀM",
+          "highestScore": "ĐIỂM CAO NHẤT",
+          "averageScore": "ĐIỂM TRUNG BÌNH",
+          "latestScore": "LẦN GẦN NHẤT"
+        },
+        "history": {
+          "title": "Lịch sử làm bài",
+          "viewAll": "Xem tất cả",
+          "modeExam": "Luyện thi",
+          "modePractice": "Luyện tập",
+          "cancel": "HUỶ",
+          "continue": "TIẾP TỤC LÀM BÀI",
+          "viewResult": "XEM KẾT QUẢ"
+        }
+      },
+      "category": {
+        "back": "Bộ đề thi",
+        "testsListTitle": "DANH SÁCH ĐỀ",
+        "freeBadge": "MIỄN PHÍ",
+        "questionsCount": "{count} câu hỏi",
+        "durationMinutes": "{count} phút",
+        "viewDetail": "XEM CHI TIẾT"
+      },
+      "test": {
+        "back": "Bộ đề thi",
+        "breakdown": {
+          "section": "SECTION",
+          "part": "PART",
+          "type": "TYPE",
+          "questions": "QUESTIONS",
+          "listening": "LISTENING",
+          "reading": "READING"
+        },
+        "config": {
+          "modeTitle": "CHẾ ĐỘ LÀM BÀI",
+          "examModeTitle": "Luyện thi",
+          "examModeDesc": "Giống thi thật — không xem đáp án khi đang làm",
+          "practiceModeTitle": "Luyện tập",
+          "practiceModeDesc": "Xem đáp án từng câu, làm lại thoải mái",
+          "partsSelectionTitle": "Chọn phần muốn làm",
+          "selectAll": "Chọn tất cả",
+          "deselectAll": "Bỏ chọn",
+          "summary": "Toàn bộ {parts} parts — {questions} câu — {duration} phút",
+          "autoSubmitNote": "Bài thi sẽ tự động nộp khi hết giờ\nBạn có thể tạm dừng và tiếp tục sau",
+          "startButton": "BẮT ĐẦU LÀM BÀI"
+        }
+      },
+      "take": {
+        "submitButton": "NỘP BÀI",
+        "exitButton": "THOÁT",
+        "progress": "Tiến độ",
+        "bookmark": "Đánh dấu",
+        "bookmarked": "Đã đánh dấu",
+        "confirmSubmitTitle": "Xác nhận nộp bài",
+        "confirmSubmitDesc": "Bạn đã hoàn thành {answered}/{total} câu hỏi. Bạn có chắc chắn muốn nộp bài thi?",
+        "confirmSubmitCancel": "Tiếp tục làm bài",
+        "confirmSubmitAction": "Nộp bài ngay",
+        "confirmExitTitle": "Rời khỏi phòng thi?",
+        "confirmExitDesc": "Bài thi đang diễn ra. Bạn có chắc chắn muốn thoát khỏi phòng thi?",
+        "confirmExitCancel": "Ở lại làm tiếp",
+        "confirmExitAction": "Xác nhận thoát"
+      }
+    }
+  }
+}

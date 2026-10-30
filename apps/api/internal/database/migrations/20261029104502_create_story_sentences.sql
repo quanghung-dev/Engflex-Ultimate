@@ -1,4 +1,4 @@
--- +goose Up
+    -- +goose Up
 CREATE TABLE story_sentences (
     id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     story_id        uuid NOT NULL REFERENCES stories (id) ON DELETE CASCADE,

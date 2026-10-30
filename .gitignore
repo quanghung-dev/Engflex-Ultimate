@@ -39,6 +39,9 @@ client_secret*.json
 *.sqlite
 *.sqlite3
 
+# --- TOEIC source documents and audio (local only) ---
+/Topic Test/
+
 # --- Frontend (Vite/React) ---
 node_modules/
 dist/

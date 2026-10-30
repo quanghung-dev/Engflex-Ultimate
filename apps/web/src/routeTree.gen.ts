@@ -26,6 +26,7 @@ import { Route as AppVideosIndexRouteImport } from './routes/_app/videos/index'
 import { Route as AppVoiceIndexRouteImport } from './routes/_app/voice/index'
 import { Route as AppVoicePreviewRouteImport } from './routes/_app/voice/preview'
 import { Route as ApiMediaSplatRouteImport } from './routes/api/media/$'
+import { Route as AppExamsToeicIndexRouteImport } from './routes/_app/exams/toeic/index'
 import { Route as AppLessonsSlugIndexRouteImport } from './routes/_app/lessons/$slug/index'
 import { Route as AppLessonsSlugPracticeRouteImport } from './routes/_app/lessons/$slug/practice'
 import { Route as AppVideosVideoIdDictationRouteImport } from './routes/_app/videos/$videoId/dictation'
@@ -41,7 +42,10 @@ import { Route as AppVoiceScenariosIndexRouteImport } from './routes/_app/voice/
 import { Route as AppVoiceScenariosScenarioIdRouteImport } from './routes/_app/voice/scenarios/$scenarioId'
 import { Route as ApiVoiceConversationIdOfferRouteImport } from './routes/api/voice/$conversationId/offer'
 import { Route as ApiVoiceConversationIdStartRouteImport } from './routes/api/voice/$conversationId/start'
+import { Route as AppExamsToeicCategoryIdIndexRouteImport } from './routes/_app/exams/toeic/$categoryId/index'
 import { Route as AppVocabularyDecksDeckIdIndexRouteImport } from './routes/_app/vocabulary/decks/$deckId/index'
+import { Route as AppExamsToeicCategoryIdTestIdIndexRouteImport } from './routes/_app/exams/toeic/$categoryId/$testId/index'
+import { Route as AppExamsToeicCategoryIdTestIdTakeRouteImport } from './routes/_app/exams/toeic/$categoryId/$testId/take'
 import { Route as AppVocabularyDecksDeckIdWordsItemIdRouteImport } from './routes/_app/vocabulary/decks/$deckId/words/$itemId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -128,6 +132,11 @@ const ApiMediaSplatRoute = ApiMediaSplatRouteImport.update({
   path: '/api/media/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppExamsToeicIndexRoute = AppExamsToeicIndexRouteImport.update({
+  id: '/exams/toeic/',
+  path: '/exams/toeic/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppLessonsSlugIndexRoute = AppLessonsSlugIndexRouteImport.update({
   id: '/lessons/$slug/',
   path: '/lessons/$slug/',
@@ -212,10 +221,28 @@ const ApiVoiceConversationIdStartRoute =
     path: '/api/voice/$conversationId/start',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AppExamsToeicCategoryIdIndexRoute =
+  AppExamsToeicCategoryIdIndexRouteImport.update({
+    id: '/exams/toeic/$categoryId/',
+    path: '/exams/toeic/$categoryId/',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
 const AppVocabularyDecksDeckIdIndexRoute =
   AppVocabularyDecksDeckIdIndexRouteImport.update({
     id: '/vocabulary/decks/$deckId/',
     path: '/vocabulary/decks/$deckId/',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
+const AppExamsToeicCategoryIdTestIdIndexRoute =
+  AppExamsToeicCategoryIdTestIdIndexRouteImport.update({
+    id: '/exams/toeic/$categoryId/$testId/',
+    path: '/exams/toeic/$categoryId/$testId/',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
+const AppExamsToeicCategoryIdTestIdTakeRoute =
+  AppExamsToeicCategoryIdTestIdTakeRouteImport.update({
+    id: '/exams/toeic/$categoryId/$testId/take',
+    path: '/exams/toeic/$categoryId/$testId/take',
     getParentRoute: () => AppRouteRoute,
   } as any)
 const AppVocabularyDecksDeckIdWordsItemIdRoute =
@@ -252,13 +279,17 @@ export interface FileRoutesByFullPath {
   '/voice/scenarios/$scenarioId': typeof AppVoiceScenariosScenarioIdRoute
   '/api/voice/$conversationId/offer': typeof ApiVoiceConversationIdOfferRoute
   '/api/voice/$conversationId/start': typeof ApiVoiceConversationIdStartRoute
+  '/exams/toeic/': typeof AppExamsToeicIndexRoute
   '/lessons/$slug/': typeof AppLessonsSlugIndexRoute
   '/vocabulary/decks/': typeof AppVocabularyDecksIndexRoute
   '/vocabulary/words/': typeof AppVocabularyWordsIndexRoute
   '/voice/history/': typeof AppVoiceHistoryIndexRoute
   '/voice/scenarios/': typeof AppVoiceScenariosIndexRoute
+  '/exams/toeic/$categoryId/': typeof AppExamsToeicCategoryIdIndexRoute
   '/vocabulary/decks/$deckId/': typeof AppVocabularyDecksDeckIdIndexRoute
+  '/exams/toeic/$categoryId/$testId/take': typeof AppExamsToeicCategoryIdTestIdTakeRoute
   '/vocabulary/decks/$deckId/words/$itemId': typeof AppVocabularyDecksDeckIdWordsItemIdRoute
+  '/exams/toeic/$categoryId/$testId/': typeof AppExamsToeicCategoryIdTestIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -287,13 +318,17 @@ export interface FileRoutesByTo {
   '/voice/scenarios/$scenarioId': typeof AppVoiceScenariosScenarioIdRoute
   '/api/voice/$conversationId/offer': typeof ApiVoiceConversationIdOfferRoute
   '/api/voice/$conversationId/start': typeof ApiVoiceConversationIdStartRoute
+  '/exams/toeic': typeof AppExamsToeicIndexRoute
   '/lessons/$slug': typeof AppLessonsSlugIndexRoute
   '/vocabulary/decks': typeof AppVocabularyDecksIndexRoute
   '/vocabulary/words': typeof AppVocabularyWordsIndexRoute
   '/voice/history': typeof AppVoiceHistoryIndexRoute
   '/voice/scenarios': typeof AppVoiceScenariosIndexRoute
+  '/exams/toeic/$categoryId': typeof AppExamsToeicCategoryIdIndexRoute
   '/vocabulary/decks/$deckId': typeof AppVocabularyDecksDeckIdIndexRoute
+  '/exams/toeic/$categoryId/$testId/take': typeof AppExamsToeicCategoryIdTestIdTakeRoute
   '/vocabulary/decks/$deckId/words/$itemId': typeof AppVocabularyDecksDeckIdWordsItemIdRoute
+  '/exams/toeic/$categoryId/$testId': typeof AppExamsToeicCategoryIdTestIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -324,13 +359,17 @@ export interface FileRoutesById {
   '/_app/voice/scenarios/$scenarioId': typeof AppVoiceScenariosScenarioIdRoute
   '/api/voice/$conversationId/offer': typeof ApiVoiceConversationIdOfferRoute
   '/api/voice/$conversationId/start': typeof ApiVoiceConversationIdStartRoute
+  '/_app/exams/toeic/': typeof AppExamsToeicIndexRoute
   '/_app/lessons/$slug/': typeof AppLessonsSlugIndexRoute
   '/_app/vocabulary/decks/': typeof AppVocabularyDecksIndexRoute
   '/_app/vocabulary/words/': typeof AppVocabularyWordsIndexRoute
   '/_app/voice/history/': typeof AppVoiceHistoryIndexRoute
   '/_app/voice/scenarios/': typeof AppVoiceScenariosIndexRoute
+  '/_app/exams/toeic/$categoryId/': typeof AppExamsToeicCategoryIdIndexRoute
   '/_app/vocabulary/decks/$deckId/': typeof AppVocabularyDecksDeckIdIndexRoute
+  '/_app/exams/toeic/$categoryId/$testId/take': typeof AppExamsToeicCategoryIdTestIdTakeRoute
   '/_app/vocabulary/decks/$deckId/words/$itemId': typeof AppVocabularyDecksDeckIdWordsItemIdRoute
+  '/_app/exams/toeic/$categoryId/$testId/': typeof AppExamsToeicCategoryIdTestIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -361,13 +400,17 @@ export interface FileRouteTypes {
     | '/voice/scenarios/$scenarioId'
     | '/api/voice/$conversationId/offer'
     | '/api/voice/$conversationId/start'
+    | '/exams/toeic/'
     | '/lessons/$slug/'
     | '/vocabulary/decks/'
     | '/vocabulary/words/'
     | '/voice/history/'
     | '/voice/scenarios/'
+    | '/exams/toeic/$categoryId/'
     | '/vocabulary/decks/$deckId/'
+    | '/exams/toeic/$categoryId/$testId/take'
     | '/vocabulary/decks/$deckId/words/$itemId'
+    | '/exams/toeic/$categoryId/$testId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -396,13 +439,17 @@ export interface FileRouteTypes {
     | '/voice/scenarios/$scenarioId'
     | '/api/voice/$conversationId/offer'
     | '/api/voice/$conversationId/start'
+    | '/exams/toeic'
     | '/lessons/$slug'
     | '/vocabulary/decks'
     | '/vocabulary/words'
     | '/voice/history'
     | '/voice/scenarios'
+    | '/exams/toeic/$categoryId'
     | '/vocabulary/decks/$deckId'
+    | '/exams/toeic/$categoryId/$testId/take'
     | '/vocabulary/decks/$deckId/words/$itemId'
+    | '/exams/toeic/$categoryId/$testId'
   id:
     | '__root__'
     | '/'
@@ -432,13 +479,17 @@ export interface FileRouteTypes {
     | '/_app/voice/scenarios/$scenarioId'
     | '/api/voice/$conversationId/offer'
     | '/api/voice/$conversationId/start'
+    | '/_app/exams/toeic/'
     | '/_app/lessons/$slug/'
     | '/_app/vocabulary/decks/'
     | '/_app/vocabulary/words/'
     | '/_app/voice/history/'
     | '/_app/voice/scenarios/'
+    | '/_app/exams/toeic/$categoryId/'
     | '/_app/vocabulary/decks/$deckId/'
+    | '/_app/exams/toeic/$categoryId/$testId/take'
     | '/_app/vocabulary/decks/$deckId/words/$itemId'
+    | '/_app/exams/toeic/$categoryId/$testId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -577,6 +628,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMediaSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/exams/toeic/': {
+      id: '/_app/exams/toeic/'
+      path: '/exams/toeic'
+      fullPath: '/exams/toeic/'
+      preLoaderRoute: typeof AppExamsToeicIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/_app/lessons/$slug/': {
       id: '/_app/lessons/$slug/'
       path: '/lessons/$slug'
@@ -682,11 +740,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiVoiceConversationIdStartRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/exams/toeic/$categoryId/': {
+      id: '/_app/exams/toeic/$categoryId/'
+      path: '/exams/toeic/$categoryId'
+      fullPath: '/exams/toeic/$categoryId/'
+      preLoaderRoute: typeof AppExamsToeicCategoryIdIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/_app/vocabulary/decks/$deckId/': {
       id: '/_app/vocabulary/decks/$deckId/'
       path: '/vocabulary/decks/$deckId'
       fullPath: '/vocabulary/decks/$deckId/'
       preLoaderRoute: typeof AppVocabularyDecksDeckIdIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/exams/toeic/$categoryId/$testId/': {
+      id: '/_app/exams/toeic/$categoryId/$testId/'
+      path: '/exams/toeic/$categoryId/$testId'
+      fullPath: '/exams/toeic/$categoryId/$testId/'
+      preLoaderRoute: typeof AppExamsToeicCategoryIdTestIdIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/exams/toeic/$categoryId/$testId/take': {
+      id: '/_app/exams/toeic/$categoryId/$testId/take'
+      path: '/exams/toeic/$categoryId/$testId/take'
+      fullPath: '/exams/toeic/$categoryId/$testId/take'
+      preLoaderRoute: typeof AppExamsToeicCategoryIdTestIdTakeRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/_app/vocabulary/decks/$deckId/words/$itemId': {
@@ -715,13 +794,17 @@ interface AppRouteRouteChildren {
   AppVoiceHistoryConversationIdRoute: typeof AppVoiceHistoryConversationIdRoute
   AppVoiceRoomConversationIdRoute: typeof AppVoiceRoomConversationIdRoute
   AppVoiceScenariosScenarioIdRoute: typeof AppVoiceScenariosScenarioIdRoute
+  AppExamsToeicIndexRoute: typeof AppExamsToeicIndexRoute
   AppLessonsSlugIndexRoute: typeof AppLessonsSlugIndexRoute
   AppVocabularyDecksIndexRoute: typeof AppVocabularyDecksIndexRoute
   AppVocabularyWordsIndexRoute: typeof AppVocabularyWordsIndexRoute
   AppVoiceHistoryIndexRoute: typeof AppVoiceHistoryIndexRoute
   AppVoiceScenariosIndexRoute: typeof AppVoiceScenariosIndexRoute
+  AppExamsToeicCategoryIdIndexRoute: typeof AppExamsToeicCategoryIdIndexRoute
   AppVocabularyDecksDeckIdIndexRoute: typeof AppVocabularyDecksDeckIdIndexRoute
+  AppExamsToeicCategoryIdTestIdTakeRoute: typeof AppExamsToeicCategoryIdTestIdTakeRoute
   AppVocabularyDecksDeckIdWordsItemIdRoute: typeof AppVocabularyDecksDeckIdWordsItemIdRoute
+  AppExamsToeicCategoryIdTestIdIndexRoute: typeof AppExamsToeicCategoryIdTestIdIndexRoute
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
@@ -740,14 +823,20 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppVoiceHistoryConversationIdRoute: AppVoiceHistoryConversationIdRoute,
   AppVoiceRoomConversationIdRoute: AppVoiceRoomConversationIdRoute,
   AppVoiceScenariosScenarioIdRoute: AppVoiceScenariosScenarioIdRoute,
+  AppExamsToeicIndexRoute: AppExamsToeicIndexRoute,
   AppLessonsSlugIndexRoute: AppLessonsSlugIndexRoute,
   AppVocabularyDecksIndexRoute: AppVocabularyDecksIndexRoute,
   AppVocabularyWordsIndexRoute: AppVocabularyWordsIndexRoute,
   AppVoiceHistoryIndexRoute: AppVoiceHistoryIndexRoute,
   AppVoiceScenariosIndexRoute: AppVoiceScenariosIndexRoute,
+  AppExamsToeicCategoryIdIndexRoute: AppExamsToeicCategoryIdIndexRoute,
   AppVocabularyDecksDeckIdIndexRoute: AppVocabularyDecksDeckIdIndexRoute,
+  AppExamsToeicCategoryIdTestIdTakeRoute:
+    AppExamsToeicCategoryIdTestIdTakeRoute,
   AppVocabularyDecksDeckIdWordsItemIdRoute:
     AppVocabularyDecksDeckIdWordsItemIdRoute,
+  AppExamsToeicCategoryIdTestIdIndexRoute:
+    AppExamsToeicCategoryIdTestIdIndexRoute,
 }
 
 const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
