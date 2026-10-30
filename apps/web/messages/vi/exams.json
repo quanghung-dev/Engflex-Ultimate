@@ -42,7 +42,15 @@
         "freeBadge": "MIỄN PHÍ",
         "questionsCount": "{count} câu hỏi",
         "durationMinutes": "{count} phút",
-        "viewDetail": "XEM CHI TIẾT"
+        "viewDetail": "XEM CHI TIẾT",
+        "empty": {
+          "title": "Chưa có đề thi",
+          "body": "Bộ đề này hiện chưa có đề thi nào."
+        },
+        "pagination": {
+          "range": "Hiển thị {from}–{to} trong {total} đề",
+          "all": "{count} đề"
+        }
       },
       "test": {
         "back": "Bộ đề thi",
@@ -59,13 +67,31 @@
           "examModeTitle": "Luyện thi",
           "examModeDesc": "Giống thi thật — không xem đáp án khi đang làm",
           "practiceModeTitle": "Luyện tập",
-          "practiceModeDesc": "Xem đáp án từng câu, làm lại thoải mái",
+          "practiceModeDesc": "Luyện các phần đã chọn, không giới hạn thời gian",
           "partsSelectionTitle": "Chọn phần muốn làm",
           "selectAll": "Chọn tất cả",
           "deselectAll": "Bỏ chọn",
-          "summary": "Toàn bộ {parts} parts — {questions} câu — {duration} phút",
-          "autoSubmitNote": "Bài thi sẽ tự động nộp khi hết giờ\nBạn có thể tạm dừng và tiếp tục sau",
-          "startButton": "BẮT ĐẦU LÀM BÀI"
+          "summary": "{parts} phần — {questions} câu hỏi — {duration} phút",
+          "autoSubmitNote": "Bài thi sẽ tự động nộp khi hết giờ.\nĐồng hồ vẫn chạy khi bạn rời phòng thi.",
+          "startButton": "BẮT ĐẦU LÀM BÀI",
+          "practiceSummary": "{parts} phần — {questions} câu hỏi — Không giới hạn thời gian",
+          "partOption": "P{part} — {type} ({count})"
+        },
+        "parts": {
+          "photos": "Mô tả hình ảnh",
+          "responses": "Hỏi – đáp",
+          "conversations": "Hội thoại",
+          "talks": "Bài nói",
+          "sentences": "Hoàn thành câu",
+          "completion": "Hoàn thành đoạn văn",
+          "comprehension": "Đọc hiểu"
+        },
+        "start": {
+          "failed": "Không thể bắt đầu bài thi. Vui lòng thử lại.",
+          "uncertain": "Chưa xác nhận được yêu cầu. Hãy kiểm tra lịch sử trước khi bắt đầu lại vì lượt làm bài có thể đã được tạo.",
+          "navigation": "Lượt làm bài đã được tạo. Tiếp tục để mở phòng thi.",
+          "continue": "Tiếp tục vào phòng thi",
+          "history": "Kiểm tra lịch sử làm bài"
         }
       },
       "take": {

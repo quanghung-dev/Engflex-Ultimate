@@ -70,6 +70,32 @@ func (h *ExamController) ListTests(c *gin.Context) {
 	common.Paginated(c, "exam tests", dtos, page, pageSize, total)
 }
 
+// GetTest godoc
+// @Summary Get exam test metadata
+// @Description Returns category and part counts only, without questions or answer-bearing content.
+// @Tags exams
+// @Security BearerAuth
+// @Produce json
+// @Param id path string true "test UUID"
+// @Success 200 {object} common.ApiResponse{data=responses.TestDetail}
+// @Failure 400 {object} common.ApiResponse
+// @Failure 401 {object} common.ApiResponse
+// @Failure 404 {object} common.ApiResponse
+// @Router /exam-tests/{id} [get]
+func (h *ExamController) GetTest(c *gin.Context) {
+	test, err := h.catalog.GetTest(c.Request.Context(), c.Param("id"))
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	var dto responses.TestDetail
+	if err := utils.Map(&dto, test); err != nil {
+		common.Fail(c, common.Internal())
+		return
+	}
+	common.OK(c, "exam test", dto)
+}
+
 // Start godoc
 // @Summary Start an exam attempt
 // @Description Each POST creates a new UUID. Exam requires parts 1-7 and has a 120-minute deadline. Practice selects a non-empty subset and has no deadline. Do not retry POST automatically; recover the attempt ID from history.

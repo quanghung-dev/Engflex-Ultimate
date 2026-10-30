@@ -6,6 +6,7 @@ import type {
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
 	getExamAttempt,
+	getExamTest,
 	listExamAttempts,
 	listExamCategories,
 	listExamTests,
@@ -22,7 +23,15 @@ export const examKeys = {
 	attempts: (params?: { page?: number; pageSize?: number }) =>
 		[...examKeys.all, "attempts", params] as const,
 	attempt: (id: string) => [...examKeys.all, "attempt", id] as const,
+	test: (id: string) => [...examKeys.all, "test", id] as const,
 };
+
+export function examTestQueryOptions(id: string) {
+	return {
+		queryKey: examKeys.test(id),
+		queryFn: () => getExamTest(id),
+	};
+}
 
 export function examCategoriesQueryOptions(params?: { type?: ExamType }) {
 	return {
@@ -85,6 +94,7 @@ export function useExamAttempt(id: string | undefined) {
 
 export function useStartExamAttempt() {
 	return useMutation({
+		retry: false,
 		mutationFn: (input: { testId: string; req: StartExamAttempt }) =>
 			startExamAttempt(input.testId, input.req),
 	});

@@ -10,6 +10,7 @@ import (
 )
 
 type ExamTestRepository interface {
+	GetByID(ctx context.Context, id string) (*models.ExamTest, error)
 	ListByCategory(ctx context.Context, categoryID string, limit, offset int) ([]*models.ExamTest, error)
 	CountByCategory(ctx context.Context, categoryID string) (int64, error)
 	GetForUpdate(ctx context.Context, id string) (*models.ExamTest, error)
@@ -41,6 +42,18 @@ func (r *examTestRepository) CountByCategory(ctx context.Context, categoryID str
 	var count int64
 	err = r.db.WithContext(ctx).Model(&models.ExamTest{}).Where("category_id = ?", id).Count(&count).Error
 	return count, err
+}
+
+func (r *examTestRepository) GetByID(ctx context.Context, id string) (*models.ExamTest, error) {
+	parsed, err := parseID(id, "testId")
+	if err != nil {
+		return nil, err
+	}
+	var test models.ExamTest
+	if err := r.db.WithContext(ctx).Joins("Category").First(&test, "exam_tests.id = ?", parsed).Error; err != nil {
+		return nil, err
+	}
+	return &test, nil
 }
 
 // GetForUpdate is called inside the start transaction; lock only the test row.

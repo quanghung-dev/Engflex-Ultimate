@@ -81,6 +81,14 @@ Package responses contains wire-only exam DTOs. Taking types intentionally
 exclude all answer-bearing and translated fields.
 */
 
+export interface TestDetail {
+  id: string;
+  categoryId: string;
+  slug: string;
+  title: string;
+  content: ContentMetadata | null;
+  category: Category | null;
+}
 export interface TestMetadata {
   id: string;
   categoryId: string;

@@ -1,7 +1,9 @@
 package tests
 
 import (
+	"bytes"
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -48,7 +50,9 @@ func TestExamPhase2HTTP(t *testing.T) {
 	require.NoError(t, tx.Create(lesson).Error)
 
 	categories := repositories.NewExamCategoryRepository(tx)
-	tests := repositories.NewExamTestRepository(tx)
+	var queryLog bytes.Buffer
+	queryLogger := logger.New(log.New(&queryLog, "", 0), logger.Config{LogLevel: logger.Info})
+	tests := repositories.NewExamTestRepository(tx.Session(&gorm.Session{Logger: queryLogger}))
 	attempts := repositories.NewAttemptRepository(tx)
 	ctl := controllers.NewExamController(services.NewCatalogService(categories, tests), services.NewAttemptService(attempts, tests, repositories.NewTransactionManager(tx)))
 	gin.SetMode(gin.TestMode)
@@ -56,6 +60,7 @@ func TestExamPhase2HTTP(t *testing.T) {
 	r.Use(func(c *gin.Context) { c.Set("userID", c.GetHeader("X-Test-User")); c.Next() })
 	r.GET("/exam-categories", ctl.ListCategories)
 	r.GET("/exam-categories/:categoryId/tests", ctl.ListTests)
+	r.GET("/exam-tests/:id", ctl.GetTest)
 	r.POST("/exam-tests/:id/attempts", ctl.Start)
 	r.GET("/exam-attempts", ctl.ListAttempts)
 	r.GET("/exam-attempts/:id", ctl.GetAttempt)
@@ -69,6 +74,24 @@ func TestExamPhase2HTTP(t *testing.T) {
 	}{
 		{"categories", "GET", "/exam-categories?type=toeic", "", "user-a", http.StatusOK, func(t *testing.T, v map[string]any, body string) { require.NotEmpty(t, v["data"]) }},
 		{"bad category type", "GET", "/exam-categories?type=ielts", "", "user-a", http.StatusBadRequest, nil},
+		{"invalid test id", "GET", "/exam-tests/bad", "", "user-a", http.StatusBadRequest, nil},
+		{"unknown test", "GET", "/exam-tests/" + uuid.NewString(), "", "user-a", http.StatusNotFound, nil},
+		{"test detail metadata", "GET", "/exam-tests/" + test.ID, "", "user-a", http.StatusOK, func(t *testing.T, v map[string]any, body string) {
+			require.Contains(t, queryLog.String(), `LEFT JOIN "exam_categories" "Category" ON "exam_tests"."category_id" = "Category"."id"`)
+			require.NotContains(t, queryLog.String(), "FOR UPDATE")
+			data := v["data"].(map[string]any)
+			require.Equal(t, test.ID, data["id"])
+			require.Equal(t, category.ID, data["categoryId"])
+			require.Equal(t, category.Title, data["category"].(map[string]any)["title"])
+			parts := data["content"].(map[string]any)["parts"].([]any)
+			require.Len(t, parts, 7)
+			for i, count := range []int{6, 25, 39, 30, 30, 16, 54} {
+				require.EqualValues(t, count, parts[i].(map[string]any)["questionCount"])
+			}
+			for _, forbidden := range []string{"correctKey", "PRIVATE", "questions", "transcript", "assets", "sourceKey"} {
+				require.NotContains(t, body, forbidden)
+			}
+		}},
 		{"invalid category id", "GET", "/exam-categories/bad/tests", "", "user-a", http.StatusBadRequest, nil},
 		{"unknown category", "GET", "/exam-categories/" + uuid.NewString() + "/tests", "", "user-a", http.StatusNotFound, nil},
 		{"test metadata", "GET", "/exam-categories/" + category.ID + "/tests", "", "user-a", http.StatusOK, func(t *testing.T, v map[string]any, body string) {
@@ -239,6 +262,7 @@ func TestExamPhase2HTTP(t *testing.T) {
 		exams.RegisterRoutes(real.Group("/api/v1"), tx)
 		for _, endpoint := range []struct{ method, path string }{
 			{"GET", "/api/v1/exam-categories"},
+			{"GET", "/api/v1/exam-tests/" + test.ID},
 			{"GET", "/api/v1/exam-categories/" + category.ID + "/tests"},
 			{"POST", "/api/v1/exam-tests/" + test.ID + "/attempts"},
 			{"GET", "/api/v1/exam-attempts"},

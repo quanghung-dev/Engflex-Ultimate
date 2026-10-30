@@ -1,83 +1,83 @@
+import { EXAM_MODE_VALUES, type ExamMode } from "@engflex/contracts";
+import { SubmitButton } from "#/components/common/submit-button";
+import { enumOptions } from "#/lib/enum-options";
 import { m } from "#/paraglide/messages";
+import type { ToeicPartItem } from "./toeic-parts-breakdown";
 
 export interface ToeicConfigPanelProps {
-	selectedMode: "exam" | "practice";
+	parts: ToeicPartItem[];
+	selectedMode: ExamMode;
 	selectedParts: number[];
-	onSelectMode?: (mode: "exam" | "practice") => void;
+	pending?: boolean;
+	disabled?: boolean;
+	locked?: boolean;
+	onSelectMode?: (mode: ExamMode) => void;
 	onTogglePart?: (partNumber: number) => void;
 	onSelectAll?: () => void;
 	onDeselectAll?: () => void;
 	onStartTest?: () => void;
 }
 
-const LISTENING_PARTS = [
-	{ num: 1, label: "P1 — Photos (6)" },
-	{ num: 2, label: "P2 — Question-Response (25)" },
-	{ num: 3, label: "P3 — Conversations (39)" },
-	{ num: 4, label: "P4 — Talks (30)" },
-];
-
-const READING_PARTS = [
-	{ num: 5, label: "P5 — Incomplete Sentences (30)" },
-	{ num: 6, label: "P6 — Text Completion (16)" },
-	{ num: 7, label: "P7 — Reading Comprehension (54)" },
-];
+const MODE_OPTIONS = enumOptions<ExamMode>(EXAM_MODE_VALUES, {
+	exam: () => m["exams.toeic.test.config.examModeTitle"](),
+	practice: () => m["exams.toeic.test.config.practiceModeTitle"](),
+});
+const MODE_DESCRIPTIONS: Record<ExamMode, () => string> = {
+	exam: () => m["exams.toeic.test.config.examModeDesc"](),
+	practice: () => m["exams.toeic.test.config.practiceModeDesc"](),
+};
 
 export function ToeicConfigPanel({
-	selectedMode = "exam",
-	selectedParts = [1, 2, 3, 4, 5, 6, 7],
+	parts,
+	selectedMode,
+	selectedParts,
+	pending = false,
+	disabled = false,
+	locked = false,
 	onSelectMode,
 	onTogglePart,
 	onSelectAll,
 	onDeselectAll,
 	onStartTest,
 }: ToeicConfigPanelProps) {
+	const questionCount = parts
+		.filter((part) => selectedParts.includes(part.partNumber))
+		.reduce((sum, part) => sum + part.questionsCount, 0);
 	return (
-		<div className="flex flex-col gap-6 rounded-2xl border border-border/80 bg-card p-5 shadow-sm md:p-6">
-			{/* Mode Selection */}
+		<fieldset
+			disabled={locked}
+			className="flex min-w-0 flex-col gap-6 rounded-2xl border border-border/80 bg-card p-5 shadow-sm md:p-6"
+		>
 			<div className="flex flex-col gap-2.5">
 				<h3 className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
 					{m["exams.toeic.test.config.modeTitle"]()}
 				</h3>
 				<div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-					<button
-						type="button"
-						onClick={() => onSelectMode?.("exam")}
-						className={`flex flex-col items-start rounded-xl p-3.5 text-left transition-all ${
-							selectedMode === "exam"
-								? "border-2 border-foreground/90 bg-muted/20 shadow-sm"
-								: "border border-border/80 hover:bg-muted/30"
-						}`}
-					>
-						<span className="text-sm font-bold text-foreground">
-							{m["exams.toeic.test.config.examModeTitle"]()}
-						</span>
-						<span className="mt-1 text-xs text-muted-foreground">
-							{m["exams.toeic.test.config.examModeDesc"]()}
-						</span>
-					</button>
-
-					<button
-						type="button"
-						onClick={() => onSelectMode?.("practice")}
-						className={`flex flex-col items-start rounded-xl p-3.5 text-left transition-all ${
-							selectedMode === "practice"
-								? "border-2 border-foreground/90 bg-muted/20 shadow-sm"
-								: "border border-border/80 hover:bg-muted/30"
-						}`}
-					>
-						<span className="text-sm font-bold text-foreground">
-							{m["exams.toeic.test.config.practiceModeTitle"]()}
-						</span>
-						<span className="mt-1 text-xs text-muted-foreground">
-							{m["exams.toeic.test.config.practiceModeDesc"]()}
-						</span>
-					</button>
+					{MODE_OPTIONS.map((mode) => (
+						<button
+							key={mode.value}
+							type="button"
+							aria-pressed={selectedMode === mode.value}
+							onClick={() => onSelectMode?.(mode.value)}
+							className={`flex flex-col items-start rounded-xl p-3.5 text-left transition-all ${selectedMode === mode.value ? "border-2 border-foreground/90 bg-muted/20 shadow-sm" : "border border-border/80 hover:bg-muted/30"}`}
+						>
+							<span className="text-sm font-bold text-foreground">
+								{mode.label()}
+							</span>
+							<span className="mt-1 text-xs text-muted-foreground">
+								{MODE_DESCRIPTIONS[mode.value]()}
+							</span>
+						</button>
+					))}
 				</div>
 			</div>
-
-			{/* Parts Selection */}
-			<div className="flex flex-col gap-3">
+			<fieldset
+				disabled={selectedMode === "exam"}
+				className="flex min-w-0 flex-col gap-3"
+			>
+				<legend className="sr-only">
+					{m["exams.toeic.test.config.partsSelectionTitle"]()}
+				</legend>
 				<div className="flex items-center justify-between">
 					<h3 className="text-sm font-bold text-foreground">
 						{m["exams.toeic.test.config.partsSelectionTitle"]()}
@@ -86,7 +86,7 @@ export function ToeicConfigPanel({
 						<button
 							type="button"
 							onClick={onSelectAll}
-							className="transition-colors hover:text-foreground"
+							className="transition-colors hover:text-foreground disabled:opacity-50"
 						>
 							{m["exams.toeic.test.config.selectAll"]()}
 						</button>
@@ -94,88 +94,72 @@ export function ToeicConfigPanel({
 						<button
 							type="button"
 							onClick={onDeselectAll}
-							className="transition-colors hover:text-foreground"
+							className="transition-colors hover:text-foreground disabled:opacity-50"
 						>
 							{m["exams.toeic.test.config.deselectAll"]()}
 						</button>
 					</div>
 				</div>
-
-				{/* LISTENING group */}
-				<div className="flex flex-col gap-2">
-					<span className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-						{m["exams.toeic.test.breakdown.listening"]()}
-					</span>
-					<div className="flex flex-col gap-2">
-						{LISTENING_PARTS.map((p) => {
-							const checked = selectedParts.includes(p.num);
-							return (
-								<label
-									key={p.num}
-									className="flex cursor-pointer items-center gap-2.5 text-xs text-foreground select-none"
-								>
-									<input
-										type="checkbox"
-										checked={checked}
-										onChange={() => onTogglePart?.(p.num)}
-										className="size-4 rounded border-border text-primary accent-primary"
-									/>
-									<span>{p.label}</span>
-								</label>
-							);
-						})}
+				{(["listening", "reading"] as const).map((section) => (
+					<div key={section} className="flex flex-col gap-2">
+						<span className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+							{section === "listening"
+								? m["exams.toeic.test.breakdown.listening"]()
+								: m["exams.toeic.test.breakdown.reading"]()}
+						</span>
+						<div className="flex flex-col gap-2">
+							{parts
+								.filter((part) => part.section === section)
+								.map((part) => (
+									<label
+										key={part.partNumber}
+										className="flex cursor-pointer items-center gap-2.5 text-xs text-foreground select-none"
+									>
+										<input
+											type="checkbox"
+											checked={selectedParts.includes(part.partNumber)}
+											onChange={() => onTogglePart?.(part.partNumber)}
+											className="size-4 rounded border-border text-primary accent-primary"
+										/>
+										<span>
+											{m["exams.toeic.test.config.partOption"]({
+												part: part.partNumber,
+												type: part.type,
+												count: part.questionsCount,
+											})}
+										</span>
+									</label>
+								))}
+						</div>
 					</div>
-				</div>
-
-				{/* READING group */}
-				<div className="flex flex-col gap-2 pt-1">
-					<span className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-						{m["exams.toeic.test.breakdown.reading"]()}
-					</span>
-					<div className="flex flex-col gap-2">
-						{READING_PARTS.map((p) => {
-							const checked = selectedParts.includes(p.num);
-							return (
-								<label
-									key={p.num}
-									className="flex cursor-pointer items-center gap-2.5 text-xs text-foreground select-none"
-								>
-									<input
-										type="checkbox"
-										checked={checked}
-										onChange={() => onTogglePart?.(p.num)}
-										className="size-4 rounded border-border text-primary accent-primary"
-									/>
-									<span>{p.label}</span>
-								</label>
-							);
-						})}
-					</div>
-				</div>
-			</div>
-
-			{/* Summary bar */}
+				))}
+			</fieldset>
 			<div className="rounded-xl border border-border/60 bg-muted/40 p-3 text-center text-xs font-semibold text-foreground md:text-sm">
-				{m["exams.toeic.test.config.summary"]({
-					parts: selectedParts.length,
-					questions: 200,
-					duration: 120,
-				})}
+				{selectedMode === "exam"
+					? m["exams.toeic.test.config.summary"]({
+							parts: selectedParts.length,
+							questions: questionCount,
+							duration: 120,
+						})
+					: m["exams.toeic.test.config.practiceSummary"]({
+							parts: selectedParts.length,
+							questions: questionCount,
+						})}
 			</div>
-
-			{/* Auto-submit note */}
-			<p className="whitespace-pre-line text-center text-xs text-muted-foreground">
-				{m["exams.toeic.test.config.autoSubmitNote"]()}
-			</p>
-
-			{/* Action Button */}
-			<button
+			{selectedMode === "exam" && (
+				<p className="whitespace-pre-line text-center text-xs text-muted-foreground">
+					{m["exams.toeic.test.config.autoSubmitNote"]()}
+				</p>
+			)}
+			<SubmitButton
 				type="button"
+				pending={pending}
+				disabled={disabled}
 				onClick={onStartTest}
 				className="w-full rounded-xl bg-emerald-600 py-3.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-emerald-700 md:text-base cursor-pointer"
 			>
 				{m["exams.toeic.test.config.startButton"]()}
-			</button>
-		</div>
+			</SubmitButton>
+		</fieldset>
 	);
 }

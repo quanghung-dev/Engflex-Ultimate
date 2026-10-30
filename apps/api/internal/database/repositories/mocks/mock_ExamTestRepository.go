@@ -115,6 +115,74 @@ func (_c *MockExamTestRepository_CountByCategory_Call) RunAndReturn(run func(ctx
 	return _c
 }
 
+// GetByID provides a mock function for the type MockExamTestRepository
+func (_mock *MockExamTestRepository) GetByID(ctx context.Context, id string) (*models.ExamTest, error) {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByID")
+	}
+
+	var r0 *models.ExamTest
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*models.ExamTest, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *models.ExamTest); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.ExamTest)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockExamTestRepository_GetByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByID'
+type MockExamTestRepository_GetByID_Call struct {
+	*mock.Call
+}
+
+// GetByID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *MockExamTestRepository_Expecter) GetByID(ctx any, id any) *MockExamTestRepository_GetByID_Call {
+	return &MockExamTestRepository_GetByID_Call{Call: _e.mock.On("GetByID", ctx, id)}
+}
+
+func (_c *MockExamTestRepository_GetByID_Call) Run(run func(ctx context.Context, id string)) *MockExamTestRepository_GetByID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockExamTestRepository_GetByID_Call) Return(examTest *models.ExamTest, err error) *MockExamTestRepository_GetByID_Call {
+	_c.Call.Return(examTest, err)
+	return _c
+}
+
+func (_c *MockExamTestRepository_GetByID_Call) RunAndReturn(run func(ctx context.Context, id string) (*models.ExamTest, error)) *MockExamTestRepository_GetByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetForUpdate provides a mock function for the type MockExamTestRepository
 func (_mock *MockExamTestRepository) GetForUpdate(ctx context.Context, id string) (*models.ExamTest, error) {
 	ret := _mock.Called(ctx, id)

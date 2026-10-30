@@ -42,7 +42,15 @@
         "freeBadge": "FREE",
         "questionsCount": "{count} questions",
         "durationMinutes": "{count} mins",
-        "viewDetail": "VIEW DETAILS"
+        "viewDetail": "VIEW DETAILS",
+        "empty": {
+          "title": "No tests yet",
+          "body": "This exam set does not have any tests yet."
+        },
+        "pagination": {
+          "range": "Showing {from}–{to} of {total} tests",
+          "all": "{count} tests"
+        }
       },
       "test": {
         "back": "Exam Sets",
@@ -59,13 +67,31 @@
           "examModeTitle": "Exam Mode",
           "examModeDesc": "Real test experience — answers hidden during the test",
           "practiceModeTitle": "Practice Mode",
-          "practiceModeDesc": "Review answers per question, retry freely",
+          "practiceModeDesc": "Practice selected parts without a time limit",
           "partsSelectionTitle": "Select parts to practice",
           "selectAll": "Select all",
           "deselectAll": "Deselect all",
-          "summary": "All {parts} parts — {questions} questions — {duration} mins",
-          "autoSubmitNote": "The test will automatically submit when time expires\nYou can pause and resume later",
-          "startButton": "START TEST"
+          "summary": "{parts} parts — {questions} questions — {duration} mins",
+          "autoSubmitNote": "The test will automatically submit when time expires.\nThe timer continues while you are away.",
+          "startButton": "START TEST",
+          "practiceSummary": "{parts} parts — {questions} questions — No time limit",
+          "partOption": "P{part} — {type} ({count})"
+        },
+        "parts": {
+          "photos": "Photos",
+          "responses": "Question-Response",
+          "conversations": "Conversations",
+          "talks": "Talks",
+          "sentences": "Incomplete Sentences",
+          "completion": "Text Completion",
+          "comprehension": "Reading Comprehension"
+        },
+        "start": {
+          "failed": "Could not start the test. Please try again.",
+          "uncertain": "The request could not be confirmed. Check exam history before starting again; an attempt may already have been created.",
+          "navigation": "Your attempt was created. Continue to open the exam room.",
+          "continue": "Continue to exam room",
+          "history": "Check exam history"
         }
       },
       "take": {

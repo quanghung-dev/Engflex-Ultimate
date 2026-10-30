@@ -6,6 +6,7 @@ import type {
 	ExamReviewAttempt,
 	ExamReviewContent,
 	ExamTakingContent,
+	ExamTestDetail,
 	ExamTestMetadata,
 	ExamType,
 	Pagination,
@@ -35,6 +36,10 @@ export function listExamTests(
 		undefined,
 		{ query: Object.keys(query).length > 0 ? query : undefined },
 	);
+}
+
+export function getExamTest(testId: string): Promise<ExamTestDetail> {
+	return api<ExamTestDetail>(API_ROUTES.EXAMS.TESTS.BY_ID(testId));
 }
 
 export function startExamAttempt(

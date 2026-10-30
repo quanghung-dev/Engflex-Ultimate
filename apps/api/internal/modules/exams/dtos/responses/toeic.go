@@ -2,6 +2,15 @@
 // exclude all answer-bearing and translated fields.
 package responses
 
+type TestDetail struct {
+	ID            string           `json:"id"`
+	CategoryID    string           `json:"categoryId"`
+	Slug          string           `json:"slug"`
+	Title         string           `json:"title"`
+	ParsedContent *ContentMetadata `json:"content"`
+	Category      *Category        `json:"category"`
+}
+
 type TestMetadata struct {
 	ID            string           `json:"id"`
 	CategoryID    string           `json:"categoryId"`

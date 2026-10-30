@@ -65,6 +65,7 @@ export type {
 export type {
   Category as ExamCategory,
   TestMetadata as ExamTestMetadata,
+  TestDetail as ExamTestDetail,
   ExamAttempt,
   ExamAttemptSummary,
   ReviewAttempt as ExamReviewAttempt,
