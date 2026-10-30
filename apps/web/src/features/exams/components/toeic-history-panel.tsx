@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, CheckCircle2, Clock, PlayCircle } from "lucide-react";
+import { toast } from "sonner";
 import { APP_ROUTES } from "#/app/app-route";
 import { m } from "#/paraglide/messages";
 
@@ -17,6 +18,27 @@ export function ToeicHistoryPanel({
 }: {
 	attempts: ToeicAttemptItem[];
 }) {
+	if (attempts.length === 0) {
+		return (
+			<div className="flex flex-col gap-3">
+				<div className="flex items-center justify-between">
+					<div className="flex items-center gap-2 text-base font-bold text-foreground">
+						<Clock className="size-5 text-sky-600" aria-hidden="true" />
+						<span>{m["exams.toeic.hub.history.title"]()}</span>
+					</div>
+				</div>
+				<div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border/80 bg-card/50 p-8 text-center shadow-sm">
+					<p className="text-sm font-semibold text-foreground">
+						{m["exams.toeic.hub.history.emptyTitle"]()}
+					</p>
+					<p className="max-w-sm text-xs text-muted-foreground">
+						{m["exams.toeic.hub.history.emptyDesc"]()}
+					</p>
+				</div>
+			</div>
+		);
+	}
+
 	return (
 		<div className="flex flex-col gap-3">
 			<div className="flex items-center justify-between">
@@ -73,26 +95,31 @@ export function ToeicHistoryPanel({
 								<>
 									<button
 										type="button"
+										onClick={() =>
+											toast.info(m["exams.toeic.hub.history.cancelSuccess"]())
+										}
 										className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-rose-700"
 									>
 										{m["exams.toeic.hub.history.cancel"]()}
 									</button>
-									<button
-										type="button"
+									<Link
+										to={APP_ROUTES.EXAMS.TOEIC.SESSION}
+										params={{ id: attempt.id }}
 										className="inline-flex items-center gap-1 rounded-lg bg-[#1e293b] px-3.5 py-1.5 text-xs font-bold text-white transition-colors hover:bg-[#0f172a] dark:bg-slate-800 dark:hover:bg-slate-700"
 									>
 										<span>{m["exams.toeic.hub.history.continue"]()}</span>
 										<ArrowRight className="size-3.5" aria-hidden="true" />
-									</button>
+									</Link>
 								</>
 							) : (
-								<button
-									type="button"
+								<Link
+									to={APP_ROUTES.EXAMS.TOEIC.RESULT}
+									params={{ id: attempt.id }}
 									className="inline-flex items-center gap-1 rounded-lg border border-border/80 bg-background px-3.5 py-1.5 text-xs font-bold text-foreground transition-colors hover:bg-muted"
 								>
 									<span>{m["exams.toeic.hub.history.viewResult"]()}</span>
 									<ArrowRight className="size-3.5" aria-hidden="true" />
-								</button>
+								</Link>
 							)}
 						</div>
 					</div>
