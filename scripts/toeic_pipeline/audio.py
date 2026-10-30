@@ -6,8 +6,23 @@ from pipeline_io import DATA, VERSION, digest, read, write
 from schemas import AudioRange
 
 
-def transcribe(source, model="small.en", device="cpu", compute="int8"):
+def transcribe(source, model="base.en", device="cuda", compute="float16"):
     from faster_whisper import WhisperModel
+
+    try:
+        engine = WhisperModel(
+            model, device=device, compute_type=compute, cpu_threads=6, download_root=str(DATA / "models")
+        )
+    except Exception as exc:
+        if device == "cuda":
+            print(f"Warning: CUDA Whisper initialization failed ({exc}), falling back to CPU (int8)...", flush=True)
+            device = "cpu"
+            compute = "int8"
+            engine = WhisperModel(
+                model, device=device, compute_type=compute, cpu_threads=6, download_root=str(DATA / "models")
+            )
+        else:
+            raise
 
     config = {
         "source": source["sha256"],
@@ -21,9 +36,6 @@ def transcribe(source, model="small.en", device="cpu", compute="int8"):
     dest = DATA / "cache" / f"asr_{digest(config)}.json"
     if dest.exists():
         return read(dest)
-    engine = WhisperModel(
-        model, device=device, compute_type=compute, cpu_threads=6, download_root=str(DATA / "models")
-    )
     segments, info = engine.transcribe(
         str(source_path(source["sourceId"])),
         language="en",

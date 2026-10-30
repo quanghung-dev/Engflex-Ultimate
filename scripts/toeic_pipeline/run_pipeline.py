@@ -62,7 +62,7 @@ def exam_for_part(artifact, part):
 
 
 def run(args):
-    manifest = inventory()
+    manifest = inventory(args.test)
     sources = select_sources(manifest, args.test)
     out = test_dir(args.test)
     write(out / "sources.json", sources)
@@ -96,7 +96,7 @@ def run(args):
     write(out / "mapping_candidates.json", mappings)
     ocrs = {}
     for section in ("LC", "RC"):
-        ocrs[section] = ocr(sources[section], out, args.scale)
+        ocrs[section] = ocr(sources[section], out, scale=args.scale, save_previews=args.page_previews)
         write(out / "raw" / (section + "_ocr.json"), ocrs[section])
     test = build(args.test, sources, ocrs, keys)
     stage_errors = []
@@ -265,9 +265,13 @@ def review(number):
                 f"<section><h3>{html.escape(item.id)}</h3>{source_links}{audio_button}{crops}<pre>{html.escape(json.dumps(item.model_dump(), ensure_ascii=False, indent=2))}</pre></section>"
             )
     pages = sorted((out / "pages").glob("*.png"))
-    images = "".join(
-        f'<figure><figcaption>{html.escape(p.name)}</figcaption><img loading="lazy" src="{p.relative_to(out).as_posix()}"></figure>'
-        for p in pages
+    images = (
+        "".join(
+            f'<figure><figcaption>{html.escape(p.name)}</figcaption><img loading="lazy" src="{p.relative_to(out).as_posix()}"></figure>'
+            for p in pages
+        )
+        if pages
+        else "<p style='padding:20px;color:#888'>Page previews disabled (run with --page-previews to generate scan images).</p>"
     )
     text = '<!doctype html><meta charset="utf-8"><title>TOEIC source review</title><style>body{font:16px system-ui;margin:24px}main{display:grid;grid-template-columns:1fr 1fr;gap:20px}article{height:85vh;overflow:auto}pre{white-space:pre-wrap}img{max-width:100%}section{border-bottom:1px solid #aaa}audio{width:100%}</style>'
     # Audio stays inside workspace; no remote publication or copies needed.
@@ -304,10 +308,15 @@ def main():
         help="Second full-page OCR and source repair for unresolved layout/blanks",
     )
     parser.add_argument("--env-file", type=Path)
-    parser.add_argument("--scale", type=float, default=2.5)
-    parser.add_argument("--asr-model", default="small.en")
-    parser.add_argument("--device", choices=["cpu", "cuda"], default="cpu")
-    parser.add_argument("--compute", default="int8")
+    parser.add_argument(
+        "--page-previews",
+        action="store_true",
+        help="Render full-page PNG previews (off by default to save disk and speed up execution)",
+    )
+    parser.add_argument("--scale", type=float, default=1.8)
+    parser.add_argument("--asr-model", default="base.en")
+    parser.add_argument("--device", choices=["cpu", "cuda"], default="cuda")
+    parser.add_argument("--compute", default="float16")
     args = parser.parse_args()
     if args.command == "inventory":
         print(f"Inventoried {len(inventory()['files'])} files")
@@ -336,7 +345,7 @@ def main():
         write(out / "corrections" / (digest(overlay) + ".json"), overlay)
         write(out / "draft.json", test.model_dump())
     # Re-read sources from disk: a changed input must invalidate validation.
-    sources = select_sources(inventory(), args.test)
+    sources = select_sources(inventory(args.test), args.test)
     reviews = read(out / "reviews.json") if (out / "reviews.json").exists() else None
     report = validate(test, sources, reviews)
     errors = read(out / "stage_errors.json") if (out / "stage_errors.json").exists() else []

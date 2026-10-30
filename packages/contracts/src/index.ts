@@ -56,8 +56,12 @@ export * from './vocabulary-requests.ts';
 export * from './vocabulary-responses.ts';
 export * from './attempts-requests.ts';
 export * from './attempts-responses.ts';
-export type { PatchAttempt as PatchExamAttempt } from './exams-requests.ts';
-export type { StartAttempt as StartExamAttempt } from './exams-requests.ts';
+export type {
+  PatchAttempt as PatchExamAttempt,
+  StartAttempt as StartExamAttempt,
+  Answer as ExamAnswer,
+} from './exams-requests.ts';
+
 export type {
   Category as ExamCategory,
   TestMetadata as ExamTestMetadata,

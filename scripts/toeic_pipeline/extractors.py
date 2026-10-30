@@ -11,10 +11,27 @@ from mutagen.mp3 import MP3
 from pipeline_io import DATA, ROOT, VERSION, digest, file_hash, read, write
 
 
-def inventory():
+def inventory(test_number=None):
     root = ROOT / "Topic Test" / "Toeic 2024"
     files = []
-    for path in sorted(root.rglob("*")):
+    if test_number is not None:
+        target_patterns = [
+            re.compile(rf"^LC/TEST {test_number} LC_?\.pdf$", re.IGNORECASE),
+            re.compile(rf"^RC/TEST {test_number} RC_?\.pdf$", re.IGNORECASE),
+            re.compile(rf"^Audio/Test_{test_number:02d}\.mp3$", re.IGNORECASE),
+            re.compile(r"^Answer/Answer\.pdf$", re.IGNORECASE),
+            re.compile(r"^Answer/Answer LC ETS\.pdf$", re.IGNORECASE),
+            re.compile(r"^Answer/Answer RC Test\.pdf$", re.IGNORECASE),
+        ]
+        candidate_paths = [
+            p
+            for p in root.rglob("*")
+            if any(pat.match(p.relative_to(root).as_posix()) for pat in target_patterns)
+        ]
+    else:
+        candidate_paths = [p for p in root.rglob("*") if p.suffix.lower() in (".pdf", ".mp3")]
+
+    for path in sorted(candidate_paths):
         if path.suffix.lower() not in (".pdf", ".mp3"):
             continue
         entry = {"sourceId": path.relative_to(root).as_posix(), "sha256": file_hash(path)}
@@ -40,7 +57,8 @@ def inventory():
             )
         files.append(entry)
     result = {"collectionId": "toeic_2024", "files": files}
-    write(DATA / "inventory.json", result)
+    if test_number is None:
+        write(DATA / "inventory.json", result)
     return result
 
 
@@ -109,7 +127,7 @@ def digital(source):
     return result
 
 
-def ocr(source, output, scale=2.5):
+def ocr(source, output, scale=1.8, save_previews=False):
     import numpy as np
     from rapidocr_onnxruntime import RapidOCR
 
@@ -127,10 +145,16 @@ def ocr(source, output, scale=2.5):
     with pymupdf.open(source_path(source["sourceId"])) as doc:
         for page in doc:
             dest = cache / f"page_{page.number + 1:03d}.json"
-            preview = output / "pages" / f"{Path(source['sourceId']).stem}_{page.number + 1:03d}.png"
-            preview.parent.mkdir(parents=True, exist_ok=True)
-            if not preview.exists():
-                page.get_pixmap(matrix=pymupdf.Matrix(1.4, 1.4)).save(preview)
+            preview_path = output / "pages" / f"{Path(source['sourceId']).stem}_{page.number + 1:03d}.png"
+            preview_rel = None
+            if save_previews:
+                preview_path.parent.mkdir(parents=True, exist_ok=True)
+                if not preview_path.exists():
+                    page.get_pixmap(matrix=pymupdf.Matrix(1.4, 1.4)).save(preview_path)
+                preview_rel = preview_path.relative_to(output).as_posix()
+            elif preview_path.exists():
+                preview_rel = preview_path.relative_to(output).as_posix()
+
             if dest.exists():
                 pages.append(read(dest))
                 continue
@@ -162,7 +186,7 @@ def ocr(source, output, scale=2.5):
                 "scale": scale,
                 "seconds": time.monotonic() - start,
                 "lines": lines,
-                "preview": preview.relative_to(output).as_posix(),
+                "preview": preview_rel,
             }
             write(dest, result)
             pages.append(result)
