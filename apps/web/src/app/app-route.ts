@@ -53,7 +53,9 @@ export const APP_ROUTES = {
 			LIST: "/exams/toeic",
 			CATEGORY: "/exams/toeic/$categoryId",
 			TEST: "/exams/toeic/$categoryId/$testId",
-			TAKE: "/exams/toeic/$categoryId/$testId/take",
+			SESSION: "/exams/toeic/session/$id",
+			RESULT: "/exams/toeic/session/$id/result",
+			HISTORY: "/exams/toeic/history",
 		},
 	},
 	/**

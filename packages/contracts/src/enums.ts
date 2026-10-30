@@ -21,7 +21,8 @@ export type ActivityType = typeof ActivityTypeReading | typeof ActivityTypeListe
  */
 export const AttemptStatusInProgress = "in_progress";
 export const AttemptStatusCompleted = "completed";
-export type AttemptStatus = typeof AttemptStatusInProgress | typeof AttemptStatusCompleted;
+export const AttemptStatusAbandoned = "abandoned";
+export type AttemptStatus = typeof AttemptStatusInProgress | typeof AttemptStatusCompleted | typeof AttemptStatusAbandoned;
 
 //////////
 // source: attempt_type.go
@@ -40,7 +41,8 @@ export const AttemptTypeFlashcard = "flashcard";
 export const AttemptTypeBenchmark = "benchmark";
 export const AttemptTypeDictation = "dictation";
 export const AttemptTypeLesson = "lesson";
-export type AttemptType = typeof AttemptTypeReading | typeof AttemptTypeListening | typeof AttemptTypeWriting | typeof AttemptTypeSpeaking | typeof AttemptTypeShadowing | typeof AttemptTypeFlashcard | typeof AttemptTypeBenchmark | typeof AttemptTypeDictation | typeof AttemptTypeLesson;
+export const AttemptTypeExam = "exam";
+export type AttemptType = typeof AttemptTypeReading | typeof AttemptTypeListening | typeof AttemptTypeWriting | typeof AttemptTypeSpeaking | typeof AttemptTypeShadowing | typeof AttemptTypeFlashcard | typeof AttemptTypeBenchmark | typeof AttemptTypeDictation | typeof AttemptTypeLesson | typeof AttemptTypeExam;
 
 //////////
 // source: cefr.go
@@ -92,6 +94,25 @@ export const ConversationStatusLive = "live";
 export const ConversationStatusEnded = "ended";
 export const ConversationStatusFailed = "failed";
 export type ConversationStatus = typeof ConversationStatusPending | typeof ConversationStatusLive | typeof ConversationStatusEnded | typeof ConversationStatusFailed;
+
+//////////
+// source: exam_mode.go
+
+/**
+ * ExamMode is the attempt mode for an exam (attempts.mode).
+ */
+export const ExamModeExam = "exam";
+export const ExamModePractice = "practice";
+export type ExamMode = typeof ExamModeExam | typeof ExamModePractice;
+
+//////////
+// source: exam_type.go
+
+/**
+ * ExamType identifies the examination format of a category (exam_categories.type).
+ */
+export type ExamType = string;
+export const ExamTypeTOEIC: ExamType = "toeic";
 
 //////////
 // source: feedback_subject_type.go

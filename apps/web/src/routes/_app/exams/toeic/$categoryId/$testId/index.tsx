@@ -147,8 +147,8 @@ function ToeicTestDetailPage() {
 						onDeselectAll={handleDeselectAll}
 						onStartTest={() => {
 							navigate({
-								to: APP_ROUTES.EXAMS.TOEIC.TAKE,
-								params: { categoryId, testId },
+								to: APP_ROUTES.EXAMS.TOEIC.SESSION,
+								params: { id: testId },
 							});
 						}}
 					/>

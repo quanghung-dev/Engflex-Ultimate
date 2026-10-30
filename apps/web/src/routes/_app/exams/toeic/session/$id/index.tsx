@@ -209,15 +209,13 @@ const PALETTE_GROUPS: PaletteGroup[] = [
 
 /* ------------------------------------------------------------------ Page Component */
 
-export const Route = createFileRoute(
-	"/_app/exams/toeic/$categoryId/$testId/take",
-)({
-	component: ToeicExamTakingPage,
+export const Route = createFileRoute("/_app/exams/toeic/session/$id/")({
+	component: ToeicExamSessionPage,
 });
 
-function ToeicExamTakingPage() {
+function ToeicExamSessionPage() {
 	const navigate = useNavigate();
-	const { categoryId, testId } = Route.useParams();
+	const { id } = Route.useParams();
 
 	const [activePart, setActivePart] = useState(1);
 	const [activeQuestionNumber, setActiveQuestionNumber] = useState(1);
@@ -229,7 +227,9 @@ function ToeicExamTakingPage() {
 	const [showSubmitModal, setShowSubmitModal] = useState(false);
 	const [showExitModal, setShowExitModal] = useState(false);
 
-	const testTitle = `Parroto TOEIC Practice Vol. 1 - ${testId.replace("test-", "Test ")}`;
+	const testTitle = id.startsWith("test-")
+		? `Parroto TOEIC Practice Vol. 1 - ${id.replace("test-", "Test ")}`
+		: "Parroto TOEIC Practice Vol. 1 - Test 1";
 
 	// Countdown Timer interval
 	useEffect(() => {
@@ -275,7 +275,10 @@ function ToeicExamTakingPage() {
 		setShowExitModal(false);
 		navigate({
 			to: APP_ROUTES.EXAMS.TOEIC.TEST,
-			params: { categoryId, testId },
+			params: {
+				categoryId: "parroto-vol-1",
+				testId: id.startsWith("test-") ? id : "test-1",
+			},
 		});
 	};
 
@@ -283,8 +286,8 @@ function ToeicExamTakingPage() {
 		setShowSubmitModal(false);
 		toast.success("Nộp bài thi thành công!");
 		navigate({
-			to: APP_ROUTES.EXAMS.TOEIC.TEST,
-			params: { categoryId, testId },
+			to: APP_ROUTES.EXAMS.TOEIC.RESULT,
+			params: { id },
 		});
 	};
 

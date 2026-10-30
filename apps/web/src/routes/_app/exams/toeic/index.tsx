@@ -1,5 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { History, TrendingUp } from "lucide-react";
+import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { PageHero } from "#/components/common/page-layout";
@@ -95,13 +96,13 @@ function ToeicHubPage() {
 				/>
 
 				<div className="flex flex-wrap items-center gap-2.5 shrink-0 pt-2 md:pt-4">
-					<button
-						type="button"
+					<Link
+						to={APP_ROUTES.EXAMS.TOEIC.HISTORY}
 						className="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-sky-700"
 					>
 						<History className="size-4" aria-hidden="true" />
 						<span>{m["exams.toeic.hub.historyButton"]()}</span>
-					</button>
+					</Link>
 					<button
 						type="button"
 						className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-emerald-700"

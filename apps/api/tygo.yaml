@@ -13,6 +13,8 @@ type_mappings:
   "enums.ActivityType": "ActivityType"
   "enums.AttemptType": "AttemptType"
   "enums.AttemptStatus": "AttemptStatus"
+  "enums.ExamMode": "ExamMode"
+  "enums.ExamType": "ExamType"
   "enums.CEFR": "CEFR"
   "enums.ConversationMode": "ConversationMode"
   "enums.ConversationStatus": "ConversationStatus"
@@ -103,6 +105,14 @@ packages:
   - path: "engflex-api/internal/modules/attempts/dtos/responses"
     output_path: "../../packages/contracts/src/attempts-responses.ts"
     fallback_type: "unknown"
+
+  - path: "engflex-api/internal/modules/exams/dtos/requests"
+    output_path: "../../packages/contracts/src/exams-requests.ts"
+    fallback_type: "unknown"
+  - path: "engflex-api/internal/modules/exams/dtos/responses"
+    output_path: "../../packages/contracts/src/exams-responses.ts"
+    fallback_type: "unknown"
+    optional_type: "null"
     
   - path: "engflex-api/internal/modules/videos/dtos/requests"
     output_path: "../../packages/contracts/src/videos-requests.ts"

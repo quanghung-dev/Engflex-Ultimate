@@ -4,13 +4,17 @@ import (
 	"context"
 	"time"
 
+	"engflex-api/internal/common"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 )
 
 type AttemptRepository interface {
+	GetExamAttemptForUpdate(context.Context, string, string) (*models.Attempt, error)
+	SaveExamAttempt(context.Context, *models.Attempt, int) error
 	Create(ctx context.Context, m *models.Attempt) error
 	GetByID(ctx context.Context, id string) (*models.Attempt, error)
 	GetOpenAttempt(ctx context.Context, userID, lessonID string) (*models.Attempt, error)
@@ -20,7 +24,36 @@ type AttemptRepository interface {
 	ListLessonAttempts(ctx context.Context, userID string) ([]*models.Attempt, error)
 	ListCompletedVideo(ctx context.Context, userID string, videoExerciseIDs []string) ([]*models.Attempt, error)
 	GetVideoAttempt(ctx context.Context, userID, videoExerciseID string, attemptType enums.AttemptType) (*models.Attempt, error)
+	ListExamAttempts(ctx context.Context, userID string, limit, offset int) ([]*models.Attempt, error)
+	CountExamAttempts(ctx context.Context, userID string) (int64, error)
+	GetExamAttempt(ctx context.Context, userID, attemptID string) (*models.Attempt, error)
 	WithTx(tx *gorm.DB) AttemptRepository
+}
+
+func (r *attemptRepository) ListExamAttempts(ctx context.Context, userID string, limit, offset int) ([]*models.Attempt, error) {
+	var attempts []*models.Attempt
+	err := r.db.WithContext(ctx).Joins("ExamTest.Category").Where("attempts.user_id = ? AND attempts.type = ?", userID, enums.AttemptTypeExam).
+		Order("attempts.created_at DESC").Order("attempts.id DESC").Limit(limit).Offset(offset).Find(&attempts).Error
+	return attempts, err
+}
+
+func (r *attemptRepository) CountExamAttempts(ctx context.Context, userID string) (int64, error) {
+	var total int64
+	err := r.db.WithContext(ctx).Model(&models.Attempt{}).Where("user_id = ? AND type = ?", userID, enums.AttemptTypeExam).Count(&total).Error
+	return total, err
+}
+
+func (r *attemptRepository) GetExamAttempt(ctx context.Context, userID, attemptID string) (*models.Attempt, error) {
+	id, err := parseID(attemptID, "attemptId")
+	if err != nil {
+		return nil, err
+	}
+	var attempt models.Attempt
+	err = r.db.WithContext(ctx).Joins("ExamTest.Category").Where("attempts.user_id = ? AND attempts.type = ?", userID, enums.AttemptTypeExam).First(&attempt, "attempts.id = ?", id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &attempt, nil
 }
 
 type attemptRepository struct {
@@ -66,10 +99,11 @@ func (r *attemptRepository) ListCompletedDays(ctx context.Context, userID string
 	return days, err
 }
 
+// CountCompleted counts completed lesson runs for the LessonsCompleted metric.
 func (r *attemptRepository) CountCompleted(ctx context.Context, userID string) (int64, error) {
 	var n int64
 	err := r.db.WithContext(ctx).Model(&models.Attempt{}).
-		Where("user_id = ? AND status = ?", userID, enums.AttemptStatusCompleted).
+		Where("user_id = ? AND type = ? AND status = ?", userID, enums.AttemptTypeLesson, enums.AttemptStatusCompleted).
 		Count(&n).Error
 	return n, err
 }
@@ -109,4 +143,27 @@ func (r *attemptRepository) GetVideoAttempt(ctx context.Context, userID, videoEx
 		return nil, err
 	}
 	return &m, nil
+}
+
+func (r *attemptRepository) GetExamAttemptForUpdate(ctx context.Context, userID, attemptID string) (*models.Attempt, error) {
+	id, err := parseID(attemptID, "attemptId")
+	if err != nil {
+		return nil, err
+	}
+	var m models.Attempt
+	err = r.db.WithContext(ctx).Clauses(clause.Locking{Strength: "UPDATE", Table: clause.Table{Name: clause.CurrentTable}}).Joins("ExamTest.Category").Where("attempts.user_id = ? AND attempts.type = ?", userID, enums.AttemptTypeExam).First(&m, "attempts.id = ?", id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &m, nil
+}
+func (r *attemptRepository) SaveExamAttempt(ctx context.Context, m *models.Attempt, revision int) error {
+	result := r.db.WithContext(ctx).Model(&models.Attempt{}).Where("id = ? AND user_id = ? AND type = ? AND status = ? AND (result->>'revision')::integer = ?", m.ID, m.UserID, enums.AttemptTypeExam, enums.AttemptStatusInProgress, revision).Updates(map[string]any{"result": m.Result, "status": m.Status, "score": m.Score, "submitted_at": m.SubmittedAt, "duration_sec": m.DurationSec})
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected != 1 {
+		return common.Conflict("attempt revision changed")
+	}
+	return nil
 }

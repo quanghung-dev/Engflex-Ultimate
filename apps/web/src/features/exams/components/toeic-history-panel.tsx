@@ -1,4 +1,6 @@
+import { Link } from "@tanstack/react-router";
 import { ArrowRight, CheckCircle2, Clock, PlayCircle } from "lucide-react";
+import { APP_ROUTES } from "#/app/app-route";
 import { m } from "#/paraglide/messages";
 
 export interface ToeicAttemptItem {
@@ -22,13 +24,13 @@ export function ToeicHistoryPanel({
 					<Clock className="size-5 text-sky-600" aria-hidden="true" />
 					<span>{m["exams.toeic.hub.history.title"]()}</span>
 				</div>
-				<button
-					type="button"
+				<Link
+					to={APP_ROUTES.EXAMS.TOEIC.HISTORY}
 					className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
 				>
 					<span>{m["exams.toeic.hub.history.viewAll"]()}</span>
 					<ArrowRight className="size-3.5" aria-hidden="true" />
-				</button>
+				</Link>
 			</div>
 
 			<div className="flex flex-col divide-y divide-border/60 rounded-2xl border border-border/80 bg-card shadow-sm">

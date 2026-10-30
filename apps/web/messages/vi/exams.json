@@ -25,7 +25,15 @@
           "modePractice": "Luyện tập",
           "cancel": "HUỶ",
           "continue": "TIẾP TỤC LÀM BÀI",
-          "viewResult": "XEM KẾT QUẢ"
+          "viewResult": "XEM KẾT QUẢ",
+          "cancelDialogTitle": "Xác nhận huỷ bài thi",
+          "cancelDialogDesc": "Bạn có chắc chắn muốn huỷ lượt làm bài này? Tiến độ làm bài hiện tại sẽ bị xoá.",
+          "cancelDialogConfirm": "Xác nhận huỷ",
+          "cancelDialogCancel": "Giữ lại",
+          "cancelSuccess": "Đã huỷ lượt làm bài",
+          "emptyTitle": "Chưa có lượt làm bài nào",
+          "emptyDesc": "Bạn chưa có bài thi nào trong lịch sử. Hãy bắt đầu làm bài ngay để theo dõi tiến độ!",
+          "emptyAction": "Khám phá đề thi"
         }
       },
       "category": {
@@ -74,6 +82,26 @@
         "confirmExitDesc": "Bài thi đang diễn ra. Bạn có chắc chắn muốn thoát khỏi phòng thi?",
         "confirmExitCancel": "Ở lại làm tiếp",
         "confirmExitAction": "Xác nhận thoát"
+      },
+      "result": {
+        "back": "Quay về danh sách",
+        "title": "Kết quả bài thi",
+        "totalScore": "Tổng điểm",
+        "correctCount": "Đúng: {correct} / {total}",
+        "timeSpent": "Thời gian làm bài: {duration}",
+        "partsBreakdownTitle": "KẾT QUẢ THEO PART",
+        "reviewTitle": "XEM LẠI ĐÁP ÁN",
+        "filterAll": "Tất cả",
+        "filterIncorrect": "Câu sai",
+        "filterCorrect": "Câu đúng",
+        "questionPaletteTitle": "BẢN ĐỒ CÂU HỎI",
+        "legendCorrect": "Đúng",
+        "legendIncorrect": "Sai",
+        "legendSkipped": "Bỏ qua",
+        "skippedBadge": "Bỏ qua",
+        "correctBadge": "Đúng",
+        "incorrectBadge": "Sai",
+        "explanationLabel": "Giải thích:"
       }
     }
   }

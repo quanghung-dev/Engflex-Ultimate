@@ -25,7 +25,15 @@
           "modePractice": "Practice Mode",
           "cancel": "CANCEL",
           "continue": "CONTINUE TEST",
-          "viewResult": "VIEW RESULT"
+          "viewResult": "VIEW RESULT",
+          "cancelDialogTitle": "Cancel Attempt?",
+          "cancelDialogDesc": "Are you sure you want to cancel this attempt? Your current progress will be lost.",
+          "cancelDialogConfirm": "Confirm Cancel",
+          "cancelDialogCancel": "Keep Attempt",
+          "cancelSuccess": "Attempt has been cancelled",
+          "emptyTitle": "No exam attempts yet",
+          "emptyDesc": "You haven't completed any exam attempts yet. Start practicing to track your progress!",
+          "emptyAction": "Explore Exam Sets"
         }
       },
       "category": {
@@ -74,6 +82,26 @@
         "confirmExitDesc": "The exam is in progress. Are you sure you want to leave the exam room?",
         "confirmExitCancel": "Stay and Continue",
         "confirmExitAction": "Confirm Exit"
+      },
+      "result": {
+        "back": "Back to list",
+        "title": "Exam Results",
+        "totalScore": "Total Score",
+        "correctCount": "Correct: {correct} / {total}",
+        "timeSpent": "Time spent: {duration}",
+        "partsBreakdownTitle": "PART BREAKDOWN",
+        "reviewTitle": "REVIEW ANSWERS",
+        "filterAll": "All",
+        "filterIncorrect": "Incorrect",
+        "filterCorrect": "Correct",
+        "questionPaletteTitle": "QUESTION MAP",
+        "legendCorrect": "Correct",
+        "legendIncorrect": "Incorrect",
+        "legendSkipped": "Skipped",
+        "skippedBadge": "Skipped",
+        "correctBadge": "Correct",
+        "incorrectBadge": "Incorrect",
+        "explanationLabel": "Explanation:"
       }
     }
   }
