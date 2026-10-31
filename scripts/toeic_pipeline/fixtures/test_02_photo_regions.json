@@ -1,0 +1,73 @@
+{
+  "sourceId": "LC/TEST 2 LC.pdf",
+  "sourceHash": "2c13c685fc137a23f6eeeeb9468f7a5a71d08acf4663b77688a2d84efb6b99f7",
+  "method": "visual inspection of 1.4x original page render; crop candidates require independent review",
+  "regions": [
+    {
+      "questionNumber": 1,
+      "pageNumber": 3,
+      "bbox": [
+        162.0,
+        54.0,
+        381.0,
+        370.0
+      ],
+      "occluded": false
+    },
+    {
+      "questionNumber": 2,
+      "pageNumber": 3,
+      "bbox": [
+        162.0,
+        406.0,
+        381.0,
+        722.0
+      ],
+      "occluded": false
+    },
+    {
+      "questionNumber": 3,
+      "pageNumber": 4,
+      "bbox": [
+        176.0,
+        52.0,
+        418.0,
+        397.0
+      ],
+      "occluded": true
+    },
+    {
+      "questionNumber": 4,
+      "pageNumber": 4,
+      "bbox": [
+        107.0,
+        453.0,
+        477.0,
+        711.0
+      ],
+      "occluded": false
+    },
+    {
+      "questionNumber": 5,
+      "pageNumber": 5,
+      "bbox": [
+        93.0,
+        52.0,
+        462.0,
+        317.0
+      ],
+      "occluded": false
+    },
+    {
+      "questionNumber": 6,
+      "pageNumber": 5,
+      "bbox": [
+        93.0,
+        373.0,
+        463.0,
+        638.0
+      ],
+      "occluded": false
+    }
+  ]
+}

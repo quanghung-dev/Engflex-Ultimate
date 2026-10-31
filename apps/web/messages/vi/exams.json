@@ -1,0 +1,201 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "exams": {
+    "toeic": {
+      "hub": {
+        "title": "Luyện thi TOEIC",
+        "description": "Luyện thi TOEIC online miễn phí với các đề thi thử đầy đủ theo chuẩn TOEIC. Mỗi đề gồm đủ 7 phần Nghe và Đọc, tự động chấm điểm, kèm giải thích đáp án chi tiết và theo dõi tiến độ để giúp bạn nâng điểm nhanh hơn.",
+        "historyButton": "Lịch sử làm bài",
+        "analyticsButton": "Phân tích kết quả",
+        "startPractice": "Vào luyện",
+        "testsCount": "{count} đề",
+        "attemptsCount": "{count} lượt làm",
+        "analytics": {
+          "title": "Phân tích kết quả",
+          "viewAll": "Xem tất cả",
+          "completedTests": "SỐ BÀI ĐÃ LÀM",
+          "highestScore": "ĐIỂM CAO NHẤT",
+          "averageScore": "ĐIỂM TRUNG BÌNH",
+          "latestScore": "LẦN GẦN NHẤT"
+        },
+        "history": {
+          "title": "Lịch sử làm bài",
+          "viewAll": "Xem tất cả",
+          "modeExam": "Luyện thi",
+          "modePractice": "Luyện tập",
+          "cancel": "HUỶ",
+          "continue": "TIẾP TỤC LÀM BÀI",
+          "viewResult": "XEM KẾT QUẢ",
+          "cancelDialogTitle": "Xác nhận huỷ bài thi",
+          "cancelDialogDesc": "Lượt làm bài sẽ được đánh dấu đã hủy; đáp án đã lưu vẫn được giữ lại. Nếu exam đã hết giờ, hệ thống sẽ chấm các đáp án đã lưu.",
+          "cancelDialogConfirm": "Xác nhận huỷ",
+          "cancelDialogCancel": "Giữ lại",
+          "cancelSuccess": "Đã huỷ lượt làm bài",
+          "emptyTitle": "Chưa có lượt làm bài nào",
+          "emptyDesc": "Bạn chưa có bài thi nào trong lịch sử. Hãy bắt đầu làm bài ngay để theo dõi tiến độ!",
+          "emptyAction": "Khám phá đề thi"
+        },
+        "load": {
+          "categoriesFailed": "Không tải được các bộ đề. Vui lòng thử lại.",
+          "attemptsFailed": "Không tải được lịch sử làm bài. Vui lòng thử lại.",
+          "retry": "Thử lại"
+        }
+      },
+      "category": {
+        "back": "Bộ đề thi",
+        "testsListTitle": "DANH SÁCH ĐỀ",
+        "freeBadge": "MIỄN PHÍ",
+        "questionsCount": "{count} câu hỏi",
+        "durationMinutes": "{count} phút",
+        "viewDetail": "XEM CHI TIẾT",
+        "empty": {
+          "title": "Chưa có đề thi",
+          "body": "Bộ đề này hiện chưa có đề thi nào."
+        },
+        "pagination": {
+          "range": "Hiển thị {from}–{to} trong {total} đề",
+          "all": "{count} đề"
+        }
+      },
+      "test": {
+        "back": "Bộ đề thi",
+        "breakdown": {
+          "section": "SECTION",
+          "part": "PART",
+          "type": "TYPE",
+          "questions": "QUESTIONS",
+          "listening": "LISTENING",
+          "reading": "READING"
+        },
+        "config": {
+          "modeTitle": "CHẾ ĐỘ LÀM BÀI",
+          "examModeTitle": "Luyện thi",
+          "examModeDesc": "Giống thi thật — không xem đáp án khi đang làm",
+          "practiceModeTitle": "Luyện tập",
+          "practiceModeDesc": "Luyện các phần đã chọn, không giới hạn thời gian",
+          "partsSelectionTitle": "Chọn phần muốn làm",
+          "selectAll": "Chọn tất cả",
+          "deselectAll": "Bỏ chọn",
+          "summary": "{parts} phần — {questions} câu hỏi — {duration} phút",
+          "autoSubmitNote": "Bài thi sẽ tự động nộp khi hết giờ.\nĐồng hồ vẫn chạy khi bạn rời phòng thi.",
+          "startButton": "BẮT ĐẦU LÀM BÀI",
+          "practiceSummary": "{parts} phần — {questions} câu hỏi — Không giới hạn thời gian",
+          "partOption": "P{part} — {type} ({count})"
+        },
+        "parts": {
+          "photos": "Mô tả hình ảnh",
+          "responses": "Hỏi – đáp",
+          "conversations": "Hội thoại",
+          "talks": "Bài nói",
+          "sentences": "Hoàn thành câu",
+          "completion": "Hoàn thành đoạn văn",
+          "comprehension": "Đọc hiểu"
+        },
+        "start": {
+          "failed": "Không thể bắt đầu bài thi. Vui lòng thử lại.",
+          "uncertain": "Chưa xác nhận được yêu cầu. Hãy kiểm tra lịch sử trước khi bắt đầu lại vì lượt làm bài có thể đã được tạo.",
+          "navigation": "Lượt làm bài đã được tạo. Tiếp tục để mở phòng thi.",
+          "continue": "Tiếp tục vào phòng thi",
+          "history": "Kiểm tra lịch sử làm bài"
+        }
+      },
+      "take": {
+        "submitButton": "NỘP BÀI",
+        "exitButton": "THOÁT",
+        "progress": "Tiến độ",
+        "bookmark": "Đánh dấu",
+        "bookmarked": "Đã đánh dấu",
+        "confirmSubmitTitle": "Xác nhận nộp bài",
+        "confirmSubmitDesc": "Bạn đã hoàn thành {answered}/{total} câu hỏi. Bạn có chắc chắn muốn nộp bài thi?",
+        "confirmSubmitCancel": "Tiếp tục làm bài",
+        "confirmSubmitAction": "Nộp bài ngay",
+        "confirmExitTitle": "Rời khỏi phòng thi?",
+        "confirmExitDesc": "Thoát sẽ lưu đáp án và hủy lượt làm này. Bạn sẽ không thể tiếp tục lượt làm đã hủy.",
+        "confirmExitCancel": "Ở lại làm tiếp",
+        "confirmExitAction": "Hủy lượt làm và thoát",
+        "question": "Câu {number}",
+        "audio": "Âm thanh câu hỏi",
+        "imageAlt": "Hình minh họa đề thi",
+        "mediaFailed": "Không tải được nội dung đa phương tiện. Bạn vẫn có thể trả lời câu hỏi.",
+        "blank": "({number})",
+        "insertion": "[Chèn câu]",
+        "reference": "Tham chiếu {number}",
+        "clear": "Xóa đáp án",
+        "elapsed": "Đã làm",
+        "remaining": "Còn lại",
+        "speed": "Tốc độ phát",
+        "expandPalette": "Mở bảng câu hỏi",
+        "collapsePalette": "Thu gọn bảng câu hỏi",
+        "saving": "Đang lưu thay đổi…",
+        "saved": "Đã lưu mọi thay đổi",
+        "saveFailed": "Chưa xác nhận được thay đổi. Vui lòng thử lại trước khi rời trang.",
+        "retry": "Thử lại",
+        "navigationFailed": "Lượt làm đã kết thúc nhưng chưa mở được trang tiếp theo. Vui lòng thử lại."
+      },
+      "result": {
+        "back": "Quay về danh sách",
+        "title": "Kết quả bài thi",
+        "totalScore": "Tổng điểm",
+        "correctCount": "Đúng: {correct} / {total}",
+        "timeSpent": "Thời gian làm bài: {duration}",
+        "partsBreakdownTitle": "KẾT QUẢ THEO PART",
+        "reviewTitle": "XEM LẠI ĐÁP ÁN",
+        "filterAll": "Tất cả",
+        "filterIncorrect": "Câu sai",
+        "filterCorrect": "Câu đúng",
+        "questionPaletteTitle": "BẢN ĐỒ CÂU HỎI",
+        "legendCorrect": "Đúng",
+        "legendIncorrect": "Sai",
+        "legendSkipped": "Bỏ qua",
+        "skippedBadge": "Bỏ qua",
+        "correctBadge": "Đúng",
+        "incorrectBadge": "Sai",
+        "explanationLabel": "Giải thích:",
+        "accuracy": "Độ chính xác",
+        "percent": "{value}%",
+        "fraction": "{correct}/{total}",
+        "scaledUnavailable": "Chưa có điểm quy đổi",
+        "notTaken": "Không làm",
+        "review": {
+          "part": "Phần {part}",
+          "question": "Câu {number}",
+          "blank": "[{number}] ____",
+          "insertion": "[↳]",
+          "imageAlt": "Hình minh họa của đề thi",
+          "mediaFailed": "Không thể tải media này. Bạn vẫn có thể xem nội dung chữ.",
+          "itemAudio": "Nghe nội dung của nhóm câu hỏi",
+          "stimulusAudio": "Nghe đoạn hội thoại hoặc bài nói",
+          "transcript": "Bản chép lời",
+          "reference": "Câu {number} liên quan đến phần được đánh dấu hoặc chỗ trống trong bài đọc.",
+          "vocabulary": "Từ vựng",
+          "empty": "Không có câu hỏi nào khớp với bộ lọc này."
+        }
+      },
+      "history": {
+        "status": {
+          "inProgress": "Đang làm",
+          "completed": "Đã hoàn thành",
+          "abandoned": "Đã hủy"
+        },
+        "missingTest": "Đề thi không còn khả dụng",
+        "selectedParts": "Các phần: {parts}",
+        "result": "{correct}/{total} ({accuracy}%)",
+        "alreadyCompleted": "Lượt làm bài đã hoàn thành. Bạn có thể xem kết quả.",
+        "cancelFailed": "Chưa xác nhận được việc hủy. Hãy tải lại lịch sử và thử lại.",
+        "continueFailed": "Không thể mở lượt làm bài. Vui lòng thử lại.",
+        "pagination": {
+          "range": "Hiển thị {from}–{to} trong {total} lượt làm bài",
+          "all": "{count} lượt làm bài"
+        }
+      }
+    },
+    "attempt": {
+      "unavailable": "Chưa có",
+      "duration": {
+        "hours": "{count} giờ",
+        "minutes": "{count} phút",
+        "seconds": "{count} giây"
+      }
+    }
+  }
+}

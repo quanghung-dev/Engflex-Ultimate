@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 const MINIO_INTERNAL =
-	process.env.MEDIA_INTERNAL_ENDPOINT ?? "http://localhost:9000";
-const MEDIA_BUCKET = process.env.MEDIA_BUCKET ?? "lesson-audio";
+	process.env.MEDIA_INTERNAL_ENDPOINT?.trim() || "http://localhost:9000";
+const MEDIA_BUCKET = process.env.MEDIA_BUCKET?.trim() || "lesson-audio";
 
 /**
  * Same-origin media forward for every lesson-media object (audio today,
@@ -46,7 +46,6 @@ export const Route = createFileRoute("/api/media/$")({
 						{ status: 502 },
 					);
 				}
-				const bytes = await upstream.arrayBuffer();
 				const headers: Record<string, string> = {};
 				for (const h of [
 					"content-type",
@@ -59,7 +58,10 @@ export const Route = createFileRoute("/api/media/$")({
 					const v = upstream.headers.get(h);
 					if (v) headers[h] = v;
 				}
-				return new Response(bytes, { status: upstream.status, headers });
+				return new Response(upstream.body, {
+					status: upstream.status,
+					headers,
+				});
 			},
 		},
 	},

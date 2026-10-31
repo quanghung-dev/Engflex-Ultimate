@@ -1,0 +1,667 @@
+{
+  "$defs": {
+    "AudioRange": {
+      "additionalProperties": false,
+      "properties": {
+        "assetId": {
+          "title": "Assetid",
+          "type": "string"
+        },
+        "startTime": {
+          "title": "Starttime",
+          "type": "number"
+        },
+        "endTime": {
+          "title": "Endtime",
+          "type": "number"
+        }
+      },
+      "required": [
+        "assetId",
+        "startTime",
+        "endTime"
+      ],
+      "title": "AudioRange",
+      "type": "object"
+    },
+    "Block": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "sourceRegion",
+            "paragraph",
+            "heading",
+            "table",
+            "image",
+            "emailHeader",
+            "chatMessage"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Text"
+        },
+        "rows": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rows"
+        },
+        "inline": {
+          "items": {
+            "$ref": "#/$defs/Inline"
+          },
+          "title": "Inline",
+          "type": "array"
+        },
+        "assetId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Assetid"
+        },
+        "vietnameseText": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vietnamesetext"
+        },
+        "sourceRefs": {
+          "items": {
+            "$ref": "#/$defs/Ref"
+          },
+          "title": "Sourcerefs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "sourceRefs"
+      ],
+      "title": "Block",
+      "type": "object"
+    },
+    "Inline": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "text",
+            "blank",
+            "insertionPoint",
+            "markedText"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Text"
+        },
+        "questionId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Questionid"
+        }
+      },
+      "required": [
+        "id",
+        "type"
+      ],
+      "title": "Inline",
+      "type": "object"
+    },
+    "Item": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "single",
+            "group"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "questions": {
+          "items": {
+            "$ref": "#/$defs/Question"
+          },
+          "title": "Questions",
+          "type": "array"
+        },
+        "passages": {
+          "items": {
+            "$ref": "#/$defs/Passage"
+          },
+          "title": "Passages",
+          "type": "array"
+        },
+        "transcript": {
+          "items": {
+            "$ref": "#/$defs/TranscriptLine"
+          },
+          "title": "Transcript",
+          "type": "array"
+        },
+        "itemAudio": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AudioRange"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "stimulusAudio": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AudioRange"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "media": {
+          "items": {
+            "$ref": "#/$defs/Block"
+          },
+          "title": "Media",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "questions"
+      ],
+      "title": "Item",
+      "type": "object"
+    },
+    "Option": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "enum": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "title": "Key",
+          "type": "string"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Text"
+        },
+        "sourceRefs": {
+          "items": {
+            "$ref": "#/$defs/Ref"
+          },
+          "title": "Sourcerefs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "key",
+        "text"
+      ],
+      "title": "Option",
+      "type": "object"
+    },
+    "Part": {
+      "additionalProperties": false,
+      "properties": {
+        "partNumber": {
+          "title": "Partnumber",
+          "type": "integer"
+        },
+        "section": {
+          "enum": [
+            "listening",
+            "reading"
+          ],
+          "title": "Section",
+          "type": "string"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/Item"
+          },
+          "title": "Items",
+          "type": "array"
+        }
+      },
+      "required": [
+        "partNumber",
+        "section",
+        "items"
+      ],
+      "title": "Part",
+      "type": "object"
+    },
+    "Passage": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "format": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Format"
+        },
+        "blocks": {
+          "items": {
+            "$ref": "#/$defs/Block"
+          },
+          "title": "Blocks",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "blocks"
+      ],
+      "title": "Passage",
+      "type": "object"
+    },
+    "Question": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "questionNumber": {
+          "title": "Questionnumber",
+          "type": "integer"
+        },
+        "stem": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stem"
+        },
+        "options": {
+          "items": {
+            "$ref": "#/$defs/Option"
+          },
+          "title": "Options",
+          "type": "array"
+        },
+        "correctKey": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Correctkey"
+        },
+        "explanation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Explanation"
+        },
+        "vietnameseText": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vietnamesetext"
+        },
+        "vocabulary": {
+          "items": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "title": "Vocabulary",
+          "type": "array"
+        },
+        "targetIds": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Targetids",
+          "type": "array"
+        },
+        "sourceRefs": {
+          "items": {
+            "$ref": "#/$defs/Ref"
+          },
+          "title": "Sourcerefs",
+          "type": "array"
+        },
+        "answerRefs": {
+          "items": {
+            "$ref": "#/$defs/Ref"
+          },
+          "title": "Answerrefs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "questionNumber"
+      ],
+      "title": "Question",
+      "type": "object"
+    },
+    "Ref": {
+      "additionalProperties": false,
+      "properties": {
+        "sourceId": {
+          "title": "Sourceid",
+          "type": "string"
+        },
+        "pageNumber": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pagenumber"
+        },
+        "bbox": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bbox"
+        },
+        "blockId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Blockid"
+        },
+        "startTime": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Starttime"
+        },
+        "endTime": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Endtime"
+        }
+      },
+      "required": [
+        "sourceId"
+      ],
+      "title": "Ref",
+      "type": "object"
+    },
+    "TranscriptLine": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "prompt",
+            "option",
+            "utterance"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "speaker": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Speaker"
+        },
+        "optionKey": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Optionkey"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "vietnameseText": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vietnamesetext"
+        },
+        "sourceRefs": {
+          "items": {
+            "$ref": "#/$defs/Ref"
+          },
+          "title": "Sourcerefs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "role",
+        "text",
+        "sourceRefs"
+      ],
+      "title": "TranscriptLine",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": "0.1.0",
+      "default": "0.1.0",
+      "title": "Schemaversion",
+      "type": "string"
+    },
+    "collectionId": {
+      "default": "toeic_2024",
+      "title": "Collectionid",
+      "type": "string"
+    },
+    "testId": {
+      "title": "Testid",
+      "type": "string"
+    },
+    "testNumber": {
+      "title": "Testnumber",
+      "type": "integer"
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "sourceManifestHash": {
+      "title": "Sourcemanifesthash",
+      "type": "string"
+    },
+    "audioAssetId": {
+      "title": "Audioassetid",
+      "type": "string"
+    },
+    "assets": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Assets",
+      "type": "array"
+    },
+    "parts": {
+      "items": {
+        "$ref": "#/$defs/Part"
+      },
+      "title": "Parts",
+      "type": "array"
+    }
+  },
+  "required": [
+    "testId",
+    "testNumber",
+    "title",
+    "sourceManifestHash",
+    "audioAssetId",
+    "assets",
+    "parts"
+  ],
+  "title": "Test",
+  "type": "object"
+}

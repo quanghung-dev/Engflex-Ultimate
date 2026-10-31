@@ -2,12 +2,13 @@
 import type * as Enums from "./enums.ts";
 
 export const ACTIVITY_TYPE_VALUES = ["reading", "listening", "writing", "speaking"] as const satisfies readonly Enums.ActivityType[];
-export const ATTEMPT_STATUS_VALUES = ["in_progress", "completed"] as const satisfies readonly Enums.AttemptStatus[];
-export const ATTEMPT_TYPE_VALUES = ["reading", "listening", "writing", "speaking", "shadowing", "flashcard", "benchmark", "dictation", "lesson"] as const satisfies readonly Enums.AttemptType[];
+export const ATTEMPT_STATUS_VALUES = ["in_progress", "completed", "abandoned"] as const satisfies readonly Enums.AttemptStatus[];
+export const ATTEMPT_TYPE_VALUES = ["reading", "listening", "writing", "speaking", "shadowing", "flashcard", "benchmark", "dictation", "lesson", "exam"] as const satisfies readonly Enums.AttemptType[];
 export const CEFR_VALUES = ["A1", "A2", "B1", "B2", "C1", "C2"] as const satisfies readonly Enums.CEFR[];
 export const CONTENT_TYPE_VALUES = ["lesson", "video", "story"] as const satisfies readonly Enums.ContentType[];
 export const CONVERSATION_MODE_VALUES = ["free_talk", "roleplay"] as const satisfies readonly Enums.ConversationMode[];
 export const CONVERSATION_STATUS_VALUES = ["pending", "live", "ended", "failed"] as const satisfies readonly Enums.ConversationStatus[];
+export const EXAM_MODE_VALUES = ["exam", "practice"] as const satisfies readonly Enums.ExamMode[];
 export const GENDER_VALUES = ["male", "female"] as const satisfies readonly Enums.Gender[];
 export const GOAL_VALUES = ["travel", "work", "exams", "daily", "fun"] as const satisfies readonly Enums.Goal[];
 export const INTEREST_TOPIC_VALUES = ["travel", "business", "movies_tv", "technology", "food", "music", "sports", "news"] as const satisfies readonly Enums.InterestTopic[];

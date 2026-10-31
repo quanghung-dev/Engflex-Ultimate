@@ -8,6 +8,7 @@ import {
 	BookOpen,
 	ChevronRight,
 	Clapperboard,
+	GraduationCap,
 	House,
 	Info,
 } from "lucide-react";
@@ -73,6 +74,12 @@ const NAV_GROUPS = [
 				to: APP_ROUTES.STORIES.LIST,
 				icon: BookMarked,
 				tile: "bg-[#0284c7]",
+			},
+			{
+				title: () => m["nav.item.exams"](),
+				to: APP_ROUTES.EXAMS.TOEIC.LIST,
+				icon: GraduationCap,
+				tile: "bg-[#059669]",
 			},
 			{
 				title: () => m["nav.item.voice"](),

@@ -48,6 +48,19 @@ export const APP_ROUTES = {
 		LIST: "/stories",
 		DETAIL: "/stories/$slug",
 	},
+	MEDIA: {
+		DETAIL: "/api/media/$",
+	},
+	EXAMS: {
+		TOEIC: {
+			LIST: "/exams/toeic",
+			CATEGORY: "/exams/toeic/$categoryId",
+			TEST: "/exams/toeic/$categoryId/$testId",
+			SESSION: "/exams/toeic/session/$id",
+			RESULT: "/exams/toeic/session/$id/result",
+			HISTORY: "/exams/toeic/history",
+		},
+	},
 	/**
 	 * Clerk's catch-all pages. The file routes are `/sign-in/$` splats, so a
 	 * typed `to` needs the splat id — but `redirect({ href })` bypasses route

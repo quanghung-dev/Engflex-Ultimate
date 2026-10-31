@@ -15,4 +15,5 @@ const (
 	AttemptTypeBenchmark AttemptType = "benchmark"
 	AttemptTypeDictation AttemptType = "dictation"
 	AttemptTypeLesson    AttemptType = "lesson"
+	AttemptTypeExam      AttemptType = "exam"
 )
