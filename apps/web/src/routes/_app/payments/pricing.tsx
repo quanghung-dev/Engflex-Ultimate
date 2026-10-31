@@ -42,9 +42,7 @@ function PricingPage() {
 	useBreadcrumbs([{ label: m["payments.pricing.crumb"]() }]);
 	const { data: plans, isPending, isError } = usePlans();
 	const checkout = useStartCheckout();
-	const [pendingPlan, setPendingPlan] = useState<SubscriptionPlan | null>(
-		null,
-	);
+	const [pendingPlan, setPendingPlan] = useState<SubscriptionPlan | null>(null);
 
 	function handleCheckout(plan: SubscriptionPlan) {
 		setPendingPlan(plan);

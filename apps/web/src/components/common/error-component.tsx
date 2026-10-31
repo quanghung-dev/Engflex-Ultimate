@@ -71,7 +71,9 @@ export function ErrorComponent({
 					{extraAction}
 					<Button asChild size="lg">
 						<Link
-							to={primaryTo ?? (isSignedIn ? APP_ROUTES.HOME : APP_ROUTES.LANDING)}
+							to={
+								primaryTo ?? (isSignedIn ? APP_ROUTES.HOME : APP_ROUTES.LANDING)
+							}
 						>
 							{primaryTo || isSignedIn
 								? primaryLabel
