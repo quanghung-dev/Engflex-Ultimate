@@ -1,0 +1,21 @@
+# Enforce LF line endings for all text files across all operating systems
+* text=auto eol=lf
+
+# Binary files that should not be normalized
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.mp3 binary
+*.wav binary
+*.mp4 binary
+*.webm binary
+*.pdf binary
+*.zip binary
+*.tar.gz binary

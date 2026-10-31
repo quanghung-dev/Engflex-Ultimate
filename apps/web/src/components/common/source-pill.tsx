@@ -1,6 +1,6 @@
 import type { VocabularySource } from "@engflex/contracts";
 import { cn } from "cn";
-import { BookOpen, PenLine, Sparkles } from "lucide-react";
+import { BookOpen, Clapperboard, PenLine, Sparkles } from "lucide-react";
 import { m } from "#/paraglide/messages";
 
 const SOURCE = {
@@ -9,7 +9,9 @@ const SOURCE = {
 		label: () => m["vocabulary.source.conversation"](),
 		icon: Sparkles,
 	},
+	video: { label: () => m["vocabulary.source.video"](), icon: Clapperboard },
 	manual: { label: () => m["vocabulary.source.manual"](), icon: PenLine },
+	story: { label: () => m["vocabulary.source.story"](), icon: BookOpen },
 } as const;
 
 export function SourcePill({

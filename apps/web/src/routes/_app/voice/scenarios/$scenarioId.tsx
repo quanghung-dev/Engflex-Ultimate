@@ -1,11 +1,10 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
+import { BackButton } from "#/components/common/back-button";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
-import { Button } from "#/components/ui/button";
 import { ScenarioDetailBody } from "#/features/voice/components/scenario-detail/scenario-detail-body";
 import { ScenarioDetailHero } from "#/features/voice/components/scenario-detail/scenario-detail-hero";
 import { ScenarioDetailSide } from "#/features/voice/components/scenario-detail/scenario-detail-side";
@@ -14,7 +13,7 @@ import {
 	useCreateConversation,
 	useScenario,
 } from "#/features/voice/queries";
-import { loadOr404 } from "#/lib/route-loader";
+import { loadOr404 } from "#/lib/router/route-loader";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/voice/scenarios/$scenarioId")({
@@ -75,12 +74,10 @@ function ScenarioDetailPage() {
 	return (
 		<PageLayout
 			action={
-				<Button asChild variant="ghost" className="w-fit">
-					<Link to={APP_ROUTES.VOICE.SCENARIOS}>
-						<ArrowLeft data-icon="inline-start" />
-						{m["voice.detail.back"]()}
-					</Link>
-				</Button>
+				<BackButton
+					to={APP_ROUTES.VOICE.SCENARIOS}
+					label={m["voice.detail.back"]()}
+				/>
 			}
 		>
 			<ScenarioDetailHero

@@ -1,20 +1,28 @@
-import { UserButton, useAuth, useUser } from "@clerk/tanstack-react-start";
+import { useAuth, useUser } from "@clerk/tanstack-react-start";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { useStore } from "@tanstack/react-store";
 import { cn } from "cn";
 import {
 	AudioWaveform,
+	BookMarked,
 	BookmarkCheck,
 	BookOpen,
+	ChevronRight,
+	Clapperboard,
 	House,
 	Info,
 	ShieldCheck,
 	Sparkles,
 } from "lucide-react";
+import { useState } from "react";
 import { APP_ROUTES } from "#/app/app-route";
 import { Logo } from "#/components/common/logo";
 import { Avatar } from "#/components/ui/avatar";
 import { Badge } from "#/components/ui/badge";
+import {
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+} from "#/components/ui/collapsible";
 import {
 	Sidebar,
 	SidebarContent,
@@ -25,9 +33,13 @@ import {
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
+	SidebarMenuSub,
+	SidebarMenuSubButton,
+	SidebarMenuSubItem,
+	useSidebar,
 } from "#/components/ui/sidebar";
-import { PROGRESS_SUMMARY } from "#/features/attempts/fixtures";
-import { profileStore } from "#/features/profiles/store";
+import { useProfile } from "#/features/profiles/queries";
+import { AccountButton } from "#/integrations/clerk/account-button";
 import { isAdminClaims } from "#/lib/roles";
 import { m } from "#/paraglide/messages";
 
@@ -45,19 +57,48 @@ const NAV_GROUPS = [
 				title: () => m["nav.item.home"](),
 				to: APP_ROUTES.HOME,
 				icon: House,
-				tile: "bg-[#6c4df0]",
+				tile: "bg-nav-home",
+			},
+			{
+				title: () => m["nav.item.videos"](),
+				to: APP_ROUTES.VIDEOS.LIST,
+				icon: Clapperboard,
+				tile: "bg-[#db2777]",
 			},
 			{
 				title: () => m["nav.item.lessons"](),
 				to: APP_ROUTES.LESSONS.LIST,
 				icon: BookOpen,
-				tile: "bg-[#ea580c]",
+				tile: "bg-nav-lessons",
+			},
+			{
+				title: () => m["nav.item.stories"](),
+				to: APP_ROUTES.STORIES.LIST,
+				icon: BookMarked,
+				tile: "bg-[#0284c7]",
 			},
 			{
 				title: () => m["nav.item.voice"](),
 				to: APP_ROUTES.VOICE.LIST,
 				icon: AudioWaveform,
-				tile: "bg-[#2563eb]",
+				tile: "bg-nav-voice",
+				// Section landings and list-level pages, like vocabulary. Every
+				// other /voice path is a drill-down — the room or one session —
+				// and lights the nearest entry (`isSubActive`, longest match).
+				items: [
+					{
+						title: () => m["voice.crumb.modes"](),
+						to: APP_ROUTES.VOICE.LIST,
+					},
+					{
+						title: () => m["voice.crumb.scenarios"](),
+						to: APP_ROUTES.VOICE.SCENARIOS,
+					},
+					{
+						title: () => m["voice.crumb.history"](),
+						to: APP_ROUTES.VOICE.HISTORY.LIST,
+					},
+				],
 			},
 		],
 	},
@@ -68,7 +109,7 @@ const NAV_GROUPS = [
 				title: () => m["nav.item.vocabulary"](),
 				to: APP_ROUTES.VOCABULARY.LIST,
 				icon: BookmarkCheck,
-				tile: "bg-[#059669]",
+				tile: "bg-nav-vocab",
 			},
 		],
 	},
@@ -118,38 +159,13 @@ export function AppSidebar() {
 					>
 						<SidebarGroupLabel>{group.label()}</SidebarGroupLabel>
 						<SidebarMenu>
-							{group.items.map((item) => {
-								const isActive =
-									item.to === APP_ROUTES.HOME
-										? pathname === APP_ROUTES.HOME
-										: pathname.startsWith(item.to);
-								return (
-									<SidebarMenuItem key={item.title()}>
-										<SidebarMenuButton
-											asChild
-											isActive={isActive}
-											tooltip={item.title()}
-										>
-											<Link to={item.to} className="font-medium">
-												<span
-													className={cn(
-														"flex size-6 shrink-0 items-center justify-center rounded-[7px] text-white",
-														item.tile,
-													)}
-												>
-													<item.icon className="size-3.5" />
-												</span>
-												<span className="text-sidebar-foreground">
-													{item.title()}
-												</span>
-												{isActive ? (
-													<span className="ml-auto size-1.5 rounded-full bg-sidebar-primary group-data-[collapsible=icon]:hidden" />
-												) : null}
-											</Link>
-										</SidebarMenuButton>
-									</SidebarMenuItem>
-								);
-							})}
+							{group.items.map((item) => (
+								<NavMenuItem
+									key={item.title()}
+									item={item}
+									pathname={pathname}
+								/>
+							))}
 						</SidebarMenu>
 					</SidebarGroup>
 				))}
@@ -189,39 +205,172 @@ export function AppSidebar() {
 	);
 }
 
+/** A nav entry with `items` renders as the collapsible branch; the union member
+ *  is narrowed by the `in` check below, which keeps the literal `to` types that
+ *  `<Link>` needs to resolve. */
+type NavItem = (typeof NAV_GROUPS)[number]["items"][number];
+
+/**
+ * One nav entry. Without sub-destinations it is a link to its page; with them it
+ * becomes a collapsible section, and the section's list-level pages sit inside.
+ */
+function NavMenuItem({ item, pathname }: { item: NavItem; pathname: string }) {
+	const { state, setOpen } = useSidebar();
+	// A section is active on its own landing (`to`) and on the list-level pages
+	// its sub-entries expose. The landing is not always the section's prefix:
+	// `VOCABULARY.DECKS.LIST` is a sibling of `VOCABULARY.WORDS.LIST`, not an
+	// ancestor, so a bare `startsWith(item.to)` would shut the section and hide
+	// the sub-menu on the words pages.
+	const inSection =
+		pathname.startsWith(item.to) ||
+		("items" in item && item.items.some((sub) => pathname.startsWith(sub.to)));
+
+	// Radix is uncontrolled unless `open` is passed, and `defaultOpen` is read
+	// once at mount — a client navigation does not remount the sidebar, so a
+	// client-side hop into a sub-page would leave the section shut. Deriving the
+	// state during render (never a syncing effect, per rules/react-effects.md):
+	// with no explicit choice we follow the route, and a choice is stored beside
+	// the section-ness it was made in, so leaving the section resets it.
+	const [choice, setChoice] = useState<{
+		inSection: boolean;
+		open: boolean;
+	} | null>(null);
+	const open = choice?.inSection === inSection ? choice.open : inSection;
+
+	const tile = (
+		<span
+			className={cn(
+				"flex size-6 shrink-0 items-center justify-center rounded-[7px] text-white",
+				item.tile,
+			)}
+		>
+			<item.icon className="size-3.5" />
+		</span>
+	);
+	const label = <span className="text-sidebar-foreground">{item.title()}</span>;
+
+	if (!("items" in item)) {
+		const isActive =
+			item.to === APP_ROUTES.HOME ? pathname === APP_ROUTES.HOME : inSection;
+		return (
+			<SidebarMenuItem>
+				<SidebarMenuButton asChild isActive={isActive} tooltip={item.title()}>
+					<Link to={item.to} className="font-medium">
+						{tile}
+						{label}
+						{isActive ? (
+							<span className="ml-auto size-1.5 rounded-full bg-sidebar-primary group-data-[collapsible=icon]:hidden" />
+						) : null}
+					</Link>
+				</SidebarMenuButton>
+			</SidebarMenuItem>
+		);
+	}
+
+	return (
+		<Collapsible
+			asChild
+			open={open}
+			className="group/collapsible"
+			onOpenChange={(next) => {
+				// Collapsed, the sub-menu is `hidden`, so the toggle would flip a
+				// group nobody can see. Expanding the rail is the action the click
+				// should have taken instead.
+				if (state === "collapsed") {
+					setOpen(true);
+					return;
+				}
+				setChoice({ inSection, open: next });
+			}}
+		>
+			<SidebarMenuItem>
+				<CollapsibleTrigger asChild>
+					{/* No `isActive` here: the parent stays a neutral header for the
+					    section, and the open chevron plus the list below show where you
+					    are. The mark belongs to the lit child entry. */}
+					<SidebarMenuButton tooltip={item.title()}>
+						{tile}
+						{label}
+						<ChevronRight className="ml-auto size-3.5 shrink-0 text-sidebar-foreground/60 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
+					</SidebarMenuButton>
+				</CollapsibleTrigger>
+				<CollapsibleContent>
+					<SidebarMenuSub>
+						{item.items.map((sub) => {
+							const isActive = isSubActive(sub.to, item.items, pathname);
+							return (
+								<SidebarMenuSubItem key={sub.title()}>
+									<SidebarMenuSubButton asChild isActive={isActive}>
+										<Link to={sub.to}>
+											<span>{sub.title()}</span>
+											{isActive ? (
+												<span className="ml-auto size-1.5 rounded-full bg-sidebar-primary group-data-[collapsible=icon]:hidden" />
+											) : null}
+										</Link>
+									</SidebarMenuSubButton>
+								</SidebarMenuSubItem>
+							);
+						})}
+					</SidebarMenuSub>
+				</CollapsibleContent>
+			</SidebarMenuItem>
+		</Collapsible>
+	);
+}
+
+/**
+ * A section's landing route is also the bare prefix of its siblings' routes
+ * (`VOICE.LIST` versus `VOICE.SCENARIOS`), so a plain `startsWith` on both
+ * would light *both* sub-items while the reader is inside scenarios — the
+ * modes page is not an ancestor of the scenarios list, it just shares its
+ * prefix. Longest match wins: an entry yields the highlight to a sibling whose
+ * route is the deeper match for the same pathname.
+ */
+function isSubActive(
+	to: string,
+	siblings: readonly { to: string }[],
+	pathname: string,
+) {
+	return (
+		pathname.startsWith(to) &&
+		!siblings.some(
+			(other) =>
+				other.to !== to &&
+				other.to.startsWith(to) &&
+				pathname.startsWith(other.to),
+		)
+	);
+}
+
 function SidebarUserCard() {
 	const { user } = useUser();
-	const level = useStore(
-		profileStore,
-		(state) => state.profile.preferences.level,
-	);
+	const level = useProfile().data?.preferences.level;
 
 	const name = user?.fullName ?? user?.firstName ?? m["nav.user.learner"]();
 
 	return (
 		<div className="flex items-center gap-2.5 rounded-[16px] border-2 border-sidebar-border bg-card p-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-full group-data-[collapsible=icon]:border-0 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:p-0">
 			<Avatar className="size-7 shrink-0">
-				<UserButton />
+				<AccountButton />
 			</Avatar>
 			<div className="flex min-w-0 flex-col leading-tight group-data-[collapsible=icon]:hidden">
 				<span className="truncate text-[13px] font-bold text-card-foreground">
 					{name}
 				</span>
-				<span className="truncate text-[11px] font-medium text-muted-foreground">
-					{m["progress.streak"]({ count: PROGRESS_SUMMARY.streakDays })}
-				</span>
 			</div>
-			<Badge
-				variant="secondary"
-				className={cn(
-					"chip chip-accent ml-auto px-2 py-0.5 text-[11px]",
-					// The wrapper centres on the avatar alone, so a `shrink-0` badge
-					// would re-introduce the off-centre gap once both are hidden.
-					"group-data-[collapsible=icon]:hidden",
-				)}
-			>
-				{LEVEL_LABELS[level]()}
-			</Badge>
+			{level ? (
+				<Badge
+					variant="secondary"
+					className={cn(
+						"chip chip-accent ml-auto px-2 py-0.5 text-[11px]",
+						// The wrapper centres on the avatar alone, so a `shrink-0` badge
+						// would re-introduce the off-centre gap once both are hidden.
+						"group-data-[collapsible=icon]:hidden",
+					)}
+				>
+					{LEVEL_LABELS[level]()}
+				</Badge>
+			) : null}
 		</div>
 	);
 }

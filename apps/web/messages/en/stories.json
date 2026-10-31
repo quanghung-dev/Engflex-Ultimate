@@ -1,0 +1,33 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "stories": {
+    "title": "Stories",
+    "tabs": {
+      "all": "All stories",
+      "saved": "Saved",
+      "comingSoon": "Coming soon"
+    },
+    "filter": {
+      "allLevels": "All levels",
+      "allCollections": "All collections",
+      "searchCollectionPlaceholder": "Search collections...",
+      "searchPlaceholder": "Search stories..."
+    },
+    "card": {
+      "hasAudio": "Audio",
+      "minutes": "{count} min"
+    },
+    "empty": "No stories found",
+    "showingRange": "Showing {from}-{to} of {total} stories",
+    "showingAll": "Showing {total} stories",
+    "reader": {
+      "listenAndRead": "LISTEN & READ",
+      "readOnly": "READ ONLY",
+      "hideTranslation": "HIDE TRANSLATION",
+      "showTranslation": "SHOW TRANSLATION",
+      "save": "SAVE",
+      "saved": "SAVED",
+      "disclaimer": "Lesson content was compiled by team Parroto and intellectual property of Parroto. Please do not copy or redistribute in any form."
+    }
+  }
+}

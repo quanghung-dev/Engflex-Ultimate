@@ -30,6 +30,10 @@ export type RoomSource =
 			turns: Turn[];
 			correctionText: string;
 			transcript: "live" | "saved";
+			/** Preview-only scene override (fixtures carry no scenarioId). */
+			scene?: { title: string; body: string };
+			/** Preview-only duration (fixtures carry no durationSec). */
+			durationSec?: number;
 	  };
 
 /** Everything session-ish the room needs, as plain data + callbacks. */
@@ -42,6 +46,8 @@ export type RoomSession = {
 	errorDetail: string | null;
 	/** Countdown text ("09:59 left"); null when uncapped (free talk) or unknown. */
 	timeLeft?: string | null;
+	/** The scenario this session runs, for the call header; absent = free talk. */
+	scene?: { title: string; body: string };
 	/** End server-side, then leave. */
 	onExit: () => void;
 	/** Leave without ending (already ended). */
@@ -109,13 +115,21 @@ export function VoiceRoom({
 		) : (
 			<EndedReview
 				turns={source.turns}
+				scene={source.scene}
+				durationSec={source.durationSec}
 				analyze={{ pending: false, failed: false, onAnalyze: noopAnalyze }}
 				onBack={session.onBack}
 			/>
 		);
 	}
 
-	const objective = m["voice.room.freeTalk.objective"]();
+	// The call header shows the scenario the session runs; free talk is the
+	// default. The DEV preview's fixture scene rides the same slot, so the
+	// preview mirrors a real scenario session.
+	const scene =
+		session.scene ?? (source.kind === "fixture" ? source.scene : undefined);
+	const title = scene?.title ?? m["voice.room.freeTalk.title"]();
+	const objective = scene?.body ?? m["voice.room.freeTalk.objective"]();
 	const transcript =
 		source.kind === "live" ? (
 			<TranscriptPanel
@@ -166,7 +180,7 @@ export function VoiceRoom({
 									objective={objective}
 									voice={
 										<VoicePanel
-											title={m["voice.room.freeTalk.title"]()}
+											title={title}
 											objective={objective}
 											ending={session.endPending}
 											timeLeft={session.timeLeft}

@@ -14,13 +14,24 @@
       "clear": "Xóa",
       "retry": "Thử lại",
       "backHome": "Về trang chủ",
-      "copy": "Sao chép"
+      "copy": "Sao chép",
+      "save": "Lưu"
     },
     "audio": {
       "playPronunciation": "Nghe phát âm",
       "play": "Phát âm thanh",
       "pause": "Tạm dừng",
       "total": "Tổng"
+    },
+    "language": {
+      "trigger": "Ngôn ngữ giải thích",
+      "label": "Ngôn ngữ giải thích",
+      "hint": "Định nghĩa và mẹo bằng ngôn ngữ này — câu ví dụ vẫn giữ tiếng Anh.",
+      "dontAskAgain": "Không hỏi lại"
+    },
+    "pager": {
+      "previous": "Trước",
+      "next": "Sau"
     },
     "toast": {
       "copiedClipboard": "Đã sao chép",
@@ -36,7 +47,8 @@
       "close": "Đóng",
       "sidebar": "Thanh bên",
       "sidebarDescription": "Hiển thị thanh bên trên di động.",
-      "toggleSidebar": "Ẩn/hiện thanh bên"
+      "toggleSidebar": "Ẩn/hiện thanh bên",
+      "pagination": "Phân trang"
     },
     "theme": {
       "label": "Giao diện",
@@ -47,6 +59,13 @@
     "premium": {
       "badge": "Premium",
       "upgradeAction": "Nâng cấp để mở khoá"
+    },
+    "guide": {
+      "dismiss": "Đừng hiện mẹo này nữa"
+    },
+    "dev": {
+      "title": "Đang xây dựng",
+      "body": "Góc này của app vẫn đang làm dở. Bạn quay lại sau nhé!"
     }
   }
 }

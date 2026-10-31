@@ -21,12 +21,6 @@ export interface ListActivities {
   lessonId: string;
 }
 /**
- * SaveBookmark is the POST /lesson-bookmarks body.
- */
-export interface SaveBookmark {
-  lessonId: string;
-}
-/**
  * CheckAnswer grades one reading/listening question. min=0, not required:
  * `required` rejects the zero value, and question 0 is valid.
  */
@@ -38,7 +32,7 @@ export interface CheckAnswer {
 /**
  * ScoreWriting grades one writing part into the open lesson attempt.
  */
-export interface ScoreWriting {
+export interface ScoreWriting extends LanguageParam {
   attemptId: string;
   text: string;
 }

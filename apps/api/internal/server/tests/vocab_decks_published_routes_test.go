@@ -79,7 +79,7 @@ func TestVocabAdminDecksItemsRoutesRequireAuth(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.method+" "+tt.path, func(t *testing.T) {
-			r := server.NewRouter(nil, config.Config{})
+			r := server.NewRouter(nil, config.Config{Cors: config.CorsConfig{AllowedOrigins: []string{"http://localhost:3000"}}})
 			w := httptest.NewRecorder()
 			r.ServeHTTP(w, httptest.NewRequest(tt.method, tt.path, nil))
 			assert.Equal(t, http.StatusUnauthorized, w.Code)

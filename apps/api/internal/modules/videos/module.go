@@ -21,6 +21,9 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 	exerciseSvc := services.NewVideoExerciseService(repositories.NewVideoExerciseRepository(db), premiumSvc)
 	exerciseCtl := controllers.NewVideoExerciseController(exerciseSvc)
 
+	attemptSvc := services.NewVideoAttemptService(repositories.NewAttemptRepository(db), repositories.NewVideoExerciseRepository(db))
+	attemptCtl := controllers.NewVideoAttemptController(attemptSvc)
+
 	transcriptSvc := services.NewVideoTranscriptService(repositories.NewVideoTranscriptRepository(db))
 	transcriptCtl := controllers.NewVideoTranscriptController(transcriptSvc)
 
@@ -38,6 +41,10 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 	e.POST("", middleware.RequireAuth(), middleware.RequireAdmin(), exerciseCtl.Create)
 	e.PUT("/:id", middleware.RequireAuth(), middleware.RequireAdmin(), exerciseCtl.Update)
 	e.DELETE("/:id", middleware.RequireAuth(), middleware.RequireAdmin(), exerciseCtl.Delete)
+	e.POST("/:id/attempts", middleware.RequireAuth(), attemptCtl.StartAttempt)
+	e.GET("/:id/attempts/open", middleware.RequireAuth(), attemptCtl.GetOpenAttempt)
+	e.PUT("/:id/attempts/:attemptId/progress", middleware.RequireAuth(), attemptCtl.SaveProgress)
+	e.POST("/:id/attempts/:attemptId/complete", middleware.RequireAuth(), attemptCtl.CompleteAttempt)
 
 	t := rg.Group("/video-transcripts")
 	t.GET("", middleware.RequireAuth(), transcriptCtl.List)
@@ -53,4 +60,5 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 	c.POST("", middleware.RequireAuth(), middleware.RequireAdmin(), categoryCtl.Create)
 	c.PUT("/:id", middleware.RequireAuth(), middleware.RequireAdmin(), categoryCtl.Update)
 	c.DELETE("/:id", middleware.RequireAuth(), middleware.RequireAdmin(), categoryCtl.Delete)
+	c.GET("/preview", middleware.RequireAuth(), categoryCtl.ListWithPreview)
 }

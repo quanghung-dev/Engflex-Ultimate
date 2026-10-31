@@ -74,7 +74,9 @@
     "source": {
       "lesson": "Từ bài học",
       "conversation": "Từ hội thoại AI",
-      "manual": "Tùy chỉnh"
+      "video": "Từ video",
+      "manual": "Tùy chỉnh",
+      "story": "Từ truyện"
     },
     "sourceLine": {
       "lesson": "Từ bài học: {id}",

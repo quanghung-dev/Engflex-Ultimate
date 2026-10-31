@@ -6,18 +6,6 @@ export const API_ROUTES = {
 		ME: "/profiles/me",
 		BY_ID: (id: ApiId) => `/profiles/${id}`,
 	},
-	CONTENTS: {
-		LIST: "/contents",
-		BY_ID: (id: ApiId) => `/contents/${id}`,
-	},
-	EXERCISES: {
-		LIST: "/exercises",
-		BY_ID: (id: ApiId) => `/exercises/${id}`,
-	},
-	ATTEMPTS: {
-		LIST: "/attempts",
-		BY_ID: (id: ApiId) => `/attempts/${id}`,
-	},
 	VOCABULARY: {
 		LIST: "/vocabulary",
 		BY_ID: (id: ApiId) => `/vocabulary/${id}`,
@@ -103,6 +91,7 @@ export const API_ROUTES = {
 		LIST: "/lessons",
 		BY_ID: (id: ApiId) => `/lessons/${id}`,
 		BY_SLUG: (slug: string) => `/lessons/by-slug/${slug}`,
+		PROGRESS: "/lessons/progress",
 		START_ATTEMPT: (id: ApiId) => `/lessons/${id}/attempts`,
 		OPEN_ATTEMPT: (id: ApiId) => `/lessons/${id}/attempts/open`,
 		CHECK: (activityId: ApiId) => `/lesson-activities/${activityId}/check`,
@@ -110,4 +99,40 @@ export const API_ROUTES = {
 		PRONOUNCE: (activityId: ApiId) =>
 			`/lesson-activities/${activityId}/pronounce`,
 	},
+	PROGRESS: {
+		SUMMARY: "/progress",
+	},
+	VIDEOS: {
+		LIST: "/video-exercises",
+		BY_ID: (id: ApiId) => `/video-exercises/${id}`,
+		CATEGORIES_PREVIEW: "/video-categories/preview",
+		ATTEMPTS: {
+			START: (id: ApiId) => `/video-exercises/${id}/attempts`,
+			OPEN: (id: ApiId) => `/video-exercises/${id}/attempts/open`,
+			SAVE_PROGRESS: (id: ApiId, attemptId: ApiId) =>
+				`/video-exercises/${id}/attempts/${attemptId}/progress`,
+			COMPLETE: (id: ApiId, attemptId: ApiId) =>
+				`/video-exercises/${id}/attempts/${attemptId}/complete`,
+		},
+	},
+	STORIES: {
+		LIST: "/stories",
+		BY_ID: (id: ApiId) => `/stories/${id}`,
+		BY_SLUG: (slug: string) => `/stories/by-slug/${slug}`,
+		TOPICS: "/stories/topics",
+	},
+	BOOKMARKS: {
+		LIST: "/bookmarks",
+		CREATE: "/bookmarks",
+		DELETE: (contentType: string, contentId: ApiId) =>
+			`/bookmarks/${contentType}/${contentId}`,
+	},
 } as const;
+
+/**
+ * Server-side API base fallback for local dev (no Coolify env). The
+ * production value comes from the `API_INTERNAL_URL` runtime env (bulk);
+ * this literal lives here — the backend-URLs module, exempt from the
+ * hardcoded-route guard — so services never spell an origin themselves.
+ */
+export const API_INTERNAL_URL_FALLBACK = "http://localhost:8000/api/v1";

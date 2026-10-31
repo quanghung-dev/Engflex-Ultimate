@@ -3,14 +3,16 @@
 // may live in this package alongside the barrel.
 //
 // tygo has no cross-package type resolution, so apps/api/tygo.yaml maps
-// every `enums.*` type and `common.ListParams` to the bare names below.
-// These ambient aliases make those names resolvable inside the generated
-// files (which carry no imports — no frontmatter). They live here, not in a
-// standalone globals.d.ts, because this barrel is the package entry point
-// and is therefore always part of a consumer's TS program. Keep this list
-// in sync with apps/api/internal/common/enums and common.ListParams.
+// every `enums.*` type, `common.ListParams` and `llm.LanguageParam` to the
+// bare names below. These ambient aliases make those names resolvable inside
+// the generated files (which carry no imports — no frontmatter). They live
+// here, not in a standalone globals.d.ts, because this barrel is the package
+// entry point and is therefore always part of a consumer's TS program. Keep
+// this list in sync with apps/api/internal/common/enums, common.ListParams
+// and internal/llm.LanguageParam.
 import type * as Common from './common.ts';
 import type * as Enums from './enums.ts';
+import type * as Llm from './llm.ts';
 
 declare global {
   type ActivityType = Enums.ActivityType;
@@ -26,20 +28,25 @@ declare global {
   type Level = Enums.Level;
   type ListParams = Common.ListParams;
   type PublishStatus = Enums.PublishStatus;
+  type LanguageParam = Llm.LanguageParam;
   type ScenarioDifficulty = Enums.ScenarioDifficulty;
   type TurnRole = Enums.TurnRole;
   type SpanStatus = Enums.SpanStatus;
   type RelevanceStatus = Enums.RelevanceStatus;
-  type VocabularyDomain = Enums.VocabularyDomain;
   type VocabularySort = Enums.VocabularySort;
   type VocabularySource = Enums.VocabularySource;
+  type VocabularyDomain = Enums.VocabularyDomain;
   type SubscriptionStatus = Enums.SubscriptionStatus;
   type SubscriptionPlan = Enums.SubscriptionPlan;
   type PaymentTransactionStatus = Enums.PaymentTransactionStatus;
+  type VocabularyPartOfSpeech = Enums.VocabularyPartOfSpeech;
+  type ContentType = Enums.ContentType;
 }
 
 export * from './common.ts';
+export * from './llm.ts';
 export * from './enums.ts';
+export * from './enum-values.ts';
 export * from './profiles-requests.ts';
 export * from './profiles-responses.ts';
 export * from './lessons-requests.ts';
@@ -58,6 +65,10 @@ export * from './users-requests.ts';
 export * from './users-responses.ts';
 export * from './payments-requests.ts';
 export * from './payments-responses.ts';
+export * from './bookmarks-requests.ts';
+export * from './bookmarks-responses.ts';
+export * from './stories-requests.ts';
+export * from './stories-responses.ts';
 // Both conversations and lessons responses declare structurally identical
 // MispronouncedWord/PhoneDetail/Prosody/ReferencePhone copies; an explicit
 // re-export resolves the star-export ambiguity (TS2308). Structural typing
@@ -68,3 +79,14 @@ export type {
   Prosody,
   ReferencePhone,
 } from './conversations-responses.ts';
+// Both vocabulary requests and responses declare structurally identical
+// VocabularyDetails/VocabularyContext/Collocation/WordForm copies (the
+// request side is a wire copy because tygo cannot resolve cross-package
+// types); an explicit re-export resolves the star-export ambiguity (TS2308).
+// Structural typing keeps both wire copies compatible.
+export type {
+  VocabularyDetails,
+  VocabularyContext,
+  Collocation,
+  WordForm,
+} from './vocabulary-responses.ts';

@@ -1,11 +1,12 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "onboarding": {
-    "crumb": "Bắt đầu",
+    "submitError": "Không thể lưu thiết lập của bạn. Vui lòng thử lại.",
     "tagline": "Nền tảng học tiếng Anh",
     "level": {
       "title": "Chọn trình độ của bạn",
       "subtitle": "Engflex điều chỉnh độ trễ hội thoại và độ phức tạp từ vựng dựa trên điểm xuất phát của bạn.",
+      "error": "Hãy chọn trình độ của bạn để tiếp tục.",
       "option": {
         "beginner": {
           "title": "Sơ cấp",
@@ -14,19 +15,20 @@
         },
         "intermediate": {
           "title": "Trung cấp",
-          "description": "Tham gia họp trôi chảy & hội thoại kỹ thuật",
+          "description": "Tán gẫu tự tin & nói chuyện thường ngày",
           "hint": "AI đề xuất theo chuẩn"
         },
         "advanced": {
           "title": "Nâng cao",
-          "description": "Đàm phán điều hành, sắc thái ngôn ngữ và thuyết trình",
+          "description": "Nói có duyên, kể chuyện mượt",
           "hint": "Chế độ thử thách tư duy"
         }
       }
     },
     "goal": {
-      "title": "Mục tiêu của bạn là gì?",
-      "subtitle": "Các hội thoại mô phỏng sẽ được xây dựng quanh những tình huống công việc quan trọng của bạn.",
+      "title": "Bạn hướng tới những mục tiêu nào?",
+      "subtitle": "Bài học và hội thoại sẽ xoay quanh những lúc bạn cần tiếng Anh nhất.",
+      "error": "Hãy chọn ít nhất 1 mục tiêu để tiếp tục.",
       "option": {
         "travel": "Du lịch",
         "work": "Công việc & Sự nghiệp",
@@ -37,7 +39,7 @@
     },
     "topics": {
       "title": "Chọn chủ đề bạn thích",
-      "subtitle": "Chọn từ 2 chủ đề trở lên để tạo tình huống học tập và kịch bản luyện nói AI.",
+      "subtitle": "Chọn ít nhất 2 chủ đề để app làm bài học và trò luyện nói hợp gu bạn.",
       "option": {
         "travel": "Du lịch",
         "business": "Kinh doanh",
@@ -68,19 +70,22 @@
         },
         "c30": {
           "label": "Bứt tốc làm chủ",
-          "sub": "Chiều sâu điều hành"
+          "sub": "Học sâu"
         }
       },
       "recommended": "Khuyên dùng",
-      "minutesUnit": "{count} phút"
+      "minutesUnit": "{count} phút",
+      "error": "Hãy chọn thời lượng học mỗi ngày để tiếp tục."
     },
-    "diagnostic": {
-      "percentile": "Bạn nằm trong top 18% người dùng giao tiếp kỹ thuật tốt nhất trên Engflex",
-      "acceleration": "Đã phát hiện tiềm năng bứt phá! Dựa trên mục tiêu và chủ đề bạn đã chọn, độ trôi chảy khi nói của bạn có thể tiến bộ nhanh gấp 2,4 lần ở chế độ mô phỏng.",
-      "chartLabel": "Lục giác chẩn đoán âm thanh Engflex",
-      "baseline": "Đã mở khóa mức nền tối ưu",
-      "latency": "Độ trễ hội thoại dự đoán",
-      "clarity": "Độ rõ của giọng nói",
+    "summary": {
+      "title": "Bạn đã sẵn sàng!",
+      "subtitle": "Đây là kế hoạch chúng ta sẽ bám theo.",
+      "level": "Trình độ",
+      "commitment": "Mục tiêu mỗi ngày",
+      "goals": "Mục tiêu",
+      "topics": "Chủ đề",
+      "chartLabel": "Bản xem trước hồ sơ nói",
+      "previewCaption": "Hồ sơ nói của bạn sẽ mở khóa sau buổi luyện nói đầu tiên.",
       "axes": {
         "precision": "CHÍNH XÁC",
         "lexical": "TỪ VỰNG",

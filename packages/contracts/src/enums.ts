@@ -17,12 +17,11 @@ export type ActivityType = typeof ActivityTypeReading | typeof ActivityTypeListe
 // source: attempt_status.go
 
 /**
- * AttemptStatus is the lesson-attempt lifecycle (Moodle parity).
+ * AttemptStatus is the attempt lifecycle.
  */
 export const AttemptStatusInProgress = "in_progress";
 export const AttemptStatusCompleted = "completed";
-export const AttemptStatusAbandoned = "abandoned";
-export type AttemptStatus = typeof AttemptStatusInProgress | typeof AttemptStatusCompleted | typeof AttemptStatusAbandoned;
+export type AttemptStatus = typeof AttemptStatusInProgress | typeof AttemptStatusCompleted;
 
 //////////
 // source: attempt_type.go
@@ -60,6 +59,17 @@ export const CEFRB2 = "B2";
 export const CEFRC1 = "C1";
 export const CEFRC2 = "C2";
 export type CEFR = typeof CEFRA1 | typeof CEFRA2 | typeof CEFRB1 | typeof CEFRB2 | typeof CEFRC1 | typeof CEFRC2;
+
+//////////
+// source: content_type.go
+
+/**
+ * ContentType identifies the resource kind in polymorphic tables like bookmarks.
+ */
+export const ContentTypeLesson = "lesson";
+export const ContentTypeVideo = "video";
+export const ContentTypeStory = "story";
+export type ContentType = typeof ContentTypeLesson | typeof ContentTypeVideo | typeof ContentTypeStory;
 
 //////////
 // source: conversation_mode.go
@@ -120,7 +130,7 @@ export type Gender = typeof GenderMale | typeof GenderFemale;
 // source: goal.go
 
 /**
- * Goal is the onboarding primary goal (user_profiles.preferences.primary_goal).
+ * Goal is one onboarding goal (user_profiles.preferences.goals[]).
  */
 export const GoalTravel = "travel";
 export const GoalWork = "work";
@@ -215,10 +225,13 @@ export const RelevanceNotApplicable: RelevanceStatus = "not_applicable";
  * ScenarioDifficulty is the scenario difficulty value (scenarios.cefr_level).
  * Separate from CEFR because "B1+" is a product half-step, not a CEFR level.
  */
+export const ScenarioDifficultyA1 = "A1";
+export const ScenarioDifficultyA2 = "A2";
+export const ScenarioDifficultyB1 = "B1";
 export const ScenarioDifficultyB1Plus = "B1+";
 export const ScenarioDifficultyB2 = "B2";
 export const ScenarioDifficultyC1 = "C1";
-export type ScenarioDifficulty = typeof ScenarioDifficultyB1Plus | typeof ScenarioDifficultyB2 | typeof ScenarioDifficultyC1;
+export type ScenarioDifficulty = typeof ScenarioDifficultyA1 | typeof ScenarioDifficultyA2 | typeof ScenarioDifficultyB1 | typeof ScenarioDifficultyB1Plus | typeof ScenarioDifficultyB2 | typeof ScenarioDifficultyC1;
 
 //////////
 // source: span_status.go
@@ -288,6 +301,27 @@ export const VocabularyDomainAIML = "ai_ml";
 export type VocabularyDomain = typeof VocabularyDomainBackendDB | typeof VocabularyDomainDistributed | typeof VocabularyDomainDevOpsCloud | typeof VocabularyDomainFrontendUI | typeof VocabularyDomainAIML;
 
 //////////
+// source: vocabulary_part_of_speech.go
+
+/**
+ * VocabularyPartOfSpeech is a word's part of speech
+ * (vocabulary_items.part_of_speech). Display labels are frontend copy.
+ */
+export const VocabularyPartOfSpeechNoun = "noun";
+export const VocabularyPartOfSpeechVerb = "verb";
+export const VocabularyPartOfSpeechAdjective = "adjective";
+export const VocabularyPartOfSpeechAdverb = "adverb";
+export const VocabularyPartOfSpeechPronoun = "pronoun";
+export const VocabularyPartOfSpeechPreposition = "preposition";
+export const VocabularyPartOfSpeechConjunction = "conjunction";
+export const VocabularyPartOfSpeechInterjection = "interjection";
+export const VocabularyPartOfSpeechDeterminer = "determiner";
+export const VocabularyPartOfSpeechPhrase = "phrase";
+export const VocabularyPartOfSpeechIdiom = "idiom";
+export const VocabularyPartOfSpeechPhrasalVerb = "phrasal_verb";
+export type VocabularyPartOfSpeech = typeof VocabularyPartOfSpeechNoun | typeof VocabularyPartOfSpeechVerb | typeof VocabularyPartOfSpeechAdjective | typeof VocabularyPartOfSpeechAdverb | typeof VocabularyPartOfSpeechPronoun | typeof VocabularyPartOfSpeechPreposition | typeof VocabularyPartOfSpeechConjunction | typeof VocabularyPartOfSpeechInterjection | typeof VocabularyPartOfSpeechDeterminer | typeof VocabularyPartOfSpeechPhrase | typeof VocabularyPartOfSpeechIdiom | typeof VocabularyPartOfSpeechPhrasalVerb;
+
+//////////
 // source: vocabulary_sort.go
 
 /**
@@ -308,5 +342,7 @@ export type VocabularySort = typeof VocabularySortRecent | typeof VocabularySort
  */
 export const VocabularySourceLesson = "lesson";
 export const VocabularySourceConversation = "conversation";
+export const VocabularySourceVideo = "video";
 export const VocabularySourceManual = "manual";
-export type VocabularySource = typeof VocabularySourceLesson | typeof VocabularySourceConversation | typeof VocabularySourceManual;
+export const VocabularySourceStory = "story";
+export type VocabularySource = typeof VocabularySourceLesson | typeof VocabularySourceConversation | typeof VocabularySourceVideo | typeof VocabularySourceManual | typeof VocabularySourceStory;

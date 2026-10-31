@@ -1,6 +1,9 @@
+import * as Sentry from "@sentry/tanstackstart-react";
 import { Link } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { APP_ROUTES } from "#/app/app-route";
 import { ErrorComponent } from "#/components/common/error-component";
+import { RetryButton } from "#/components/common/retry-button";
 import { Button } from "#/components/ui/button";
 import { ApiError } from "#/lib/api";
 import { m } from "#/paraglide/messages";
@@ -22,7 +25,7 @@ export function RouteNotFound() {
 /** Route error boundary fallback (unexpected render/query failures). A 403
  *  from the API is never a crash — it's a learner hitting premium-gated
  *  content — so it gets its own upgrade-prompt copy instead of the generic
- *  retry page. */
+ *  retry page, and is never reported to Sentry as an exception. */
 export function RouteErrorFallback({
 	error,
 	reset,
@@ -30,7 +33,15 @@ export function RouteErrorFallback({
 	error: unknown;
 	reset: () => void;
 }) {
-	if (error instanceof ApiError && error.status === 403) {
+	const isPremiumRequired = error instanceof ApiError && error.status === 403;
+
+	useEffect(() => {
+		if (!isPremiumRequired) {
+			Sentry.captureException(error);
+		}
+	}, [error, isPremiumRequired]);
+
+	if (isPremiumRequired) {
 		return (
 			<ErrorComponent
 				badge={m["errors.premiumRequired.badge"]()}
@@ -48,6 +59,7 @@ export function RouteErrorFallback({
 			/>
 		);
 	}
+
 	return (
 		<ErrorComponent
 			badge={m["errors.server.badge"]()}
@@ -56,11 +68,7 @@ export function RouteErrorFallback({
 			title={m["errors.server.title"]()}
 			body={m["errors.server.body"]()}
 			primaryLabel={m["common.actions.backHome"]()}
-			extraAction={
-				<Button type="button" variant="outline" onClick={() => reset()}>
-					{m["common.actions.retry"]()}
-				</Button>
-			}
+			extraAction={<RetryButton reset={reset} />}
 		/>
 	);
 }

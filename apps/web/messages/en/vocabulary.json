@@ -74,7 +74,9 @@
     "source": {
       "lesson": "From lesson",
       "conversation": "From AI sparring",
-      "manual": "Custom"
+      "video": "From video",
+      "manual": "Custom",
+      "story": "From story"
     },
     "sourceLine": {
       "lesson": "From lesson: {id}",

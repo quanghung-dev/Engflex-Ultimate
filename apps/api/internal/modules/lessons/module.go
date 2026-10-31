@@ -1,7 +1,7 @@
 // Package lessons wires the curriculum module: units on the path (sections
-// derived from CEFR), ordered activities, and the caller's bookmarks.
-// Lesson attempts are recorded here (1 attempt = 1 lesson); progress
-// rollups stay outside.
+// derived from CEFR) and ordered activities. Lesson attempts are recorded
+// here (1 attempt = 1 lesson); progress rollups stay outside. Bookmarks are
+// the generic internal/modules/bookmarks module now, not lesson-local.
 package lessons
 
 import (
@@ -41,9 +41,6 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, voiceCfg config.VoiceConfi
 	)
 	activityCtl := controllers.NewLessonActivityController(activitySvc, media)
 
-	bookmarkSvc := services.NewLessonBookmarkService(repositories.NewLessonBookmarkRepository(db))
-	bookmarkCtl := controllers.NewLessonBookmarkController(bookmarkSvc)
-
 	// Lessons/activities/sections are 100% admin-curated, so mutations are
 	// admin-gated outright; reads stay open to any authenticated user,
 	// filtered to published content by the service (sections have no draft
@@ -77,11 +74,6 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, voiceCfg config.VoiceConfi
 	}
 	la.POST("/:id/pronounce", append(strict, middleware.RequireAuth(), activityCtl.Pronounce)...)
 	la.POST("/:id/score", append(strict, middleware.RequireAuth(), activityCtl.ScoreWriting)...)
-
-	lb := rg.Group("/lesson-bookmarks")
-	lb.GET("", middleware.RequireAuth(), bookmarkCtl.List)
-	lb.POST("", middleware.RequireAuth(), bookmarkCtl.Save)
-	lb.DELETE("/:lessonId", middleware.RequireAuth(), bookmarkCtl.Unsave)
 
 	// Admin-only: full (unstripped) activity config, needed to prefill the
 	// edit form — the learner-shaped GET /lesson-activities/:id strips

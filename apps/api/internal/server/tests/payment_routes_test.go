@@ -28,7 +28,7 @@ func TestPaymentPublicRoutesDoNotRequireAuth(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.method+" "+tt.path, func(t *testing.T) {
-			r := server.NewRouter(nil, config.Config{})
+			r := server.NewRouter(nil, config.Config{Cors: config.CorsConfig{AllowedOrigins: []string{"http://localhost:3000"}}})
 			w := httptest.NewRecorder()
 			r.ServeHTTP(w, httptest.NewRequest(tt.method, tt.path, nil))
 			assert.NotEqual(t, http.StatusUnauthorized, w.Code)
@@ -42,7 +42,7 @@ func TestPaymentPublicRoutesDoNotRequireAuth(t *testing.T) {
 func TestPaymentIPN_RejectsMissingSignature(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	r := server.NewRouter(nil, config.Config{})
+	r := server.NewRouter(nil, config.Config{Cors: config.CorsConfig{AllowedOrigins: []string{"http://localhost:3000"}}})
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/api/v1/payments/vnpay/ipn?vnp_TxnRef=x", nil))
 

@@ -3,6 +3,7 @@ package requests
 import (
 	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
+	"engflex-api/internal/llm"
 )
 
 // ListLessons filters the unit hub (level, skill tab, completion status).
@@ -21,11 +22,6 @@ type ListActivities struct {
 	LessonID string `form:"lessonId" json:"lessonId" binding:"required,uuid"`
 }
 
-// SaveBookmark is the POST /lesson-bookmarks body.
-type SaveBookmark struct {
-	LessonID string `json:"lessonId" binding:"required,uuid"`
-}
-
 // CheckAnswer grades one reading/listening question. min=0, not required:
 // `required` rejects the zero value, and question 0 is valid.
 type CheckAnswer struct {
@@ -36,6 +32,7 @@ type CheckAnswer struct {
 
 // ScoreWriting grades one writing part into the open lesson attempt.
 type ScoreWriting struct {
-	AttemptID string `json:"attemptId" binding:"required,uuid"`
-	Text      string `json:"text" binding:"required"`
+	llm.LanguageParam `tstype:",extends"`
+	AttemptID         string `json:"attemptId" binding:"required,uuid"`
+	Text              string `json:"text" binding:"required"`
 }

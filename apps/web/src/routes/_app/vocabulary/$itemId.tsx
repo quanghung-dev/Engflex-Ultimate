@@ -16,7 +16,7 @@ import {
 	useVocabularyItemDetail,
 	vocabularyItemQueryOptions,
 } from "#/features/vocabulary/queries";
-import { loadOr404 } from "#/lib/route-loader";
+import { loadOr404 } from "#/lib/router/route-loader";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/vocabulary/$itemId")({

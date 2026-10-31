@@ -1,15 +1,24 @@
 import type { Turn } from "@engflex/contracts";
+import { CardShell } from "#/components/common/card-shell";
+import { LanguagePicker } from "#/components/common/language-picker";
+import { MoMascot } from "#/components/common/mo-mascot";
 import { Badge } from "#/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "#/components/ui/card";
+import {
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyTitle,
+} from "#/components/ui/empty";
 import { ScrollArea } from "#/components/ui/scroll-area";
+import { Skeleton } from "#/components/ui/skeleton";
 import {
 	type TranscriptRow,
 	TranscriptRows,
 } from "#/features/voice/components/transcript/transcript-panel";
 import type { AnalyzeControl } from "#/features/voice/components/transcript/turn-feedback";
-import { TurnFeedbackPanel } from "#/features/voice/components/transcript/turn-feedback";
-import { REVIEW_MOCK_TURNS } from "#/features/voice/fixtures";
+import { TurnFeedbackDisclosure } from "#/features/voice/components/transcript/turn-feedback-disclosure";
 import { useAnalyzeTurn, useConversation } from "#/features/voice/queries";
+import { useExplanationLanguage } from "#/hooks/use-explanation-language";
 import { cn } from "#/lib/utils";
 import { m } from "#/paraglide/messages";
 
@@ -23,50 +32,85 @@ function PersistedTranscriptView({
 	analyzePending,
 	analyzeFailed,
 	onAnalyze,
+	pending = false,
 	className,
 }: {
 	turns: Turn[];
 	analyzePending: boolean;
 	analyzeFailed: boolean;
 	onAnalyze: (position: number) => void;
+	pending?: boolean;
 	className?: string;
 }) {
+	const { asking, withLanguage, confirm, dismiss, reopen } =
+		useExplanationLanguage("analyze");
 	const rows: TranscriptRow[] = turns.map((turn) => ({
 		key: turn.id,
 		isUser: turn.role === "user",
 		text: turn.text,
 		accessory:
 			turn.role === "user" ? (
-				<TurnFeedbackPanel
+				<TurnFeedbackDisclosure
 					feedback={turn.feedback?.payload}
 					utterance={turn.text}
 					pending={analyzePending}
 					failed={analyzeFailed}
-					onAnalyze={() => onAnalyze(turn.position)}
+					onAnalyze={() => withLanguage(() => onAnalyze(turn.position))}
 				/>
 			) : undefined,
 	}));
 
 	return (
-		<Card className={cn("flex h-full min-h-0 flex-col", className)}>
-			<CardHeader className="pb-0">
-				<CardTitle className="flex items-center gap-2 text-base">
-					{m["voice.room.transcript.title"]()}
-					<Badge variant="secondary">{rows.length}</Badge>
-				</CardTitle>
-			</CardHeader>
-			<CardContent className="min-h-0 flex-1 pb-6">
+		<CardShell
+			pending={pending}
+			className={cn("flex h-full min-h-0 flex-col gap-6 py-6", className)}
+			skeleton={
+				<>
+					<div className="px-6">
+						<Skeleton className="h-5 w-32" />
+					</div>
+					<div className="flex flex-col gap-4 px-6 pb-6">
+						<Skeleton className="h-14 w-3/4" />
+						<Skeleton className="h-14 w-2/3 self-end" />
+						<Skeleton className="h-14 w-3/4" />
+					</div>
+				</>
+			}
+		>
+			<div className="flex items-center gap-2 px-6 text-base leading-none font-semibold">
+				{m["voice.room.transcript.title"]()}
+				<Badge variant="secondary">{rows.length}</Badge>
+				{/* One control per transcript, not per turn: it belongs to the
+				    surface that sends the analyze requests. */}
+				<span className="ml-auto">
+					<LanguagePicker
+						open={asking}
+						onOpenChange={(next) => {
+							if (next) reopen();
+							else dismiss();
+						}}
+						onConfirm={confirm}
+					/>
+				</span>
+			</div>
+			<div className="min-h-0 flex-1 px-6 pb-6">
 				<ScrollArea className="h-full max-h-[55vh] min-h-0 overflow-x-clip pr-3 lg:max-h-none">
 					{rows.length === 0 ? (
-						<p className="py-8 text-center text-sm text-muted-foreground">
-							{m["voice.room.transcript.empty"]()}
-						</p>
+						<Empty className="items-center py-8 text-center">
+							<MoMascot variant="confused" size={72} />
+							<EmptyHeader>
+								<EmptyTitle>{m["voice.room.review.emptyTitle"]()}</EmptyTitle>
+								<EmptyDescription>
+									{m["voice.room.review.emptyBody"]()}
+								</EmptyDescription>
+							</EmptyHeader>
+						</Empty>
 					) : (
 						<TranscriptRows rows={rows} />
 					)}
 				</ScrollArea>
-			</CardContent>
-		</Card>
+			</div>
+		</CardShell>
 	);
 }
 
@@ -93,8 +137,7 @@ export function PersistedTranscript({
 	});
 	const analyzeLive = useAnalyzeTurn(conversationId ?? "");
 	const stored = turnsOverride ?? conversation.data?.turns ?? [];
-	// Mock review while no real turns flow end to end (e.g. empty session).
-	const turns = stored.length > 0 ? stored : REVIEW_MOCK_TURNS;
+	const turns = stored;
 
 	return (
 		<PersistedTranscriptView
@@ -105,6 +148,7 @@ export function PersistedTranscript({
 				analyzeOverride?.onAnalyze ??
 				((position) => analyzeLive.mutate(position))
 			}
+			pending={!useFixtures && conversation.isPending}
 			className={className}
 		/>
 	);

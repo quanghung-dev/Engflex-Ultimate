@@ -1,7 +1,10 @@
 /** Centralized app route URLs. Use these instead of hardcoding paths. */
 export const APP_ROUTES = {
-	HOME: "/",
+	/** Public landing page — the front door for signed-out visitors. */
+	LANDING: "/",
+	HOME: "/home",
 	ABOUT: "/about",
+	PRICING: "/pricing",
 	ONBOARDING: "/onboarding",
 	LESSONS: {
 		LIST: "/lessons",
@@ -17,6 +20,23 @@ export const APP_ROUTES = {
 		SCENARIOS: "/voice/scenarios",
 		SCENARIO: "/voice/scenarios/$scenarioId",
 		ROOM: "/voice/room/$conversationId",
+		/** Past sessions: the list and one session's review. */
+		HISTORY: {
+			LIST: "/voice/history",
+			DETAIL: "/voice/history/$conversationId",
+		},
+		SIGNAL_START: "/api/voice/$conversationId/start",
+		SIGNAL_OFFER: "/api/voice/$conversationId/offer",
+	},
+	VIDEOS: {
+		LIST: "/videos",
+		DICTATION: "/videos/$videoId/dictation",
+		SHADOWING: "/videos/$videoId/shadowing",
+		CATEGORY: "/videos/categories/$categorySlug",
+	},
+	STORIES: {
+		LIST: "/stories",
+		DETAIL: "/stories/$slug",
 	},
 	/**
 	 * Clerk's catch-all pages. The file routes are `/sign-in/$` splats, so a

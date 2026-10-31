@@ -1,10 +1,13 @@
 import { Mic } from "lucide-react";
 import { SubmitButton } from "#/components/common/submit-button";
-import type { ModeCard as ModeCardFixture } from "#/features/voice/fixtures";
 import { m } from "#/paraglide/messages";
 
+/** The two voice modes the hub offers; per-mode copy lives in MODE_COPY. */
+export const VOICE_MODES = ["spontaneous", "structured"] as const;
+export type VoiceMode = (typeof VOICE_MODES)[number];
+
 const MODE_COPY: Record<
-	ModeCardFixture["id"],
+	VoiceMode,
 	{
 		badge: () => string;
 		title: () => string;
@@ -41,20 +44,20 @@ const MODE_COPY: Record<
 };
 
 export function ModeCard({
-	card,
+	mode,
 	onStart,
 	pending = false,
 }: {
-	card: ModeCardFixture;
+	mode: VoiceMode;
 	onStart: () => void;
 	pending?: boolean;
 }) {
-	const copy = MODE_COPY[card.id];
-	const primary = card.id === "spontaneous";
+	const copy = MODE_COPY[mode];
+	const primary = mode === "spontaneous";
 
 	return (
 		<div className="surface-card flex h-full flex-col gap-4 p-5">
-			<span className="chip w-fit bg-accent px-2 py-0.5 text-[11px]">
+			<span className="chip w-fit">
 				<span aria-hidden="true" className="size-1.5 rounded-full bg-primary" />
 				{copy.badge()}
 			</span>
@@ -64,15 +67,12 @@ export function ModeCard({
 			</p>
 			<div className="flex flex-wrap gap-1.5">
 				{copy.features.map((feature) => (
-					<span
-						key={feature()}
-						className="chip bg-accent px-2 py-0.5 text-[11px]"
-					>
+					<span key={feature()} className="chip">
 						{feature()}
 					</span>
 				))}
 			</div>
-			<p className="rounded-[16px] border-2 border-border bg-accent p-3 text-[15px] font-medium text-foreground">
+			<p className="rounded-lg border-2 border-border bg-accent p-3 text-[15px] font-medium text-foreground">
 				{copy.meta()}
 			</p>
 			<div className="mt-auto pt-1">

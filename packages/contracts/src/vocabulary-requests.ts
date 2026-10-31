@@ -11,7 +11,6 @@
  */
 export interface ListVocabulary extends ListParams {
   sort: VocabularySort;
-  domain: VocabularyDomain;
   cefr: CEFR;
   source: VocabularySource;
 }

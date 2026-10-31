@@ -1,10 +1,18 @@
+import type { LessonProgressSummary } from "@engflex/contracts";
 import { Link } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
+import { useMemo } from "react";
 import { APP_ROUTES } from "#/app/app-route";
+import { CardShell } from "#/components/common/card-shell";
 import { ProgressBar } from "#/components/common/progress-bar";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
-import { useLessonDetail, useLessonSections } from "#/features/lessons/queries";
+import { Skeleton } from "#/components/ui/skeleton";
+import {
+	useLessonDetail,
+	useLessonProgress,
+	useLessonSections,
+} from "#/features/lessons/queries";
 import { lessonsStore, progressFrom } from "#/features/lessons/store";
 import { m } from "#/paraglide/messages";
 
@@ -12,23 +20,67 @@ export function ActiveLessonCard() {
 	const sectionsQuery = useLessonSections();
 	const units = sectionsQuery.data?.flatMap((section) => section.units) ?? [];
 	const storeState = useStore(lessonsStore);
+	const progressQuery = useLessonProgress();
+	const serverById = useMemo(() => {
+		const byId: Record<string, LessonProgressSummary | undefined> = {};
+		for (const item of progressQuery.data ?? []) byId[item.lessonId] = item;
+		return byId;
+	}, [progressQuery.data]);
 	const lesson =
-		units.find(
-			(unit) => progressFrom(storeState, unit.id).status === "in_progress",
-		) ?? units[0];
+		units.find((unit) => {
+			const server = serverById[unit.id];
+			return (
+				progressFrom(storeState, unit.id, undefined, {
+					count: server?.completedActivityIds.length ?? 0,
+					completed: server?.status === "completed",
+				}).status === "in_progress"
+			);
+		}) ?? units[0];
 	// Only the picked lesson needs its activity total; the store already knows
 	// the totals of any lesson practiced this session.
 	const detailQuery = useLessonDetail(lesson?.id);
+	const server = lesson ? serverById[lesson.id] : undefined;
 	const progress = lesson
-		? progressFrom(storeState, lesson.id, detailQuery.data?.activities.length)
+		? progressFrom(storeState, lesson.id, detailQuery.data?.activities.length, {
+				count: server?.completedActivityIds.length ?? 0,
+				completed: server?.status === "completed",
+			})
 		: null;
+
+	if (sectionsQuery.isPending) {
+		return (
+			<CardShell
+				pending
+				surface="surface-hero"
+				className="flex h-full flex-col gap-4 p-5"
+				skeleton={
+					<>
+						<Skeleton className="h-6 w-28 rounded-full" />
+						<div className="flex flex-col gap-2">
+							<Skeleton className="h-5 w-3/4" />
+							<Skeleton className="h-4 w-full" />
+						</div>
+						<div className="mt-auto flex flex-col gap-2">
+							<Skeleton className="h-3 w-40" />
+							<Skeleton className="h-2 w-full rounded-full" />
+						</div>
+						<Skeleton className="h-9 w-36 rounded-lg" />
+					</>
+				}
+			/>
+		);
+	}
 
 	if (!lesson || !progress) return null;
 
 	return (
-		<div className="surface-hero flex h-full flex-col gap-4 p-5">
+		<CardShell
+			surface="surface-hero"
+			className="flex h-full flex-col gap-4 p-5"
+		>
 			<Badge variant="outline" className="chip w-fit">
-				{m["dashboard.activeLesson.unitLabel"]()}
+				{m["dashboard.activeLesson.label"]()}
+				{lesson.section?.title ? ` · ${lesson.section.title}` : null}
 			</Badge>
 			<div>
 				<h3 className="text-lg font-bold text-foreground">{lesson.title}</h3>
@@ -55,6 +107,6 @@ export function ActiveLessonCard() {
 					{m["dashboard.activeLesson.continue"]()}
 				</Link>
 			</Button>
-		</div>
+		</CardShell>
 	);
 }

@@ -14,13 +14,24 @@
       "clear": "Clear",
       "retry": "Try again",
       "backHome": "Back to home",
-      "copy": "Copy"
+      "copy": "Copy",
+      "save": "Save"
     },
     "audio": {
       "playPronunciation": "Play pronunciation",
       "play": "Play audio",
       "pause": "Pause audio",
       "total": "Total"
+    },
+    "language": {
+      "trigger": "Explanation language",
+      "label": "Explanation language",
+      "hint": "Definitions and tips in this language — example sentences stay English.",
+      "dontAskAgain": "Don't ask again"
+    },
+    "pager": {
+      "previous": "Previous",
+      "next": "Next"
     },
     "toast": {
       "copiedClipboard": "Copied to clipboard",
@@ -36,7 +47,8 @@
       "close": "Close",
       "sidebar": "Sidebar",
       "sidebarDescription": "Displays the mobile sidebar.",
-      "toggleSidebar": "Toggle Sidebar"
+      "toggleSidebar": "Toggle Sidebar",
+      "pagination": "Pagination"
     },
     "theme": {
       "label": "Theme",
@@ -47,6 +59,13 @@
     "premium": {
       "badge": "Premium",
       "upgradeAction": "Upgrade to unlock"
+    },
+    "guide": {
+      "dismiss": "Don't show this tip again"
+    },
+    "dev": {
+      "title": "Under construction",
+      "body": "This corner of the app is still being built. Check back soon!"
     }
   }
 }

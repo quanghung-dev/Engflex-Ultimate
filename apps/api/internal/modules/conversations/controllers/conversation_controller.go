@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"io"
 	"net/http"
 	"strconv"
@@ -77,6 +78,36 @@ func (h *ConversationController) Get(c *gin.Context) {
 	_ = utils.MapSlice(&turnDtos, turns)
 	dto.Turns = turnDtos
 	common.OK(c, "conversation", dto)
+}
+
+// List godoc
+// @Summary      List the caller's finished conversations
+// @Description  Ended and failed conversations, newest first, with the scenario and partner attached. Optionally scoped to one scenario.
+// @Tags         conversations
+// @Security     BearerAuth
+// @Produce      json
+// @Param        page query int false "page"
+// @Param        pageSize query int false "page size"
+// @Param        scenarioId query string false "scenario filter"
+// @Success      200 {object} common.ApiResponse{data=[]responses.ConversationSummary}
+// @Failure      400 {object} common.ApiResponse
+// @Failure      401 {object} common.ApiResponse
+// @Router       /conversations [get]
+func (h *ConversationController) List(c *gin.Context) {
+	page, pageSize := utils.ParsePagination(c)
+	var req requests.ListConversations
+	if err := c.ShouldBindQuery(&req); err != nil {
+		common.Fail(c, common.BadRequest(err.Error()))
+		return
+	}
+	rows, total, err := h.service.List(c.Request.Context(), middleware.UserID(c), req.ScenarioID, pageSize, utils.Offset(page, pageSize))
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	dtos := make([]responses.ConversationSummary, 0, len(rows))
+	_ = utils.MapSlice(&dtos, rows)
+	common.Paginated(c, "conversations", dtos, page, pageSize, total)
 }
 
 // Start godoc
@@ -169,7 +200,16 @@ func (h *ConversationController) AnalyzeTurn(c *gin.Context) {
 		common.Fail(c, common.BadRequest("invalid position"))
 		return
 	}
-	feedback, err := h.service.AnalyzeTurn(c.Request.Context(), userID, c.Param("id"), position)
+	// The body is optional: the path identifies the turn and language only
+	// steers the language the explanation prose is written in. An absent body
+	// decodes to io.EOF — a valid "no language" — while anything else
+	// malformed is still a 400.
+	var req requests.AnalyzeBody
+	if err := c.ShouldBindJSON(&req); err != nil && !errors.Is(err, io.EOF) {
+		common.Fail(c, common.BadRequest("invalid body"))
+		return
+	}
+	feedback, err := h.service.AnalyzeTurn(c.Request.Context(), userID, c.Param("id"), position, req.Language)
 	if err != nil {
 		common.Fail(c, err)
 		return

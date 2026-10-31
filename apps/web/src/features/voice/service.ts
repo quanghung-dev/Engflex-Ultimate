@@ -1,9 +1,10 @@
 import type {
 	Conversation,
 	ConversationSession,
+	ConversationSummary,
 	Feedback,
+	ListScenarios,
 	Pagination,
-	Persona,
 	Scenario,
 	ScenarioTopic,
 	StartConversation,
@@ -11,7 +12,8 @@ import type {
 	TranscriptResult,
 } from "@engflex/contracts";
 import { API_ROUTES } from "#/app/api-routes";
-import { api, apiPage } from "#/lib/api";
+import { api, apiPage } from "#/lib/api/api";
+import { explanationLanguage } from "#/lib/language/explanation-language";
 
 /** The three actions of the correction modal, in the engine's vocabulary. */
 export type TranscriptAction = "review" | "send" | "dismiss";
@@ -49,9 +51,15 @@ export function analyzeTurn(
 	conversationId: string,
 	position: number,
 ): Promise<Feedback> {
+	// The body carries only the explanation language, and it is read here at
+	// request time: the first-use pick stores the choice, so every later call
+	// picks it up without a value threaded through the call chain.
 	return api<Feedback>(
 		API_ROUTES.CONVERSATIONS.ANALYZE_TURN(conversationId, position),
-		{ method: "POST" },
+		{
+			method: "POST",
+			body: JSON.stringify({ language: explanationLanguage() }),
+		},
 		{ withCredentials: true },
 	);
 }
@@ -91,11 +99,19 @@ export function transcribeAudio(
 	);
 }
 
-export function listScenarios(params?: {
-	topicId?: string;
-}): Promise<{ items: Scenario[]; pagination: Pagination }> {
+/**
+ * One page of the scenario catalog. Params are the generated request DTO
+ * (`ListScenarios`) made partial — `random` swaps the newest-first order for
+ * `random()`, so the home card can pull two surprises.
+ */
+export function listScenarios(
+	params?: Partial<ListScenarios>,
+): Promise<{ items: Scenario[]; pagination: Pagination }> {
 	const query: Record<string, string> = {};
 	if (params?.topicId) query.topicId = params.topicId;
+	if (params?.random) query.random = "true";
+	if (params?.page) query.page = String(params.page);
+	if (params?.pageSize) query.pageSize = String(params.pageSize);
 	return apiPage<Scenario>(
 		API_ROUTES.SCENARIOS.LIST,
 		{ method: "GET" },
@@ -127,13 +143,19 @@ export function getScenarioById(id: string): Promise<Scenario> {
 	});
 }
 
-export function listPersonas(): Promise<{
-	items: Persona[];
-	pagination: Pagination;
-}> {
-	return apiPage<Persona>(
-		API_ROUTES.PERSONAS.LIST,
+/** One page of the caller's finished conversations, newest first. */
+export function listConversations(params: {
+	scenarioId?: string;
+	page?: number;
+	pageSize?: number;
+}): Promise<{ items: ConversationSummary[]; pagination: Pagination }> {
+	const query: Record<string, string> = {};
+	if (params.scenarioId) query.scenarioId = params.scenarioId;
+	if (params.page) query.page = String(params.page);
+	if (params.pageSize) query.pageSize = String(params.pageSize);
+	return apiPage<ConversationSummary>(
+		API_ROUTES.CONVERSATIONS.LIST,
 		{ method: "GET" },
-		{ withCredentials: true },
+		{ withCredentials: true, query },
 	);
 }

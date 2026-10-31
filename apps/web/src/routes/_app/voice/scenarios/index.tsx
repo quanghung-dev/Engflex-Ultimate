@@ -1,4 +1,5 @@
 import type { ScenarioDifficulty } from "@engflex/contracts";
+import { SCENARIO_DIFFICULTY_VALUES } from "@engflex/contracts";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { cn } from "cn";
 import { Search } from "lucide-react";
@@ -27,7 +28,7 @@ export const Route = createFileRoute("/_app/voice/scenarios/")({
 	component: ScenariosPage,
 });
 
-const LEVELS: Array<"all" | ScenarioDifficulty> = ["all", "B1+", "B2", "C1"];
+const LEVELS = ["all" as const, ...SCENARIO_DIFFICULTY_VALUES];
 
 function levelLabel(level: (typeof LEVELS)[number]): string {
 	if (level === "all") return m["voice.scenarios.level.any"]();
@@ -83,7 +84,7 @@ function ScenariosPage() {
 	return (
 		<PageLayout
 			hero={{
-				icon: <MoMascot variant="open" size={64} />,
+				icon: <MoMascot variant="headphones" size={84} />,
 				title: m["voice.scenarios.title"](),
 				description: m["voice.scenarios.subtitle"](),
 			}}
@@ -163,10 +164,7 @@ function ScenariosPage() {
 				<section key={topicEntry.id} className="flex flex-col gap-4">
 					<div className="flex items-center justify-between gap-3">
 						<div className="flex min-w-0 items-center gap-3">
-							<span
-								className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[12px] bg-primary text-sm font-bold text-primary-foreground"
-								style={{ boxShadow: "0 2px 0 #433095" }}
-							>
+							<span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-primary text-sm font-bold text-primary-foreground shadow-edge-primary-xs">
 								{topics.findIndex((t) => t.id === topicEntry.id) + 1}
 							</span>
 							<h2 className="truncate text-lg font-bold text-foreground">

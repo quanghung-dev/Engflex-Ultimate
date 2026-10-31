@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
+import { LanguagePicker } from "#/components/common/language-picker";
 import { PageSplit } from "#/components/common/page-layout";
 import { SubmitButton } from "#/components/common/submit-button";
 import { CheckQuestionPanel } from "#/features/lessons/components/check-question-panel";
@@ -38,7 +39,10 @@ import {
 	completePart,
 	getFirstIncompleteActivity,
 } from "#/features/lessons/store";
-import { loadOr404 } from "#/lib/route-loader";
+import { DockGuide } from "#/features/vocabulary/components/dock-guide";
+import { TextActionDock } from "#/features/vocabulary/components/text-action-dock";
+import { useExplanationLanguage } from "#/hooks/use-explanation-language";
+import { loadOr404 } from "#/lib/router/route-loader";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/lessons/$slug/practice")({
@@ -96,19 +100,17 @@ function buildQuestionSeeds(
 	return seeds;
 }
 
-/** Fully-answered check activities count as complete for pills + resume. */
+/** Every part with a recorded server entry counts complete — the server's
+ *  own finalize rule (any attached part covers it), so writing and speaking
+ *  rehydrate too. Mid-activity answers still restore via `checks`. */
 function markCompleteParts(
 	lessonId: string,
 	activities: Activity[],
 	progress: AttemptProgress,
 ) {
+	const completed = new Set(progress.completedParts ?? []);
 	for (const activity of activities) {
-		const total =
-			activity.reading?.questions.length ??
-			activity.listening?.questions.length ??
-			0;
-		const answered = progress.checks[activity.id]?.length ?? 0;
-		if (total > 0 && answered >= total) {
+		if (completed.has(activity.id)) {
 			completePart(lessonId, activity.partNumber, activities.length);
 		}
 	}
@@ -153,6 +155,9 @@ function PracticeInner({
 	// 401 and retry can only burn time on it — including seconds of SSR burn
 	// on hard loads. In-flight token dips are covered by the
 	// retry-except-404 in the query options instead.
+
+	const { asking, confirm, dismiss, reopen } =
+		useExplanationLanguage("writing");
 	const openQuery = useQuery({
 		...openAttemptQueryOptions(lessonId),
 		enabled: isLoaded,
@@ -176,6 +181,7 @@ function PracticeInner({
 				lessonId={lessonId}
 				part={currentPart}
 				onSelect={setActivePart}
+				headerExtra={<DockGuide />}
 			>
 				<NoOpenRunCard
 					lessonId={lessonId}
@@ -189,54 +195,75 @@ function PracticeInner({
 	}
 
 	return (
-		<PartShell lessonId={lessonId} part={currentPart} onSelect={setActivePart}>
-			{currentPart === "reading" && activity?.reading && attemptId !== null ? (
-				<ReadingActivity
-					key={`${activity.id}:${attemptId}`}
-					lessonId={lessonId}
-					slug={slug}
-					activity={activity}
-					activities={detail.activities}
-					onAdvance={setActivePart}
-					attemptId={attemptId}
-					seed={seeds[activity.id] ?? { answers: {}, results: {} }}
-				/>
-			) : null}
-			{currentPart === "listening" &&
-			activity?.listening &&
-			attemptId !== null ? (
-				<ListeningActivity
-					key={`${activity.id}:${attemptId}`}
-					lessonId={lessonId}
-					slug={slug}
-					activity={activity}
-					activities={detail.activities}
-					onAdvance={setActivePart}
-					attemptId={attemptId}
-					seed={seeds[activity.id] ?? { answers: {}, results: {} }}
-				/>
-			) : null}
-			{currentPart === "writing" && activity?.writing ? (
-				<WritingActivity
-					lessonId={lessonId}
-					slug={slug}
-					activity={activity}
-					activities={detail.activities}
-					onAdvance={setActivePart}
-					attemptId={attemptId}
-				/>
-			) : null}
-			{currentPart === "speaking" && activity?.speaking ? (
-				<SpeakingBranch
-					lessonId={lessonId}
-					slug={slug}
-					activity={activity}
-					activities={detail.activities}
-					onAdvance={setActivePart}
-					attemptId={attemptId}
-				/>
-			) : null}
-		</PartShell>
+		<TextActionDock source={{ type: "lesson", id: lessonId }}>
+			<PartShell
+				lessonId={lessonId}
+				part={currentPart}
+				onSelect={setActivePart}
+				headerExtra={
+					<div className="flex gap-2">
+						<LanguagePicker
+							open={asking}
+							onOpenChange={(next) => {
+								if (next) reopen();
+								else dismiss();
+							}}
+							onConfirm={confirm}
+						/>
+						<DockGuide />
+					</div>
+				}
+			>
+				{currentPart === "reading" &&
+				activity?.reading &&
+				attemptId !== null ? (
+					<ReadingActivity
+						key={`${activity.id}:${attemptId}`}
+						lessonId={lessonId}
+						slug={slug}
+						activity={activity}
+						activities={detail.activities}
+						onAdvance={setActivePart}
+						attemptId={attemptId}
+						seed={seeds[activity.id] ?? { answers: {}, results: {} }}
+					/>
+				) : null}
+				{currentPart === "listening" &&
+				activity?.listening &&
+				attemptId !== null ? (
+					<ListeningActivity
+						key={`${activity.id}:${attemptId}`}
+						lessonId={lessonId}
+						slug={slug}
+						activity={activity}
+						activities={detail.activities}
+						onAdvance={setActivePart}
+						attemptId={attemptId}
+						seed={seeds[activity.id] ?? { answers: {}, results: {} }}
+					/>
+				) : null}
+				{currentPart === "writing" && activity?.writing ? (
+					<WritingActivity
+						lessonId={lessonId}
+						slug={slug}
+						activity={activity}
+						activities={detail.activities}
+						onAdvance={setActivePart}
+						attemptId={attemptId}
+					/>
+				) : null}
+				{currentPart === "speaking" && activity?.speaking ? (
+					<SpeakingBranch
+						lessonId={lessonId}
+						slug={slug}
+						activity={activity}
+						activities={detail.activities}
+						onAdvance={setActivePart}
+						attemptId={attemptId}
+					/>
+				) : null}
+			</PartShell>
+		</TextActionDock>
 	);
 }
 
@@ -515,17 +542,22 @@ function WritingActivity({
 	const payload = activity.writing;
 	const [text, setText] = useState("");
 	const score = useScoreWriting();
+	const { withLanguage } = useExplanationLanguage("writing");
 	const [result, setResult] = useState<WritingScoreResponse | null>(null);
+	// The first Check writing on this browser picks the explanation language
+	// first; later submits run straight through.
 	function handleSubmit() {
 		if (!attemptId || score.isPending) return;
-		score.mutate(
-			{ activityId: activity.id, attemptId, text },
-			{
-				onSuccess: (value) => setResult(value),
-				onError: () => {
-					toast.error(m["lessons.writing.score.failed"]());
+		withLanguage(() =>
+			score.mutate(
+				{ activityId: activity.id, attemptId, text },
+				{
+					onSuccess: (value) => setResult(value),
+					onError: () => {
+						toast.error(m["lessons.writing.score.failed"]());
+					},
 				},
-			},
+			),
 		);
 	}
 	const { continueLabel, handleContinue } = useContinue(
@@ -556,8 +588,6 @@ function WritingActivity({
 						<ModelAnswerCard
 							modelAnswer={payload.modelAnswer}
 							checklist={payload.checklist}
-							continueLabel={continueLabel}
-							onContinue={handleContinue}
 						/>
 					) : null}
 				</div>

@@ -1,8 +1,6 @@
 package responses
 
 import (
-	"time"
-
 	"engflex-api/internal/common/enums"
 )
 
@@ -66,11 +64,4 @@ type LessonDetail struct {
 	Status      enums.PublishStatus `json:"status"`
 	IsPremium   bool                `json:"isPremium"`
 	Activities  []Activity          `json:"activities"`
-}
-
-// Bookmark is one saved lesson for the caller. Go name CreatedAt matches
-// the model for copier; wire name savedAt is the product term.
-type Bookmark struct {
-	LessonID  string    `json:"lessonId"`
-	CreatedAt time.Time `json:"savedAt"`
 }

@@ -1,11 +1,12 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "onboarding": {
-    "crumb": "Onboarding",
+    "submitError": "We couldn't save your setup. Please try again.",
     "tagline": "English learning platform",
     "level": {
       "title": "Choose your level",
       "subtitle": "Engflex tunes conversational latency and vocabulary complexity based on your baseline.",
+      "error": "Choose your level to continue.",
       "option": {
         "beginner": {
           "title": "Beginner",
@@ -14,19 +15,20 @@
         },
         "intermediate": {
           "title": "Intermediate",
-          "description": "Fluent meeting participation & technical dialogues",
+          "description": "Everyday conversations & confident small talk",
           "hint": "AI benchmark recommendation"
         },
         "advanced": {
           "title": "Advanced",
-          "description": "Executive negotiation, nuance, and keynote delivery",
+          "description": "Nuance, humor, and smooth storytelling",
           "hint": "Cognitive pressure mode"
         }
       }
     },
     "goal": {
-      "title": "What's your goal?",
-      "subtitle": "Targeted synthetic dialogues will be generated around high-stakes real work situations.",
+      "title": "What are your goals?",
+      "subtitle": "Lessons and chats shaped around the moments you care about.",
+      "error": "Choose at least one goal to continue.",
       "option": {
         "travel": "Travel",
         "work": "Work & Career",
@@ -37,7 +39,7 @@
     },
     "topics": {
       "title": "Pick topics you like",
-      "subtitle": "Choose 2 or more topics to fuel dynamic case studies and AI voice drill scenarios.",
+      "subtitle": "Pick 2+ topics to shape your lessons and speaking games.",
       "option": {
         "travel": "Travel",
         "business": "Business",
@@ -68,19 +70,22 @@
         },
         "c30": {
           "label": "Accelerated mastery",
-          "sub": "Executive depth"
+          "sub": "Deep dive"
         }
       },
       "recommended": "Recommended",
-      "minutesUnit": "{count} min"
+      "minutesUnit": "{count} min",
+      "error": "Choose how much time you can study to continue."
     },
-    "diagnostic": {
-      "percentile": "You're in the top 18% of technical communicators entering Engflex",
-      "acceleration": "High potential trajectory detected! Based on your target goals and chosen topics, your speech fluency curve accelerates 2.4x faster in simulation mode.",
-      "chartLabel": "Engflex acoustic diagnostic hexagon",
-      "baseline": "Optimal baseline unlocked",
-      "latency": "Predicted conversational latency",
-      "clarity": "Acoustic clarity confidence",
+    "summary": {
+      "title": "You're all set",
+      "subtitle": "Here's the plan we'll build around.",
+      "level": "Level",
+      "commitment": "Daily goal",
+      "goals": "Goals",
+      "topics": "Topics",
+      "chartLabel": "Speaking profile preview",
+      "previewCaption": "Your speaking snapshot unlocks after your first voice session.",
       "axes": {
         "precision": "PRECISION",
         "lexical": "LEXICAL",
