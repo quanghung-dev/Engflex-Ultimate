@@ -12,17 +12,28 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteRouteImport } from './routes/_app/route'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as ErrorRouteImport } from './routes/error'
 import { Route as NotFoundRouteImport } from './routes/not-found'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as AppHomeRouteImport } from './routes/_app/home'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminLessonsRouteImport } from './routes/admin/lessons'
+import { Route as AdminPremiumRouteImport } from './routes/admin/premium'
+import { Route as AdminScenariosRouteImport } from './routes/admin/scenarios'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminVideosRouteImport } from './routes/admin/videos'
+import { Route as AdminVocabularyRouteImport } from './routes/admin/vocabulary'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
 import { Route as AppLessonsIndexRouteImport } from './routes/_app/lessons/index'
+import { Route as AppPaymentsPricingRouteImport } from './routes/_app/payments/pricing'
 import { Route as AppStoriesIndexRouteImport } from './routes/_app/stories/index'
 import { Route as AppStoriesSlugRouteImport } from './routes/_app/stories/$slug'
 import { Route as AppVideosIndexRouteImport } from './routes/_app/videos/index'
+import { Route as AppVocabularyIndexRouteImport } from './routes/_app/vocabulary/index'
+import { Route as AppVocabularyItemIdRouteImport } from './routes/_app/vocabulary/$itemId'
 import { Route as AppVoiceIndexRouteImport } from './routes/_app/voice/index'
 import { Route as AppVoicePreviewRouteImport } from './routes/_app/voice/preview'
 import { Route as ApiMediaSplatRouteImport } from './routes/api/media/$'
@@ -30,6 +41,7 @@ import { Route as AppExamsToeicIndexRouteImport } from './routes/_app/exams/toei
 import { Route as AppExamsToeicHistoryRouteImport } from './routes/_app/exams/toeic/history'
 import { Route as AppLessonsSlugIndexRouteImport } from './routes/_app/lessons/$slug/index'
 import { Route as AppLessonsSlugPracticeRouteImport } from './routes/_app/lessons/$slug/practice'
+import { Route as AppPaymentsVnpayReturnRouteImport } from './routes/_app/payments/vnpay/return'
 import { Route as AppVideosVideoIdDictationRouteImport } from './routes/_app/videos/$videoId/dictation'
 import { Route as AppVideosVideoIdShadowingRouteImport } from './routes/_app/videos/$videoId/shadowing'
 import { Route as AppVideosCategoriesCategorySlugRouteImport } from './routes/_app/videos/categories/$categorySlug'
@@ -64,6 +76,11 @@ const AboutRoute = AboutRouteImport.update({
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRouteRoute = AdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ErrorRoute = ErrorRouteImport.update({
   id: '/error',
   path: '/error',
@@ -89,6 +106,41 @@ const AppHomeRoute = AppHomeRouteImport.update({
   path: '/home',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminLessonsRoute = AdminLessonsRouteImport.update({
+  id: '/lessons',
+  path: '/lessons',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminPremiumRoute = AdminPremiumRouteImport.update({
+  id: '/premium',
+  path: '/premium',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminScenariosRoute = AdminScenariosRouteImport.update({
+  id: '/scenarios',
+  path: '/scenarios',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminVideosRoute = AdminVideosRouteImport.update({
+  id: '/videos',
+  path: '/videos',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminVocabularyRoute = AdminVocabularyRouteImport.update({
+  id: '/vocabulary',
+  path: '/vocabulary',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const SignInSplatRoute = SignInSplatRouteImport.update({
   id: '/sign-in/$',
   path: '/sign-in/$',
@@ -104,6 +156,11 @@ const AppLessonsIndexRoute = AppLessonsIndexRouteImport.update({
   path: '/lessons/',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppPaymentsPricingRoute = AppPaymentsPricingRouteImport.update({
+  id: '/payments/pricing',
+  path: '/payments/pricing',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppStoriesIndexRoute = AppStoriesIndexRouteImport.update({
   id: '/stories/',
   path: '/stories/',
@@ -117,6 +174,16 @@ const AppStoriesSlugRoute = AppStoriesSlugRouteImport.update({
 const AppVideosIndexRoute = AppVideosIndexRouteImport.update({
   id: '/videos/',
   path: '/videos/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppVocabularyIndexRoute = AppVocabularyIndexRouteImport.update({
+  id: '/vocabulary/',
+  path: '/vocabulary/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppVocabularyItemIdRoute = AppVocabularyItemIdRouteImport.update({
+  id: '/vocabulary/$itemId',
+  path: '/vocabulary/$itemId',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppVoiceIndexRoute = AppVoiceIndexRouteImport.update({
@@ -152,6 +219,11 @@ const AppLessonsSlugIndexRoute = AppLessonsSlugIndexRouteImport.update({
 const AppLessonsSlugPracticeRoute = AppLessonsSlugPracticeRouteImport.update({
   id: '/lessons/$slug/practice',
   path: '/lessons/$slug/practice',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppPaymentsVnpayReturnRoute = AppPaymentsVnpayReturnRouteImport.update({
+  id: '/payments/vnpay/return',
+  path: '/payments/vnpay/return',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppVideosVideoIdDictationRoute =
@@ -267,23 +339,35 @@ const AppVocabularyDecksDeckIdWordsItemIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/error': typeof ErrorRoute
   '/not-found': typeof NotFoundRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/home': typeof AppHomeRoute
+  '/admin/lessons': typeof AdminLessonsRoute
+  '/admin/premium': typeof AdminPremiumRoute
+  '/admin/scenarios': typeof AdminScenariosRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/videos': typeof AdminVideosRoute
+  '/admin/vocabulary': typeof AdminVocabularyRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/admin/': typeof AdminIndexRoute
+  '/payments/pricing': typeof AppPaymentsPricingRoute
   '/stories/$slug': typeof AppStoriesSlugRoute
+  '/vocabulary/$itemId': typeof AppVocabularyItemIdRoute
   '/voice/preview': typeof AppVoicePreviewRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/lessons/': typeof AppLessonsIndexRoute
   '/stories/': typeof AppStoriesIndexRoute
   '/videos/': typeof AppVideosIndexRoute
+  '/vocabulary/': typeof AppVocabularyIndexRoute
   '/voice/': typeof AppVoiceIndexRoute
   '/exams/toeic/history': typeof AppExamsToeicHistoryRoute
   '/lessons/$slug/practice': typeof AppLessonsSlugPracticeRoute
+  '/payments/vnpay/return': typeof AppPaymentsVnpayReturnRoute
   '/videos/$videoId/dictation': typeof AppVideosVideoIdDictationRoute
   '/videos/$videoId/shadowing': typeof AppVideosVideoIdShadowingRoute
   '/videos/categories/$categorySlug': typeof AppVideosCategoriesCategorySlugRoute
@@ -314,17 +398,28 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/home': typeof AppHomeRoute
+  '/admin/lessons': typeof AdminLessonsRoute
+  '/admin/premium': typeof AdminPremiumRoute
+  '/admin/scenarios': typeof AdminScenariosRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/videos': typeof AdminVideosRoute
+  '/admin/vocabulary': typeof AdminVocabularyRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/admin': typeof AdminIndexRoute
+  '/payments/pricing': typeof AppPaymentsPricingRoute
   '/stories/$slug': typeof AppStoriesSlugRoute
+  '/vocabulary/$itemId': typeof AppVocabularyItemIdRoute
   '/voice/preview': typeof AppVoicePreviewRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/lessons': typeof AppLessonsIndexRoute
   '/stories': typeof AppStoriesIndexRoute
   '/videos': typeof AppVideosIndexRoute
+  '/vocabulary': typeof AppVocabularyIndexRoute
   '/voice': typeof AppVoiceIndexRoute
   '/exams/toeic/history': typeof AppExamsToeicHistoryRoute
   '/lessons/$slug/practice': typeof AppLessonsSlugPracticeRoute
+  '/payments/vnpay/return': typeof AppPaymentsVnpayReturnRoute
   '/videos/$videoId/dictation': typeof AppVideosVideoIdDictationRoute
   '/videos/$videoId/shadowing': typeof AppVideosVideoIdShadowingRoute
   '/videos/categories/$categorySlug': typeof AppVideosCategoriesCategorySlugRoute
@@ -351,23 +446,35 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteRouteWithChildren
+  '/admin': typeof AdminRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/error': typeof ErrorRoute
   '/not-found': typeof NotFoundRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/_app/home': typeof AppHomeRoute
+  '/admin/lessons': typeof AdminLessonsRoute
+  '/admin/premium': typeof AdminPremiumRoute
+  '/admin/scenarios': typeof AdminScenariosRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/videos': typeof AdminVideosRoute
+  '/admin/vocabulary': typeof AdminVocabularyRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/admin/': typeof AdminIndexRoute
+  '/_app/payments/pricing': typeof AppPaymentsPricingRoute
   '/_app/stories/$slug': typeof AppStoriesSlugRoute
+  '/_app/vocabulary/$itemId': typeof AppVocabularyItemIdRoute
   '/_app/voice/preview': typeof AppVoicePreviewRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/_app/lessons/': typeof AppLessonsIndexRoute
   '/_app/stories/': typeof AppStoriesIndexRoute
   '/_app/videos/': typeof AppVideosIndexRoute
+  '/_app/vocabulary/': typeof AppVocabularyIndexRoute
   '/_app/voice/': typeof AppVoiceIndexRoute
   '/_app/exams/toeic/history': typeof AppExamsToeicHistoryRoute
   '/_app/lessons/$slug/practice': typeof AppLessonsSlugPracticeRoute
+  '/_app/payments/vnpay/return': typeof AppPaymentsVnpayReturnRoute
   '/_app/videos/$videoId/dictation': typeof AppVideosVideoIdDictationRoute
   '/_app/videos/$videoId/shadowing': typeof AppVideosVideoIdShadowingRoute
   '/_app/videos/categories/$categorySlug': typeof AppVideosCategoriesCategorySlugRoute
@@ -394,23 +501,35 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/about'
     | '/error'
     | '/not-found'
     | '/onboarding'
     | '/pricing'
     | '/home'
+    | '/admin/lessons'
+    | '/admin/premium'
+    | '/admin/scenarios'
+    | '/admin/users'
+    | '/admin/videos'
+    | '/admin/vocabulary'
     | '/sign-in/$'
     | '/sign-up/$'
+    | '/admin/'
+    | '/payments/pricing'
     | '/stories/$slug'
+    | '/vocabulary/$itemId'
     | '/voice/preview'
     | '/api/media/$'
     | '/lessons/'
     | '/stories/'
     | '/videos/'
+    | '/vocabulary/'
     | '/voice/'
     | '/exams/toeic/history'
     | '/lessons/$slug/practice'
+    | '/payments/vnpay/return'
     | '/videos/$videoId/dictation'
     | '/videos/$videoId/shadowing'
     | '/videos/categories/$categorySlug'
@@ -441,17 +560,28 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/home'
+    | '/admin/lessons'
+    | '/admin/premium'
+    | '/admin/scenarios'
+    | '/admin/users'
+    | '/admin/videos'
+    | '/admin/vocabulary'
     | '/sign-in/$'
     | '/sign-up/$'
+    | '/admin'
+    | '/payments/pricing'
     | '/stories/$slug'
+    | '/vocabulary/$itemId'
     | '/voice/preview'
     | '/api/media/$'
     | '/lessons'
     | '/stories'
     | '/videos'
+    | '/vocabulary'
     | '/voice'
     | '/exams/toeic/history'
     | '/lessons/$slug/practice'
+    | '/payments/vnpay/return'
     | '/videos/$videoId/dictation'
     | '/videos/$videoId/shadowing'
     | '/videos/categories/$categorySlug'
@@ -477,23 +607,35 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_app'
+    | '/admin'
     | '/about'
     | '/error'
     | '/not-found'
     | '/onboarding'
     | '/pricing'
     | '/_app/home'
+    | '/admin/lessons'
+    | '/admin/premium'
+    | '/admin/scenarios'
+    | '/admin/users'
+    | '/admin/videos'
+    | '/admin/vocabulary'
     | '/sign-in/$'
     | '/sign-up/$'
+    | '/admin/'
+    | '/_app/payments/pricing'
     | '/_app/stories/$slug'
+    | '/_app/vocabulary/$itemId'
     | '/_app/voice/preview'
     | '/api/media/$'
     | '/_app/lessons/'
     | '/_app/stories/'
     | '/_app/videos/'
+    | '/_app/vocabulary/'
     | '/_app/voice/'
     | '/_app/exams/toeic/history'
     | '/_app/lessons/$slug/practice'
+    | '/_app/payments/vnpay/return'
     | '/_app/videos/$videoId/dictation'
     | '/_app/videos/$videoId/shadowing'
     | '/_app/videos/categories/$categorySlug'
@@ -520,6 +662,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRouteRoute: typeof AppRouteRouteWithChildren
+  AdminRouteRoute: typeof AdminRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   ErrorRoute: typeof ErrorRoute
   NotFoundRoute: typeof NotFoundRoute
@@ -553,6 +696,13 @@ declare module '@tanstack/react-router' {
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/error': {
@@ -590,6 +740,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppHomeRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/lessons': {
+      id: '/admin/lessons'
+      path: '/lessons'
+      fullPath: '/admin/lessons'
+      preLoaderRoute: typeof AdminLessonsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/premium': {
+      id: '/admin/premium'
+      path: '/premium'
+      fullPath: '/admin/premium'
+      preLoaderRoute: typeof AdminPremiumRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/scenarios': {
+      id: '/admin/scenarios'
+      path: '/scenarios'
+      fullPath: '/admin/scenarios'
+      preLoaderRoute: typeof AdminScenariosRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/videos': {
+      id: '/admin/videos'
+      path: '/videos'
+      fullPath: '/admin/videos'
+      preLoaderRoute: typeof AdminVideosRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/vocabulary': {
+      id: '/admin/vocabulary'
+      path: '/vocabulary'
+      fullPath: '/admin/vocabulary'
+      preLoaderRoute: typeof AdminVocabularyRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/sign-in/$': {
       id: '/sign-in/$'
       path: '/sign-in/$'
@@ -611,6 +810,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLessonsIndexRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/_app/payments/pricing': {
+      id: '/_app/payments/pricing'
+      path: '/payments/pricing'
+      fullPath: '/payments/pricing'
+      preLoaderRoute: typeof AppPaymentsPricingRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/_app/stories/': {
       id: '/_app/stories/'
       path: '/stories'
@@ -630,6 +836,20 @@ declare module '@tanstack/react-router' {
       path: '/videos'
       fullPath: '/videos/'
       preLoaderRoute: typeof AppVideosIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/vocabulary/': {
+      id: '/_app/vocabulary/'
+      path: '/vocabulary'
+      fullPath: '/vocabulary/'
+      preLoaderRoute: typeof AppVocabularyIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/vocabulary/$itemId': {
+      id: '/_app/vocabulary/$itemId'
+      path: '/vocabulary/$itemId'
+      fullPath: '/vocabulary/$itemId'
+      preLoaderRoute: typeof AppVocabularyItemIdRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/_app/voice/': {
@@ -679,6 +899,13 @@ declare module '@tanstack/react-router' {
       path: '/lessons/$slug/practice'
       fullPath: '/lessons/$slug/practice'
       preLoaderRoute: typeof AppLessonsSlugPracticeRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/payments/vnpay/return': {
+      id: '/_app/payments/vnpay/return'
+      path: '/payments/vnpay/return'
+      fullPath: '/payments/vnpay/return'
+      preLoaderRoute: typeof AppPaymentsVnpayReturnRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/_app/videos/$videoId/dictation': {
@@ -819,14 +1046,18 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteRouteChildren {
   AppHomeRoute: typeof AppHomeRoute
+  AppPaymentsPricingRoute: typeof AppPaymentsPricingRoute
   AppStoriesSlugRoute: typeof AppStoriesSlugRoute
+  AppVocabularyItemIdRoute: typeof AppVocabularyItemIdRoute
   AppVoicePreviewRoute: typeof AppVoicePreviewRoute
   AppLessonsIndexRoute: typeof AppLessonsIndexRoute
   AppStoriesIndexRoute: typeof AppStoriesIndexRoute
   AppVideosIndexRoute: typeof AppVideosIndexRoute
+  AppVocabularyIndexRoute: typeof AppVocabularyIndexRoute
   AppVoiceIndexRoute: typeof AppVoiceIndexRoute
   AppExamsToeicHistoryRoute: typeof AppExamsToeicHistoryRoute
   AppLessonsSlugPracticeRoute: typeof AppLessonsSlugPracticeRoute
+  AppPaymentsVnpayReturnRoute: typeof AppPaymentsVnpayReturnRoute
   AppVideosVideoIdDictationRoute: typeof AppVideosVideoIdDictationRoute
   AppVideosVideoIdShadowingRoute: typeof AppVideosVideoIdShadowingRoute
   AppVideosCategoriesCategorySlugRoute: typeof AppVideosCategoriesCategorySlugRoute
@@ -850,14 +1081,18 @@ interface AppRouteRouteChildren {
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppHomeRoute: AppHomeRoute,
+  AppPaymentsPricingRoute: AppPaymentsPricingRoute,
   AppStoriesSlugRoute: AppStoriesSlugRoute,
+  AppVocabularyItemIdRoute: AppVocabularyItemIdRoute,
   AppVoicePreviewRoute: AppVoicePreviewRoute,
   AppLessonsIndexRoute: AppLessonsIndexRoute,
   AppStoriesIndexRoute: AppStoriesIndexRoute,
   AppVideosIndexRoute: AppVideosIndexRoute,
+  AppVocabularyIndexRoute: AppVocabularyIndexRoute,
   AppVoiceIndexRoute: AppVoiceIndexRoute,
   AppExamsToeicHistoryRoute: AppExamsToeicHistoryRoute,
   AppLessonsSlugPracticeRoute: AppLessonsSlugPracticeRoute,
+  AppPaymentsVnpayReturnRoute: AppPaymentsVnpayReturnRoute,
   AppVideosVideoIdDictationRoute: AppVideosVideoIdDictationRoute,
   AppVideosVideoIdShadowingRoute: AppVideosVideoIdShadowingRoute,
   AppVideosCategoriesCategorySlugRoute: AppVideosCategoriesCategorySlugRoute,
@@ -885,9 +1120,34 @@ const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
   AppRouteRouteChildren,
 )
 
+interface AdminRouteRouteChildren {
+  AdminLessonsRoute: typeof AdminLessonsRoute
+  AdminPremiumRoute: typeof AdminPremiumRoute
+  AdminScenariosRoute: typeof AdminScenariosRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminVideosRoute: typeof AdminVideosRoute
+  AdminVocabularyRoute: typeof AdminVocabularyRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminLessonsRoute: AdminLessonsRoute,
+  AdminPremiumRoute: AdminPremiumRoute,
+  AdminScenariosRoute: AdminScenariosRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  AdminVideosRoute: AdminVideosRoute,
+  AdminVocabularyRoute: AdminVocabularyRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
+  AdminRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRouteRoute: AppRouteRouteWithChildren,
+  AdminRouteRoute: AdminRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   ErrorRoute: ErrorRoute,
   NotFoundRoute: NotFoundRoute,
@@ -902,13 +1162,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
