@@ -4,6 +4,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { EmptyList } from "#/components/common/empty-list";
+import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
 import { Pager } from "#/components/common/pager";
 import {
@@ -93,7 +94,13 @@ function StoriesListPage() {
 	}
 
 	return (
-		<PageLayout>
+		<PageLayout
+			hero={{
+				icon: <MoMascot variant="nice" size={84} />,
+				title: m["stories.title"](),
+				description: m["stories.description"](),
+			}}
+		>
 			<StoryFilterBar
 				tab="all"
 				onTabChange={() => {}}

@@ -14,6 +14,7 @@ require (
 	github.com/jinzhu/copier v0.4.0
 	github.com/joho/godotenv v1.5.1
 	github.com/kaptinlin/jsonrepair v0.4.9
+	github.com/lib/pq v1.12.3
 	github.com/openai/openai-go/v3 v3.74.0
 	github.com/redis/go-redis/v9 v9.23.0
 	github.com/stretchr/testify v1.12.1

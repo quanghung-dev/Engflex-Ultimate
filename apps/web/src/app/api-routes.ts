@@ -127,6 +127,21 @@ export const API_ROUTES = {
 		DELETE: (contentType: string, contentId: ApiId) =>
 			`/bookmarks/${contentType}/${contentId}`,
 	},
+	EXAMS: {
+		CATEGORIES: {
+			LIST: "/exam-categories",
+			TESTS: (categoryId: ApiId) => `/exam-categories/${categoryId}/tests`,
+		},
+		TESTS: {
+			BY_ID: (id: ApiId) => `/exam-tests/${id}`,
+			START_ATTEMPT: (id: ApiId) => `/exam-tests/${id}/attempts`,
+		},
+		ATTEMPTS: {
+			LIST: "/exam-attempts",
+			CANCEL: (id: ApiId) => `/exam-attempts/${id}/cancel`,
+			BY_ID: (id: ApiId) => `/exam-attempts/${id}`,
+		},
+	},
 } as const;
 
 /**

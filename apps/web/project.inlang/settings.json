@@ -27,7 +27,8 @@
       "./messages/{locale}/videos.json",
       "./messages/{locale}/pricing.json",
       "./messages/{locale}/landing.json",
-      "./messages/{locale}/stories.json"
+      "./messages/{locale}/stories.json",
+      "./messages/{locale}/exams.json"
     ]
   }
 }

@@ -6,7 +6,9 @@ MIGRATIONS_DIR ?= internal/database/migrations
 # clobber a real DATABASE_URL (the e2e suite migrates a dedicated database and
 # was silently migrating the dev one). Missing file is fine (CI passes env).
 ifneq (,$(wildcard .env))
-	DATABASE_URL ?= $(shell sed -n 's/^DATABASE_URL=//p' .env | head -1)
+	ENV_VARS := $(subst $(newline), ,$(file < .env))
+	PARSED_DB_URL := $(patsubst DATABASE_URL=%,%,$(filter DATABASE_URL=%,$(ENV_VARS)))
+	DATABASE_URL ?= $(strip $(firstword $(PARSED_DB_URL)))
 endif
 
 .PHONY: migration-create migration-up migration-down migration-status migration-reset mocks contracts swagger seed-audio pronounce-image pronounce-warm run
@@ -16,7 +18,7 @@ migration-create:
 	@goose -dir $(MIGRATIONS_DIR) create $(name) sql
 
 migration-up:
-	@goose -dir $(MIGRATIONS_DIR) postgres "$(DATABASE_URL)" up
+	@goose -dir $(MIGRATIONS_DIR) -allow-missing postgres "$(DATABASE_URL)" up
 
 migration-down:
 	@goose -dir $(MIGRATIONS_DIR) postgres "$(DATABASE_URL)" down

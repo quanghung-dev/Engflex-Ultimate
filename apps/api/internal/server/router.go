@@ -20,6 +20,7 @@ import (
 	"engflex-api/internal/modules/attempts"
 	"engflex-api/internal/modules/bookmarks"
 	"engflex-api/internal/modules/conversations"
+	"engflex-api/internal/modules/exams"
 	"engflex-api/internal/modules/lessons"
 	"engflex-api/internal/modules/payments"
 	"engflex-api/internal/modules/profiles"
@@ -159,6 +160,7 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	conversations.RegisterRoutes(v1, db, cfg.Voice, sessionLimiter)
 	lessons.RegisterRoutes(v1, db, cfg.Voice, cfg.LLM, cfg.Media, sessionLimiter)
 	attempts.RegisterRoutes(v1, db)
+	exams.RegisterRoutes(v1, db)
 	scenarios.RegisterRoutes(v1, db)
 	videos.RegisterRoutes(v1, db)
 	vocabulary.RegisterRoutes(v1, db)

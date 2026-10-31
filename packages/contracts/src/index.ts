@@ -18,6 +18,8 @@ declare global {
   type ActivityType = Enums.ActivityType;
   type AttemptType = Enums.AttemptType;
   type AttemptStatus = Enums.AttemptStatus;
+  type ExamMode = Enums.ExamMode;
+  type ExamType = Enums.ExamType;
   type CEFR = Enums.CEFR;
   type ConversationMode = Enums.ConversationMode;
   type ConversationStatus = Enums.ConversationStatus;
@@ -57,6 +59,25 @@ export * from './conversations-requests.ts';
 export * from './conversations-responses.ts';
 export * from './vocabulary-requests.ts';
 export * from './vocabulary-responses.ts';
+
+export * from './attempts-requests.ts';
+export * from './attempts-responses.ts';
+export type {
+  PatchAttempt as PatchExamAttempt,
+  StartAttempt as StartExamAttempt,
+  Answer as ExamAnswer,
+} from './exams-requests.ts';
+
+export type {
+  Category as ExamCategory,
+  TestMetadata as ExamTestMetadata,
+  TestDetail as ExamTestDetail,
+  ExamAttempt,
+  ExamAttemptSummary,
+  ReviewAttempt as ExamReviewAttempt,
+  TakingContent as ExamTakingContent,
+  ReviewContent as ExamReviewContent,
+} from './exams-responses.ts';
 export * from './videos-requests.ts';
 export * from './videos-responses.ts';
 export * from './attempts-requests.ts';
