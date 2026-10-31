@@ -20,7 +20,7 @@ type AdminActivity struct {
 	Description string             `json:"description"`
 	SkillFocus  string             `json:"skillFocus"`
 	DurationMin int                `json:"durationMin"`
-	Config      json.RawMessage    `json:"config"`
+	Config      json.RawMessage    `json:"config" swaggertype:"object"`
 	CreatedAt   time.Time          `json:"createdAt"`
 	UpdatedAt   time.Time          `json:"updatedAt"`
 }

@@ -102,7 +102,7 @@ func (h *UserController) ListSubscriptions(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        id path string true "Clerk user id"
-// @Param        request body paymentrequests.GrantSubscription true "plan to grant"
+// @Param        request body requests.GrantSubscription true "plan to grant"
 // @Success      200 {object} common.ApiResponse{data=responses.Subscription}
 // @Router       /admin/users/{id}/subscriptions [post]
 func (h *UserController) GrantSubscription(c *gin.Context) {

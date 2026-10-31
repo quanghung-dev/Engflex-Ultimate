@@ -73,7 +73,7 @@ type CreateLessonActivity struct {
 	Description string             `json:"description"`
 	SkillFocus  string             `json:"skillFocus"`
 	DurationMin int                `json:"durationMin"`
-	Config      json.RawMessage    `json:"config" binding:"required"`
+	Config      json.RawMessage    `json:"config" binding:"required" swaggertype:"object"`
 }
 
 type UpdateLessonActivity struct {
@@ -83,5 +83,5 @@ type UpdateLessonActivity struct {
 	Description *string             `json:"description"`
 	SkillFocus  *string             `json:"skillFocus"`
 	DurationMin *int                `json:"durationMin"`
-	Config      json.RawMessage     `json:"config"`
+	Config      json.RawMessage     `json:"config" swaggertype:"object"`
 }
