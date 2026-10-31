@@ -1,13 +1,22 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { History } from "lucide-react";
-import { useState } from "react";
+import type { ExamAttemptSummary } from "@engflex/contracts";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+	createFileRoute,
+	Link,
+	redirect,
+	useRouter,
+} from "@tanstack/react-router";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { BackButton } from "#/components/common/back-button";
+import { CardShell } from "#/components/common/card-shell";
+import { PageLayout } from "#/components/common/page-layout";
+import { Pager } from "#/components/common/pager";
+import { SubmitButton } from "#/components/common/submit-button";
 import {
 	AlertDialog,
-	AlertDialogAction,
 	AlertDialogCancel,
 	AlertDialogContent,
 	AlertDialogDescription,
@@ -16,135 +25,197 @@ import {
 	AlertDialogTitle,
 } from "#/components/ui/alert-dialog";
 import { Button } from "#/components/ui/button";
+import { Skeleton } from "#/components/ui/skeleton";
+import { ToeicHistoryCard } from "#/features/exams/components/history/toeic-history-card";
 import {
-	type ToeicHistoryAttemptItem,
-	ToeicHistoryCard,
-} from "#/features/exams/components/history/toeic-history-card";
+	examAttemptsQueryOptions,
+	examKeys,
+	useCancelExamAttempt,
+	useContinueExamAttempt,
+} from "#/features/exams/queries";
+import { ApiError } from "#/lib/api/api";
+import { loadOr404 } from "#/lib/router/route-loader";
+import { parsePage } from "#/lib/router/search-params";
 import { m } from "#/paraglide/messages";
 
-/* ------------------------------------------------------------------ Mock Data */
-
-const INITIAL_MOCK_HISTORY: ToeicHistoryAttemptItem[] = [
-	{
-		id: "test-1-attempt-1",
-		title: "Parroto TOEIC Practice Vol. 1 - Test 1",
-		mode: "exam",
-		status: "completed",
-		score: "10/990",
-		duration: "2m",
-		date: "30/10/2026",
-	},
-	{
-		id: "test-1-attempt-2",
-		title: "Parroto TOEIC Practice Vol. 1 - Test 1",
-		mode: "practice",
-		status: "in_progress",
-		duration: "0m",
-		date: "30/10/2026",
-	},
-	{
-		id: "test-1-attempt-3",
-		title: "Parroto TOEIC Practice Vol. 1 - Test 1",
-		mode: "exam",
-		status: "in_progress",
-		duration: "0m",
-		date: "30/10/2026",
-	},
-	{
-		id: "test-1-attempt-4",
-		title: "Parroto TOEIC Practice Vol. 1 - Test 1",
-		mode: "exam",
-		status: "completed",
-		score: "10/990",
-		duration: "3h45m",
-		date: "30/10/2026",
-	},
-	{
-		id: "test-3-attempt-1",
-		title: "TOEIC 2026 - Test 3",
-		mode: "practice",
-		partBadge: "P5",
-		status: "completed",
-		score: "19/30 (63%)",
-		duration: "2h39m",
-		date: "08/07/2026",
-	},
-];
-
-/* ------------------------------------------------------------------ Page Component */
-
+const PAGE_SIZE = 10;
 export const Route = createFileRoute("/_app/exams/toeic/history")({
+	validateSearch: (search: Record<string, unknown>): { page?: number } => ({
+		page: parsePage(search.page),
+	}),
+	loaderDeps: ({ search }) => ({ page: search.page ?? 1 }),
+	loader: async ({ context: { queryClient }, deps: { page } }) => {
+		const data = await loadOr404(
+			queryClient,
+			examAttemptsQueryOptions({ page, pageSize: PAGE_SIZE }),
+		);
+		const last = Math.max(1, data.pagination.totalPages);
+		if (page > last)
+			throw redirect({
+				to: APP_ROUTES.EXAMS.TOEIC.HISTORY,
+				search: { page: last },
+				replace: true,
+			});
+		return data;
+	},
+	pendingComponent: HistoryPending,
 	component: ToeicHistoryPage,
 });
-
+function HistoryPending() {
+	return (
+		<PageLayout>
+			{[0, 1, 2].map((item) => (
+				<CardShell
+					key={item}
+					pending
+					className="p-5"
+					skeleton={
+						<>
+							<Skeleton className="h-5 w-3/4" />
+							<Skeleton className="mt-3 h-4 w-1/2" />
+							<Skeleton className="mt-4 ml-auto h-9 w-36" />
+						</>
+					}
+				/>
+			))}
+		</PageLayout>
+	);
+}
 function ToeicHistoryPage() {
-	const [attempts, setAttempts] =
-		useState<ToeicHistoryAttemptItem[]>(INITIAL_MOCK_HISTORY);
+	const { items, pagination } = Route.useLoaderData();
+	const navigate = Route.useNavigate();
+	const queryClient = useQueryClient();
+	const router = useRouter();
+	const cancel = useCancelExamAttempt();
+	const resume = useContinueExamAttempt();
+	const actionLock = useRef(false);
 	const [attemptToCancel, setAttemptToCancel] =
-		useState<ToeicHistoryAttemptItem | null>(null);
-
+		useState<ExamAttemptSummary | null>(null);
 	useBreadcrumbs([
 		{ label: m["exams.toeic.hub.title"](), to: APP_ROUTES.EXAMS.TOEIC.LIST },
 		{ label: m["exams.toeic.hub.history.title"]() },
 	]);
-
-	const handleConfirmCancel = () => {
-		if (!attemptToCancel) return;
-		setAttempts((prev) => prev.filter((a) => a.id !== attemptToCancel.id));
-		toast.success(m["exams.toeic.hub.history.cancelSuccess"]());
-		setAttemptToCancel(null);
-	};
-
+	async function refresh(id: string) {
+		await Promise.all([
+			queryClient.invalidateQueries({
+				queryKey: [...examKeys.all, "attempts"],
+			}),
+			queryClient.invalidateQueries({ queryKey: examKeys.attempt(id) }),
+		]);
+		// Reload the same URL so the route consumes the refreshed server snapshot.
+		await router.invalidate();
+	}
+	async function handleCancel() {
+		if (!attemptToCancel || actionLock.current) return;
+		actionLock.current = true;
+		try {
+			const response = await cancel.mutateAsync(attemptToCancel.id);
+			setAttemptToCancel(null);
+			if (response.status === "abandoned")
+				toast.success(m["exams.toeic.hub.history.cancelSuccess"]());
+			else
+				toast.info(m["exams.toeic.history.alreadyCompleted"](), {
+					action: {
+						label: m["exams.toeic.hub.history.viewResult"](),
+						onClick: () => {
+							void navigate({
+								to: APP_ROUTES.EXAMS.TOEIC.RESULT,
+								params: { id: response.id },
+							});
+						},
+					},
+				});
+			await refresh(response.id);
+		} catch {
+			toast.error(m["exams.toeic.history.cancelFailed"]());
+		} finally {
+			actionLock.current = false;
+		}
+	}
+	async function handleContinue(id: string) {
+		if (actionLock.current) return;
+		actionLock.current = true;
+		try {
+			const attempt = await resume.mutateAsync(id);
+			queryClient.setQueryData(examKeys.attempt(id), attempt);
+			await navigate({
+				to:
+					attempt.status === "completed"
+						? APP_ROUTES.EXAMS.TOEIC.RESULT
+						: APP_ROUTES.EXAMS.TOEIC.SESSION,
+				params: { id },
+			});
+		} catch (error) {
+			if (error instanceof ApiError && error.status === 409) await refresh(id);
+			else toast.error(m["exams.toeic.history.continueFailed"]());
+		} finally {
+			actionLock.current = false;
+		}
+	}
 	return (
-		<div className="mx-auto flex w-full max-w-5xl flex-col gap-6 pb-20">
-			{/* Top Back Navigation to TOEIC List */}
-			<div className="flex items-center">
+		<PageLayout
+			action={
 				<BackButton
 					to={APP_ROUTES.EXAMS.TOEIC.LIST}
 					label={m["exams.toeic.category.back"]()}
 				/>
-			</div>
-
-			{/* Page Title */}
-			<h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+			}
+		>
+			<h1 className="text-2xl font-bold">
 				{m["exams.toeic.hub.history.title"]()}
 			</h1>
-
-			{/* History List or Empty State */}
-			{attempts.length === 0 ? (
-				<div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card p-12 text-center">
-					<div className="flex size-14 items-center justify-center rounded-full bg-muted text-muted-foreground">
-						<History className="size-7" aria-hidden="true" />
-					</div>
-					<h3 className="mt-4 text-base font-bold text-foreground">
+			{items.length === 0 ? (
+				<CardShell className="flex flex-col items-center gap-3 p-12 text-center">
+					<h2 className="font-bold">
 						{m["exams.toeic.hub.history.emptyTitle"]()}
-					</h3>
-					<p className="mt-1.5 max-w-sm text-xs text-muted-foreground sm:text-sm">
-						{m["exams.toeic.hub.history.emptyDesc"]()}
-					</p>
-					<Button asChild className="mt-6 rounded-xl font-bold">
+					</h2>
+					<p>{m["exams.toeic.hub.history.emptyDesc"]()}</p>
+					<Button asChild>
 						<Link to={APP_ROUTES.EXAMS.TOEIC.LIST}>
 							{m["exams.toeic.hub.history.emptyAction"]()}
 						</Link>
 					</Button>
-				</div>
+				</CardShell>
 			) : (
-				<div className="flex flex-col gap-3.5">
-					{attempts.map((attempt) => (
-						<ToeicHistoryCard
-							key={attempt.id}
-							item={attempt}
-							onCancel={(item) => setAttemptToCancel(item)}
-						/>
-					))}
-				</div>
+				<>
+					<div className="flex flex-col gap-3.5">
+						{items.map((item) => (
+							<ToeicHistoryCard
+								key={item.id}
+								item={item}
+								onCancel={setAttemptToCancel}
+								onContinue={(id) => {
+									void handleContinue(id);
+								}}
+								pending={resume.isPending && resume.variables === item.id}
+								locked={cancel.isPending || resume.isPending}
+							/>
+						))}
+					</div>
+					<Pager
+						page={pagination.page}
+						totalPages={pagination.totalPages}
+						onPageChange={(page) => {
+							void navigate({ search: { page } });
+						}}
+						summary={
+							pagination.totalPages > 1
+								? m["exams.toeic.history.pagination.range"]({
+										from: (pagination.page - 1) * PAGE_SIZE + 1,
+										to: Math.min(pagination.page * PAGE_SIZE, pagination.total),
+										total: pagination.total,
+									})
+								: m["exams.toeic.history.pagination.all"]({
+										count: pagination.total,
+									})
+						}
+					/>
+				</>
 			)}
-
-			{/* Confirm Cancel Alert Dialog */}
 			<AlertDialog
-				open={attemptToCancel != null}
+				open={!!attemptToCancel}
 				onOpenChange={(open) => {
-					if (!open) setAttemptToCancel(null);
+					if (!open && !actionLock.current) setAttemptToCancel(null);
 				}}
 			>
 				<AlertDialogContent>
@@ -160,15 +231,18 @@ function ToeicHistoryPage() {
 						<AlertDialogCancel>
 							{m["exams.toeic.hub.history.cancelDialogCancel"]()}
 						</AlertDialogCancel>
-						<AlertDialogAction
-							onClick={handleConfirmCancel}
-							className="bg-rose-600 text-white hover:bg-rose-700"
+						<SubmitButton
+							variant="destructive"
+							pending={cancel.isPending}
+							onClick={() => {
+								void handleCancel();
+							}}
 						>
 							{m["exams.toeic.hub.history.cancelDialogConfirm"]()}
-						</AlertDialogAction>
+						</SubmitButton>
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
-		</div>
+		</PageLayout>
 	);
 }

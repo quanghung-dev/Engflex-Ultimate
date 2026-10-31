@@ -34,7 +34,7 @@ export function ToeicResultPartsCard({ parts }: ToeicResultPartsCardProps) {
 							{/* Part Title and Description */}
 							<div className="col-span-4 flex flex-col sm:col-span-3">
 								<span className="text-sm font-bold text-foreground">
-									Part {p.partNum}
+									{m["exams.toeic.result.review.part"]({ part: p.partNum })}
 								</span>
 								<span className="text-xs text-muted-foreground truncate">
 									{p.name}

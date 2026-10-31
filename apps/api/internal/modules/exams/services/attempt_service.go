@@ -134,6 +134,14 @@ func (s *AttemptService) List(ctx context.Context, userID string, page, pageSize
 		logger.Report(ctx, "list exam attempts failed", appErr)
 		return nil, 0, appErr
 	}
+	for _, attempt := range attempts {
+		attempt.ParsedResult, err = toeic.ParseResult(attempt.Result)
+		if err != nil {
+			appErr := common.Internal()
+			logger.Report(ctx, "parse exam history result failed", appErr, "attemptID", attempt.ID, "error", err)
+			return nil, 0, appErr
+		}
+	}
 	total, err := s.attempts.CountExamAttempts(ctx, userID)
 	if err != nil {
 		appErr := common.FromDBError(err, "attempt")
@@ -145,7 +153,7 @@ func (s *AttemptService) List(ctx context.Context, userID string, page, pageSize
 }
 
 func (s *AttemptService) Get(ctx context.Context, userID, attemptID string) (*models.Attempt, error) {
-	return s.change(ctx, userID, attemptID, nil)
+	return s.change(ctx, userID, attemptID, nil, false)
 }
 
 func filterSelectedParts(content *toeic.Content, selectedParts pq.Int64Array) {

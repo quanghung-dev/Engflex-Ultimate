@@ -1,112 +1,100 @@
+import type { AttemptStatus, ExamAttemptSummary } from "@engflex/contracts";
 import { Link } from "@tanstack/react-router";
-import { CheckCircle2, Clock } from "lucide-react";
+import { Clock } from "lucide-react";
 import { APP_ROUTES } from "#/app/app-route";
+import { SubmitButton } from "#/components/common/submit-button";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
+import { formatExamDate, formatExamDuration } from "#/features/exams/dates";
 import { m } from "#/paraglide/messages";
 
-export interface ToeicHistoryAttemptItem {
-	id: string;
-	title: string;
-	mode: "exam" | "practice";
-	partBadge?: string;
-	status: "in_progress" | "completed";
-	score?: string;
-	duration: string;
-	date: string;
-}
-
-interface ToeicHistoryCardProps {
-	item: ToeicHistoryAttemptItem;
-	onCancel: (item: ToeicHistoryAttemptItem) => void;
-}
-
-export function ToeicHistoryCard({ item, onCancel }: ToeicHistoryCardProps) {
-	const isCompleted = item.status === "completed";
-
+const STATUS_LABELS: Record<AttemptStatus, () => string> = {
+	in_progress: () => m["exams.toeic.history.status.inProgress"](),
+	completed: () => m["exams.toeic.history.status.completed"](),
+	abandoned: () => m["exams.toeic.history.status.abandoned"](),
+};
+export function ToeicHistoryCard({
+	item,
+	onCancel,
+	onContinue,
+	pending,
+	locked,
+}: {
+	item: ExamAttemptSummary;
+	onCancel: (item: ExamAttemptSummary) => void;
+	onContinue: (id: string) => void;
+	pending: boolean;
+	locked: boolean;
+}) {
+	const result = item.result;
 	return (
-		<div className="flex flex-col gap-4 rounded-2xl border border-border/80 bg-card p-5 shadow-xs transition-all hover:border-border sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-			{/* Left Column: Title & Metadata */}
-			<div className="flex flex-col gap-2 min-w-0">
-				{/* Top Row: Title + Mode/Part Badge */}
-				<div className="flex flex-wrap items-center gap-2.5">
-					<h3 className="text-base font-bold text-foreground truncate">
-						{item.title}
+		<div className="flex flex-col gap-4 rounded-2xl border border-border/80 bg-card p-5 shadow-xs sm:flex-row sm:items-center sm:justify-between">
+			<div className="flex min-w-0 flex-col gap-2">
+				<div className="flex flex-wrap items-center gap-2">
+					<h3 className="truncate text-base font-bold">
+						{item.examTest?.title ?? m["exams.toeic.history.missingTest"]()}
 					</h3>
-					{item.partBadge ? (
-						<Badge
-							variant="outline"
-							className="rounded-md border-border bg-muted/60 px-2 py-0.5 text-xs font-semibold text-muted-foreground"
-						>
-							{item.partBadge}
-						</Badge>
-					) : (
-						<Badge
-							variant="outline"
-							className="rounded-md border-border bg-muted/60 px-2 py-0.5 text-xs font-semibold text-muted-foreground"
-						>
-							{item.mode === "exam"
+					<Badge variant="outline">
+						{item.mode === null
+							? m["exams.attempt.unavailable"]()
+							: item.mode === "exam"
 								? m["exams.toeic.hub.history.modeExam"]()
 								: m["exams.toeic.hub.history.modePractice"]()}
-						</Badge>
+					</Badge>
+					<Badge variant="secondary">{STATUS_LABELS[item.status]()}</Badge>
+					{item.mode === "practice" && (
+						<span className="text-xs text-muted-foreground">
+							{m["exams.toeic.history.selectedParts"]({
+								parts: item.selectedParts.join(", "),
+							})}
+						</span>
 					)}
 				</div>
-
-				{/* Bottom Row: Score + Duration + Date + Check */}
-				<div className="flex flex-wrap items-center gap-3 text-xs font-medium text-muted-foreground sm:text-sm">
-					{isCompleted && item.score && (
-						<span className="font-bold text-foreground">{item.score}</span>
+				<div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+					{item.status === "completed" && (
+						<span className="font-bold text-foreground">
+							{result?.correctCount != null && result.accuracyPct != null
+								? m["exams.toeic.history.result"]({
+										correct: result.correctCount,
+										total: result.questionCount,
+										accuracy: Math.round(result.accuracyPct),
+									})
+								: m["exams.attempt.unavailable"]()}
+						</span>
 					)}
-
 					<span className="inline-flex items-center gap-1">
 						<Clock className="size-3.5" aria-hidden="true" />
-						{item.duration}
+						{formatExamDuration(item.durationSec)}
 					</span>
-
-					<span>{item.date}</span>
-
-					{isCompleted && (
-						<CheckCircle2
-							className="size-4 text-emerald-500"
-							aria-hidden="true"
-						/>
-					)}
+					<span>{formatExamDate(item.startedAt ?? item.createdAt)}</span>
 				</div>
 			</div>
-
-			{/* Right Column: Action Buttons */}
-			<div className="flex items-center gap-2.5 self-end sm:self-center shrink-0">
-				{isCompleted ? (
-					<Button
-						asChild
-						variant="outline"
-						className="rounded-xl border-border/90 px-5 py-2 text-xs font-bold tracking-wide hover:bg-muted"
-					>
+			<div className="flex shrink-0 items-center gap-2 self-end sm:self-center">
+				{item.status === "completed" && (
+					<Button asChild variant="outline">
 						<Link to={APP_ROUTES.EXAMS.TOEIC.RESULT} params={{ id: item.id }}>
 							{m["exams.toeic.hub.history.viewResult"]()}
 						</Link>
 					</Button>
-				) : (
+				)}
+				{item.status === "in_progress" && (
 					<>
 						<Button
 							type="button"
-							onClick={() => onCancel(item)}
-							className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold tracking-wide text-white hover:bg-rose-700 active:bg-rose-800"
+							variant="destructive"
+							onClick={() => {
+								if (!locked) onCancel(item);
+							}}
 						>
 							{m["exams.toeic.hub.history.cancel"]()}
 						</Button>
-
-						<Button
-							asChild
-							className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold tracking-wide text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
+						<SubmitButton
+							pending={pending}
+							disabled={locked && !pending}
+							onClick={() => onContinue(item.id)}
 						>
-							<Link
-								to={APP_ROUTES.EXAMS.TOEIC.SESSION}
-								params={{ id: item.id }}
-							>
-								{m["exams.toeic.hub.history.continue"]()}
-							</Link>
-						</Button>
+							{m["exams.toeic.hub.history.continue"]()}
+						</SubmitButton>
 					</>
 				)}
 			</div>

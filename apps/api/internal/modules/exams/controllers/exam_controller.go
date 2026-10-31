@@ -152,6 +152,33 @@ func (h *ExamController) ListAttempts(c *gin.Context) {
 	common.Paginated(c, "exam attempts", dtos, page, pageSize, total)
 }
 
+// CancelAttempt godoc
+// @Summary Cancel my exam attempt
+// @Description Preserves saved answers. Expired exams are finalized instead. Closed attempts return their existing state.
+// @Tags exams
+// @Security BearerAuth
+// @Produce json
+// @Param id path string true "attempt UUID"
+// @Success 200 {object} common.ApiResponse{data=responses.ExamAttemptSummary}
+// @Failure 400 {object} common.ApiResponse
+// @Failure 401 {object} common.ApiResponse
+// @Failure 404 {object} common.ApiResponse
+// @Router /exam-attempts/{id}/cancel [post]
+func (h *ExamController) CancelAttempt(c *gin.Context) {
+	c.Header("Cache-Control", "private, no-store")
+	attempt, err := h.attempts.Cancel(c.Request.Context(), middleware.UserID(c), c.Param("id"))
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	var dto responses.ExamAttemptSummary
+	if err := utils.Map(&dto, attempt); err != nil {
+		common.Fail(c, common.Internal())
+		return
+	}
+	common.OK(c, "exam attempt cancellation processed", dto)
+}
+
 // GetAttempt godoc
 // @Summary Get my exam attempt
 // @Description Owner-only. In-progress payload omits answer keys, translations and transcripts. Completed payload includes review content. An expired attempt is finalized using saved answers before returning.

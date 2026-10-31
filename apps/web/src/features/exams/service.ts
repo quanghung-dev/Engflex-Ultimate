@@ -66,6 +66,14 @@ export function listExamAttempts(params?: {
 	);
 }
 
+export function cancelExamAttempt(
+	attemptId: string,
+): Promise<ExamAttemptSummary> {
+	return api<ExamAttemptSummary>(API_ROUTES.EXAMS.ATTEMPTS.CANCEL(attemptId), {
+		method: "POST",
+	});
+}
+
 export function getExamAttempt(
 	attemptId: string,
 ): Promise<ExamAttempt | ExamReviewAttempt> {

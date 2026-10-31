@@ -19,10 +19,14 @@ func (s *AttemptService) Patch(ctx context.Context, userID, id string, req reque
 	if req.Revision < 1 || len(req.Answers) > 200 {
 		return nil, common.BadRequest("invalid revision or batch size")
 	}
-	return s.change(ctx, userID, id, &req)
+	return s.change(ctx, userID, id, &req, false)
 }
 
-func (s *AttemptService) change(ctx context.Context, userID, id string, req *requests.PatchAttempt) (*models.Attempt, error) {
+func (s *AttemptService) Cancel(ctx context.Context, userID, id string) (*models.Attempt, error) {
+	return s.change(ctx, userID, id, nil, true)
+}
+
+func (s *AttemptService) change(ctx context.Context, userID, id string, req *requests.PatchAttempt, cancel bool) (*models.Attempt, error) {
 	var m *models.Attempt
 	var afterCommit error
 	err := s.transactions.Run(ctx, func(tx *gorm.DB) error {
@@ -51,11 +55,25 @@ func (s *AttemptService) change(ctx context.Context, userID, id string, req *req
 			}
 			return nil
 		}
+		if cancel && m.Status == enums.AttemptStatusAbandoned {
+			return nil
+		}
 		if m.Status != enums.AttemptStatusInProgress {
 			return common.Conflict("attempt is closed")
 		}
 		previous := m.ParsedResult.Revision
 		expired := m.DeadlineAt != nil && !now.Before(*m.DeadlineAt)
+		if cancel && !expired {
+			duration := max(0, int(now.Sub(*m.StartedAt).Seconds()))
+			m.Status = enums.AttemptStatusAbandoned
+			m.DurationSec = &duration
+			m.ParsedResult.Revision++
+			m.Result, err = json.Marshal(m.ParsedResult)
+			if err != nil {
+				return common.Internal()
+			}
+			return repo.SaveExamAttempt(ctx, m, previous)
+		}
 		if !expired && req == nil {
 			return nil
 		}

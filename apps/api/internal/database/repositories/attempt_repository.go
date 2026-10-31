@@ -32,7 +32,7 @@ type AttemptRepository interface {
 
 func (r *attemptRepository) ListExamAttempts(ctx context.Context, userID string, limit, offset int) ([]*models.Attempt, error) {
 	var attempts []*models.Attempt
-	err := r.db.WithContext(ctx).Joins("ExamTest.Category").Where("attempts.user_id = ? AND attempts.type = ?", userID, enums.AttemptTypeExam).
+	err := r.db.WithContext(ctx).Joins("ExamTest.Category", r.db.Omit("Content")).Where("attempts.user_id = ? AND attempts.type = ?", userID, enums.AttemptTypeExam).
 		Order("attempts.created_at DESC").Order("attempts.id DESC").Limit(limit).Offset(offset).Find(&attempts).Error
 	return attempts, err
 }

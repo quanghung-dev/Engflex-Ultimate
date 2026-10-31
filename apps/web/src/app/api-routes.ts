@@ -95,6 +95,7 @@ export const API_ROUTES = {
 		},
 		ATTEMPTS: {
 			LIST: "/exam-attempts",
+			CANCEL: (id: ApiId) => `/exam-attempts/${id}/cancel`,
 			BY_ID: (id: ApiId) => `/exam-attempts/${id}`,
 		},
 	},

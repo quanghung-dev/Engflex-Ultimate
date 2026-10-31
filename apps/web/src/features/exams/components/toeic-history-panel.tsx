@@ -1,3 +1,4 @@
+import type { AttemptStatus } from "@engflex/contracts";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, CheckCircle2, Clock, PlayCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -8,7 +9,7 @@ export interface ToeicAttemptItem {
 	id: string;
 	title: string;
 	mode: "exam" | "practice";
-	status: "in_progress" | "completed";
+	status: AttemptStatus;
 	date: string;
 	scorePct?: number;
 }
@@ -66,6 +67,10 @@ export function ToeicHistoryPanel({
 								<span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-500 dark:bg-amber-950/40 dark:text-amber-400">
 									<PlayCircle className="size-5" aria-hidden="true" />
 								</span>
+							) : attempt.status === "abandoned" ? (
+								<span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+									<Clock className="size-5" aria-hidden="true" />
+								</span>
 							) : (
 								<span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-500 dark:bg-emerald-950/40 dark:text-emerald-400">
 									<CheckCircle2 className="size-5" aria-hidden="true" />
@@ -111,7 +116,7 @@ export function ToeicHistoryPanel({
 										<ArrowRight className="size-3.5" aria-hidden="true" />
 									</Link>
 								</>
-							) : (
+							) : attempt.status === "completed" ? (
 								<Link
 									to={APP_ROUTES.EXAMS.TOEIC.RESULT}
 									params={{ id: attempt.id }}
@@ -120,6 +125,10 @@ export function ToeicHistoryPanel({
 									<span>{m["exams.toeic.hub.history.viewResult"]()}</span>
 									<ArrowRight className="size-3.5" aria-hidden="true" />
 								</Link>
+							) : (
+								<span className="text-xs text-muted-foreground">
+									{m["exams.toeic.history.status.abandoned"]()}
+								</span>
 							)}
 						</div>
 					</div>

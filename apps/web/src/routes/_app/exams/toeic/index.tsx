@@ -114,7 +114,7 @@ function ToeicHubPage() {
 			id: att.id,
 			title: att.examTest?.title ?? "TOEIC Test",
 			mode: (att.mode ?? "exam") as "exam" | "practice",
-			status: att.status as "in_progress" | "completed",
+			status: att.status,
 			date: formatAttemptDate(att.startedAt ?? att.createdAt),
 			scorePct: att.score != null ? Math.round(att.score) : undefined,
 		}),

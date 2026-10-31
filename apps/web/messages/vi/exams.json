@@ -27,7 +27,7 @@
           "continue": "TIẾP TỤC LÀM BÀI",
           "viewResult": "XEM KẾT QUẢ",
           "cancelDialogTitle": "Xác nhận huỷ bài thi",
-          "cancelDialogDesc": "Bạn có chắc chắn muốn huỷ lượt làm bài này? Tiến độ làm bài hiện tại sẽ bị xoá.",
+          "cancelDialogDesc": "Lượt làm bài sẽ được đánh dấu đã hủy; đáp án đã lưu vẫn được giữ lại. Nếu exam đã hết giờ, hệ thống sẽ chấm các đáp án đã lưu.",
           "cancelDialogConfirm": "Xác nhận huỷ",
           "cancelDialogCancel": "Giữ lại",
           "cancelSuccess": "Đã huỷ lượt làm bài",
@@ -127,7 +127,51 @@
         "skippedBadge": "Bỏ qua",
         "correctBadge": "Đúng",
         "incorrectBadge": "Sai",
-        "explanationLabel": "Giải thích:"
+        "explanationLabel": "Giải thích:",
+        "accuracy": "Độ chính xác",
+        "percent": "{value}%",
+        "fraction": "{correct}/{total}",
+        "scaledUnavailable": "Chưa có điểm quy đổi",
+        "notTaken": "Không làm",
+        "review": {
+          "part": "Phần {part}",
+          "question": "Câu {number}",
+          "blank": "[{number}] ____",
+          "insertion": "[↳]",
+          "imageAlt": "Hình minh họa của đề thi",
+          "mediaFailed": "Không thể tải media này. Bạn vẫn có thể xem nội dung chữ.",
+          "itemAudio": "Nghe nội dung của nhóm câu hỏi",
+          "stimulusAudio": "Nghe đoạn hội thoại hoặc bài nói",
+          "transcript": "Bản chép lời",
+          "reference": "Câu {number} liên quan đến phần được đánh dấu hoặc chỗ trống trong bài đọc.",
+          "vocabulary": "Từ vựng",
+          "empty": "Không có câu hỏi nào khớp với bộ lọc này."
+        }
+      },
+      "history": {
+        "status": {
+          "inProgress": "Đang làm",
+          "completed": "Đã hoàn thành",
+          "abandoned": "Đã hủy"
+        },
+        "missingTest": "Đề thi không còn khả dụng",
+        "selectedParts": "Các phần: {parts}",
+        "result": "{correct}/{total} ({accuracy}%)",
+        "alreadyCompleted": "Lượt làm bài đã hoàn thành. Bạn có thể xem kết quả.",
+        "cancelFailed": "Chưa xác nhận được việc hủy. Hãy tải lại lịch sử và thử lại.",
+        "continueFailed": "Không thể mở lượt làm bài. Vui lòng thử lại.",
+        "pagination": {
+          "range": "Hiển thị {from}–{to} trong {total} lượt làm bài",
+          "all": "{count} lượt làm bài"
+        }
+      }
+    },
+    "attempt": {
+      "unavailable": "Chưa có",
+      "duration": {
+        "hours": "{count} giờ",
+        "minutes": "{count} phút",
+        "seconds": "{count} giây"
       }
     }
   }

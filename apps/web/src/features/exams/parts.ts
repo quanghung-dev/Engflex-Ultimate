@@ -22,3 +22,7 @@ export function toeicParts(
 		questionsCount: part.questionCount,
 	}));
 }
+
+export function toeicPartLabel(partNumber: number): string {
+	return PART_LABELS[partNumber]?.() ?? "";
+}

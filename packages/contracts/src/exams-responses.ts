@@ -10,6 +10,7 @@ export interface Category {
   type: ExamType;
 }
 export interface ExamAttemptSummary {
+  result: ResultSummary | null;
   id: string;
   status: AttemptStatus;
   mode: ExamMode | null;
@@ -21,6 +22,11 @@ export interface ExamAttemptSummary {
   deadlineAt: string /* RFC3339 */ | null;
   createdAt: string /* RFC3339 */;
   examTest: AttemptTestSummary | null;
+}
+export interface ResultSummary {
+  correctCount: number /* int */ | null;
+  accuracyPct: number /* float64 */ | null;
+  questionCount: number /* int */;
 }
 export interface AttemptTestSummary {
   id: string;

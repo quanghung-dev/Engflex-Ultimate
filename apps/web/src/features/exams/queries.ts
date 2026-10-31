@@ -5,6 +5,7 @@ import type {
 } from "@engflex/contracts";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
+	cancelExamAttempt,
 	getExamAttempt,
 	getExamTest,
 	listExamAttempts,
@@ -25,6 +26,14 @@ export const examKeys = {
 	attempt: (id: string) => [...examKeys.all, "attempt", id] as const,
 	test: (id: string) => [...examKeys.all, "test", id] as const,
 };
+
+export function useCancelExamAttempt() {
+	return useMutation({ mutationFn: cancelExamAttempt, retry: false });
+}
+
+export function useContinueExamAttempt() {
+	return useMutation({ mutationFn: getExamAttempt, retry: false });
+}
 
 export function examTestQueryOptions(id: string) {
 	return {

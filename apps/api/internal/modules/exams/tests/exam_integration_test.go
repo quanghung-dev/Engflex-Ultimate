@@ -53,7 +53,7 @@ func TestExamPhase2HTTP(t *testing.T) {
 	var queryLog bytes.Buffer
 	queryLogger := logger.New(log.New(&queryLog, "", 0), logger.Config{LogLevel: logger.Info})
 	tests := repositories.NewExamTestRepository(tx.Session(&gorm.Session{Logger: queryLogger}))
-	attempts := repositories.NewAttemptRepository(tx)
+	attempts := repositories.NewAttemptRepository(tx.Session(&gorm.Session{Logger: queryLogger}))
 	ctl := controllers.NewExamController(services.NewCatalogService(categories, tests), services.NewAttemptService(attempts, tests, repositories.NewTransactionManager(tx)))
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
@@ -65,6 +65,7 @@ func TestExamPhase2HTTP(t *testing.T) {
 	r.GET("/exam-attempts", ctl.ListAttempts)
 	r.GET("/exam-attempts/:id", ctl.GetAttempt)
 	r.PATCH("/exam-attempts/:id", ctl.PatchAttempt)
+	r.POST("/exam-attempts/:id/cancel", ctl.CancelAttempt)
 
 	var attemptID string
 	cases := []struct {
@@ -120,8 +121,12 @@ func TestExamPhase2HTTP(t *testing.T) {
 			require.NotContains(t, body, "PRIVATE")
 		}},
 		{"history", "GET", "/exam-attempts?page=1&pageSize=1", "", "user-a", http.StatusOK, func(t *testing.T, v map[string]any, body string) {
+			require.Equal(t, 2, strings.Count(queryLog.String(), "SELECT"), "history uses one list and one count query")
+			require.NotContains(t, queryLog.String(), `"ExamTest"."content"`)
 			require.Len(t, v["data"], 1)
 			require.NotContains(t, body, "content")
+			require.NotContains(t, body, "answers")
+			require.Contains(t, body, "questionCount")
 			require.NotContains(t, body, "correctKey")
 			require.NotContains(t, body, "PRIVATE")
 		}},
@@ -134,6 +139,9 @@ func TestExamPhase2HTTP(t *testing.T) {
 			req := httptest.NewRequest(tc.method, tc.path, strings.NewReader(tc.body))
 			req.Header.Set("X-Test-User", tc.user)
 			req.Header.Set("Content-Type", "application/json")
+			if tc.name == "history" {
+				queryLog.Reset()
+			}
 			r.ServeHTTP(w, req)
 			require.Equal(t, tc.status, w.Code, w.Body.String())
 			if tc.check != nil {
@@ -262,6 +270,7 @@ func TestExamPhase2HTTP(t *testing.T) {
 		exams.RegisterRoutes(real.Group("/api/v1"), tx)
 		for _, endpoint := range []struct{ method, path string }{
 			{"GET", "/api/v1/exam-categories"},
+			{"POST", "/api/v1/exam-attempts/" + attemptID + "/cancel"},
 			{"GET", "/api/v1/exam-tests/" + test.ID},
 			{"GET", "/api/v1/exam-categories/" + category.ID + "/tests"},
 			{"POST", "/api/v1/exam-tests/" + test.ID + "/attempts"},

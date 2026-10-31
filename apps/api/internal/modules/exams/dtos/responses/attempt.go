@@ -14,6 +14,7 @@ type Category struct {
 }
 
 type ExamAttemptSummary struct {
+	ParsedResult  *ResultSummary      `json:"result"`
 	ID            string              `json:"id"`
 	Status        enums.AttemptStatus `json:"status"`
 	Mode          *enums.ExamMode     `json:"mode"`
@@ -25,6 +26,11 @@ type ExamAttemptSummary struct {
 	DeadlineAt    *time.Time          `json:"deadlineAt"`
 	CreatedAt     time.Time           `json:"createdAt"`
 	ExamTest      *AttemptTestSummary `json:"examTest"`
+}
+type ResultSummary struct {
+	CorrectCount  *int     `json:"correctCount"`
+	AccuracyPct   *float64 `json:"accuracyPct"`
+	QuestionCount int      `json:"questionCount"`
 }
 type AttemptTestSummary struct {
 	ID         string    `json:"id"`

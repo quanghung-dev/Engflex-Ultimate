@@ -27,7 +27,7 @@
           "continue": "CONTINUE TEST",
           "viewResult": "VIEW RESULT",
           "cancelDialogTitle": "Cancel Attempt?",
-          "cancelDialogDesc": "Are you sure you want to cancel this attempt? Your current progress will be lost.",
+          "cancelDialogDesc": "This attempt will be marked as cancelled. Saved answers stay in your history. If the exam time has expired, saved answers will be graded instead.",
           "cancelDialogConfirm": "Confirm Cancel",
           "cancelDialogCancel": "Keep Attempt",
           "cancelSuccess": "Attempt has been cancelled",
@@ -127,7 +127,51 @@
         "skippedBadge": "Skipped",
         "correctBadge": "Correct",
         "incorrectBadge": "Incorrect",
-        "explanationLabel": "Explanation:"
+        "explanationLabel": "Explanation:",
+        "accuracy": "Accuracy",
+        "percent": "{value}%",
+        "fraction": "{correct}/{total}",
+        "scaledUnavailable": "Scaled score not available",
+        "notTaken": "Not taken",
+        "review": {
+          "part": "Part {part}",
+          "question": "Question {number}",
+          "blank": "[{number}] ____",
+          "insertion": "[↳]",
+          "imageAlt": "Exam illustration",
+          "mediaFailed": "This media could not be loaded. You can still review the text.",
+          "itemAudio": "Listen to the item",
+          "stimulusAudio": "Listen to the stimulus",
+          "transcript": "Transcript",
+          "reference": "Question {number} refers to the marked text or blank in the passage.",
+          "vocabulary": "Vocabulary",
+          "empty": "No questions match this filter."
+        }
+      },
+      "history": {
+        "status": {
+          "inProgress": "In progress",
+          "completed": "Completed",
+          "abandoned": "Cancelled"
+        },
+        "missingTest": "Test no longer available",
+        "selectedParts": "Parts: {parts}",
+        "result": "{correct}/{total} ({accuracy}%)",
+        "alreadyCompleted": "This attempt is completed. You can view its results.",
+        "cancelFailed": "Could not confirm cancellation. Refresh history and try again.",
+        "continueFailed": "Could not open the attempt. Please try again.",
+        "pagination": {
+          "range": "Showing {from}–{to} of {total} attempts",
+          "all": "{count} attempts"
+        }
+      }
+    },
+    "attempt": {
+      "unavailable": "Not available",
+      "duration": {
+        "hours": "{count}h",
+        "minutes": "{count}m",
+        "seconds": "{count}s"
       }
     }
   }

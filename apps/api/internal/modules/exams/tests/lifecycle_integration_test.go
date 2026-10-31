@@ -182,6 +182,105 @@ func TestExamLifecyclePostgres(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, 2, read.ParsedResult.Revision)
 		}},
+		{"cancel retains saved answers and history", func(t *testing.T) {
+			m := start()
+			_, err := svc.Patch(ctx, "owner", m.ID, requests.PatchAttempt{Revision: 1, Answers: []requests.Answer{{QuestionID: "q7", SelectedKey: &key, Flagged: true}}})
+			require.NoError(t, err)
+			cancelled, err := svc.Cancel(ctx, "owner", m.ID)
+			require.NoError(t, err)
+			require.Equal(t, enums.AttemptStatusAbandoned, cancelled.Status)
+			require.Equal(t, 3, cancelled.ParsedResult.Revision)
+			require.Equal(t, key, *cancelled.ParsedResult.Answers[0].SelectedKey)
+			require.True(t, cancelled.ParsedResult.Answers[0].Flagged)
+			require.Nil(t, cancelled.SubmittedAt)
+			repeated, err := svc.Cancel(ctx, "owner", m.ID)
+			require.NoError(t, err)
+			require.Equal(t, 3, repeated.ParsedResult.Revision)
+			_, err = svc.Patch(ctx, "owner", m.ID, requests.PatchAttempt{Revision: 3, Submit: true})
+			var app *common.AppError
+			require.ErrorAs(t, err, &app)
+			require.Equal(t, http.StatusConflict, app.Status)
+			history, _, err := svc.List(ctx, "owner", 1, 100)
+			require.NoError(t, err)
+			found := false
+			for _, entry := range history {
+				if entry.ID == m.ID {
+					found = true
+					require.Equal(t, enums.AttemptStatusAbandoned, entry.Status)
+					require.Equal(t, 25, entry.ParsedResult.QuestionCount)
+				}
+			}
+			require.True(t, found)
+		}},
+		{"expired cancel grades saved answers and remains idempotent", func(t *testing.T) {
+			m, err := svc.Start(ctx, "owner", exam.ID, requests.StartAttempt{Mode: enums.ExamModeExam, SelectedParts: []int{1, 2, 3, 4, 5, 6, 7}})
+			require.NoError(t, err)
+			_, err = svc.Patch(ctx, "owner", m.ID, requests.PatchAttempt{Revision: 1, Answers: []requests.Answer{{QuestionID: "q7", SelectedKey: &key}}})
+			require.NoError(t, err)
+			past := time.Now().Add(-time.Second)
+			require.NoError(t, db.Model(&models.Attempt{}).Where("id = ?", m.ID).Updates(map[string]any{"deadline_at": past, "started_at": past.Add(-120 * time.Minute), "mode": enums.ExamModeExam}).Error)
+			completed, err := svc.Cancel(ctx, "owner", m.ID)
+			require.NoError(t, err)
+			require.Equal(t, enums.AttemptStatusCompleted, completed.Status)
+			require.Equal(t, 7200, *completed.DurationSec)
+			require.Equal(t, 1, *completed.ParsedResult.CorrectCount)
+			require.Nil(t, completed.Score)
+			again, err := svc.Cancel(ctx, "owner", m.ID)
+			require.NoError(t, err)
+			require.Equal(t, completed.ParsedResult.Revision, again.ParsedResult.Revision)
+		}},
+		{"cancel save race preserves final state", func(t *testing.T) {
+			m := start()
+			var wg sync.WaitGroup
+			errs := make(chan error, 2)
+			wg.Add(2)
+			go func() { defer wg.Done(); _, err := svc.Cancel(ctx, "owner", m.ID); errs <- err }()
+			go func() {
+				defer wg.Done()
+				_, err := svc.Patch(ctx, "owner", m.ID, requests.PatchAttempt{Revision: 1, Answers: []requests.Answer{{QuestionID: "q7", SelectedKey: &key}}})
+				errs <- err
+			}()
+			wg.Wait()
+			close(errs)
+			for err := range errs {
+				if err != nil {
+					var app *common.AppError
+					require.ErrorAs(t, err, &app)
+					require.Equal(t, http.StatusConflict, app.Status)
+				}
+			}
+			var stored models.Attempt
+			require.NoError(t, db.First(&stored, "id = ?", m.ID).Error)
+			require.Equal(t, enums.AttemptStatusAbandoned, stored.Status)
+			require.Nil(t, stored.SubmittedAt)
+		}},
+		{"cancel submit race closes exactly once", func(t *testing.T) {
+			m := start()
+			var wg sync.WaitGroup
+			errs := make(chan error, 2)
+			wg.Add(2)
+			go func() { defer wg.Done(); _, err := svc.Cancel(ctx, "owner", m.ID); errs <- err }()
+			go func() {
+				defer wg.Done()
+				_, err := svc.Patch(ctx, "owner", m.ID, requests.PatchAttempt{Revision: 1, Submit: true})
+				errs <- err
+			}()
+			wg.Wait()
+			close(errs)
+			for err := range errs {
+				if err != nil {
+					var app *common.AppError
+					require.ErrorAs(t, err, &app)
+					require.Equal(t, http.StatusConflict, app.Status)
+				}
+			}
+			var stored models.Attempt
+			require.NoError(t, db.First(&stored, "id = ?", m.ID).Error)
+			require.Contains(t, []enums.AttemptStatus{enums.AttemptStatusAbandoned, enums.AttemptStatusCompleted}, stored.Status)
+			again, err := svc.Cancel(ctx, "owner", m.ID)
+			require.NoError(t, err)
+			require.Equal(t, 2, again.ParsedResult.Revision)
+		}},
 		{"owner isolation", func(t *testing.T) {
 			m := start()
 			_, err := svc.Patch(ctx, "other", m.ID, requests.PatchAttempt{Revision: 1, Submit: true})
