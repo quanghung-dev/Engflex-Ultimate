@@ -3,7 +3,6 @@
   "lessons": {
     "reading": {
       "previousQuestion": "Câu trước",
-      "readTime": "Đọc ~2 phút",
       "questionOf": "Câu {number}/{total}",
       "nextQuestion": "Câu tiếp theo"
     },
@@ -16,23 +15,17 @@
       "paced": "Nhịp đều",
       "levelLabel": "Trình độ:",
       "levelAll": "Mọi trình độ",
-      "levelB1": "B1",
-      "levelB2": "B2",
-      "levelC1": "C1",
       "start": "Bắt đầu học",
       "emptyTitle": "Không có bài học nào khớp bộ lọc",
       "emptyBody": "Hãy thử mở rộng từ khóa tìm kiếm hoặc xóa bộ lọc trình độ để xem thêm bài học."
     },
     "detail": {
       "pace": "Nhịp độ khuyến nghị: Chậm rãi",
-      "sequential": "Theo thứ tự",
       "coach": "Huấn luyện Mo",
       "steady": "Tốc độ ổn định",
       "calmTip": "Mẹo giữ bình tĩnh của Mo",
       "calmQuote": "Hãy hít thở giữa các câu. Vội vàng không làm code deploy nhanh hơn.",
       "startLesson": "Bắt đầu bài học (Phần {number}: {part})",
-      "saved": "Đã lưu",
-      "saveLater": "Lưu để học sau",
       "activitiesTitle": "Hoạt động trong bài",
       "activitiesSubtitle": "Cần hoàn thành mọi bước",
       "partOf": "Phần {number}/{total}",

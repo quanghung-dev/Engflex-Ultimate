@@ -93,25 +93,9 @@
         "b2": "B2 (Kỹ thuật)",
         "c1": "C1 (Kiến trúc)"
       },
-      "posLabel": "Từ loại",
       "definitionLabel": "Định nghĩa",
-      "exampleLabel": "Câu ví dụ / ngữ cảnh",
       "save": "Lưu vào từ vựng",
       "required": "Từ và định nghĩa là bắt buộc."
-    },
-    "recall": {
-      "title": "Bộ thẻ ôn tập hằng ngày",
-      "subtitle": "Thuật toán lặp lại ngắt quãng",
-      "dueBadge": "{count} mục đến hạn",
-      "body": "Tự kiểm tra bằng các gợi ý kỹ thuật khó giúp bạn ghi nhớ từ vựng và bật ra khi nói.",
-      "dueToday": "Đến hạn hôm nay",
-      "overdue": "Quá hạn",
-      "start": "Bắt đầu luyện flashcard ({count} thẻ)"
-    },
-    "recent": {
-      "title": "Từ bạn mới thêm",
-      "viewAll": "Xem tất cả ({count})",
-      "body": "Các thuật ngữ bạn ghi lại trong cuộc họp, tài liệu thiết kế và đánh giá kiến trúc."
     }
   }
 }

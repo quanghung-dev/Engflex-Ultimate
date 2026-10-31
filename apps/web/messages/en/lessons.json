@@ -3,7 +3,6 @@
   "lessons": {
     "reading": {
       "previousQuestion": "Previous",
-      "readTime": "~2 min read",
       "questionOf": "Question {number} of {total}",
       "nextQuestion": "Next question"
     },
@@ -16,23 +15,17 @@
       "paced": "Paced",
       "levelLabel": "Level:",
       "levelAll": "All levels",
-      "levelB1": "B1",
-      "levelB2": "B2",
-      "levelC1": "C1",
       "start": "Start lesson",
       "emptyTitle": "No lesson matches current filters",
       "emptyBody": "Try broadening your search term or clearing the level filter to view more curriculum units."
     },
     "detail": {
       "pace": "Recommended pace: Calm",
-      "sequential": "Sequential",
       "coach": "Coach Mo",
       "steady": "Steady speed",
       "calmTip": "Mo's calm tip",
       "calmQuote": "Take a breath between sentences. Rushing doesn't make code deploy faster.",
       "startLesson": "Start lesson (Part {number}: {part})",
-      "saved": "Saved",
-      "saveLater": "Save for later",
       "activitiesTitle": "Lesson activities",
       "activitiesSubtitle": "All steps required for completion",
       "partOf": "Part {number} of {total}",
