@@ -111,6 +111,7 @@ export function useStartExamAttempt() {
 
 export function usePatchExamAttempt() {
 	return useMutation({
+		retry: false,
 		mutationFn: (input: { attemptId: string; req: PatchExamAttempt }) =>
 			patchExamAttempt(input.attemptId, input.req),
 	});

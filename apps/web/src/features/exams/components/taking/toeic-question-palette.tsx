@@ -1,17 +1,17 @@
-import { ChevronLeft, ChevronRight, MessageSquare } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { m } from "#/paraglide/messages";
 
 export interface PaletteGroup {
 	partNum: number;
 	title: string;
-	questions: number[]; // e.g. [1, 2, 3, 4, 5, 6]
+	questions: { id: string; questionNumber: number }[];
 }
 
 export function ToeicQuestionPalette({
 	isCollapsed,
 	onToggleCollapse,
 	groups,
-	activeQuestionNumber,
+	activeQuestionId,
 	answers,
 	bookmarks,
 	onSelectQuestion,
@@ -19,10 +19,10 @@ export function ToeicQuestionPalette({
 	isCollapsed: boolean;
 	onToggleCollapse: () => void;
 	groups: PaletteGroup[];
-	activeQuestionNumber: number;
+	activeQuestionId: string | null;
 	answers: Record<string, string>;
 	bookmarks: Set<string>;
-	onSelectQuestion: (questionNum: number) => void;
+	onSelectQuestion: (questionId: string) => void;
 }) {
 	const totalQuestions = groups.reduce((acc, g) => acc + g.questions.length, 0);
 	const answeredCount = Object.keys(answers).length;
@@ -38,8 +38,8 @@ export function ToeicQuestionPalette({
 				className="absolute -left-3.5 top-1/2 z-20 flex size-7 -translate-y-1/2 items-center justify-center rounded-full border border-border/80 bg-background text-foreground shadow-sm transition-colors hover:bg-muted"
 				aria-label={
 					isCollapsed
-						? "Expand questions palette"
-						: "Collapse questions palette"
+						? m["exams.toeic.take.expandPalette"]()
+						: m["exams.toeic.take.collapsePalette"]()
 				}
 			>
 				{isCollapsed ? (
@@ -81,17 +81,16 @@ export function ToeicQuestionPalette({
 							</span>
 
 							<div className="grid grid-cols-5 gap-1.5">
-								{group.questions.map((num) => {
-									const qId = `q-${num}`;
+								{group.questions.map(({ id: qId, questionNumber: num }) => {
 									const isAnswered = answers[qId] != null;
 									const isBookmarked = bookmarks.has(qId);
-									const isActive = activeQuestionNumber === num;
+									const isActive = activeQuestionId === qId;
 
 									return (
 										<button
 											key={num}
 											type="button"
-											onClick={() => onSelectQuestion(num)}
+											onClick={() => onSelectQuestion(qId)}
 											className={`relative flex size-8 items-center justify-center rounded-md text-xs font-semibold transition-all ${
 												isActive
 													? "border-2 border-foreground font-bold shadow-xs"
@@ -110,17 +109,6 @@ export function ToeicQuestionPalette({
 							</div>
 						</div>
 					))}
-				</div>
-
-				{/* Floating Bottom Help / Feedback Pill */}
-				<div className="p-3 border-t border-border/60 flex items-center justify-end">
-					<button
-						type="button"
-						className="flex size-9 items-center justify-center rounded-full bg-[#1e293b] text-white shadow-md hover:bg-[#0f172a] dark:bg-slate-800"
-						title="Hỗ trợ & Góp ý"
-					>
-						<MessageSquare className="size-4" />
-					</button>
 				</div>
 			</div>
 		</div>

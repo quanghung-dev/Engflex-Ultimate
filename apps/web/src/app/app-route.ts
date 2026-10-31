@@ -48,6 +48,9 @@ export const APP_ROUTES = {
 		LIST: "/stories",
 		DETAIL: "/stories/$slug",
 	},
+	MEDIA: {
+		DETAIL: "/api/media/$",
+	},
 	EXAMS: {
 		TOEIC: {
 			LIST: "/exams/toeic",

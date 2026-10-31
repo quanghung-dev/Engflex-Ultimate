@@ -2,7 +2,8 @@
 
 Media manifest: JSON object mapping each export sourceId to an accessible HTTP(S)
 URL. The URLs must serve the exact bytes bound by the release asset hashes.
-Requires ffprobe on PATH. Does not upload, replace, or modify existing media.
+Requires ffprobe on PATH and configured MinIO. Verified media is published to
+MinIO before inserting the test; source URLs remain manifest identities only.
 """
 import argparse
 import hashlib
@@ -88,6 +89,8 @@ def main():
     read = lambda p: json.loads(p.read_text(encoding="utf-8"))
     original = read(args.release / "content.json")
     content = prepare(original, read(args.release / "provenance.json"), read(args.release.parent / "validation.json"), read(args.media))
+    from publish_toeic_media import publish_content
+    publish_content(content)
     import psycopg
     from psycopg.types.json import Jsonb
     from psycopg.errors import UniqueViolation

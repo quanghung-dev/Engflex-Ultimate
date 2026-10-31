@@ -1,8 +1,8 @@
 import type { AttemptStatus } from "@engflex/contracts";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, CheckCircle2, Clock, PlayCircle } from "lucide-react";
-import { toast } from "sonner";
 import { APP_ROUTES } from "#/app/app-route";
+import { Button } from "#/components/ui/button";
 import { m } from "#/paraglide/messages";
 
 export interface ToeicAttemptItem {
@@ -16,8 +16,12 @@ export interface ToeicAttemptItem {
 
 export function ToeicHistoryPanel({
 	attempts,
+	onCancel,
+	locked,
 }: {
 	attempts: ToeicAttemptItem[];
+	onCancel: (id: string) => void;
+	locked: boolean;
 }) {
 	if (attempts.length === 0) {
 		return (
@@ -98,16 +102,16 @@ export function ToeicHistoryPanel({
 						<div className="flex items-center gap-2 self-end sm:self-center shrink-0">
 							{attempt.status === "in_progress" ? (
 								<>
-									<button
+									<Button
 										type="button"
-										onClick={() =>
-											toast.info(m["exams.toeic.hub.history.cancelSuccess"]())
-										}
+										disabled={locked}
+										onClick={() => onCancel(attempt.id)}
 										className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-rose-700"
 									>
 										{m["exams.toeic.hub.history.cancel"]()}
-									</button>
+									</Button>
 									<Link
+										disabled={locked}
 										to={APP_ROUTES.EXAMS.TOEIC.SESSION}
 										params={{ id: attempt.id }}
 										className="inline-flex items-center gap-1 rounded-lg bg-[#1e293b] px-3.5 py-1.5 text-xs font-bold text-white transition-colors hover:bg-[#0f172a] dark:bg-slate-800 dark:hover:bg-slate-700"

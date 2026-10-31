@@ -34,6 +34,11 @@
           "emptyTitle": "Chưa có lượt làm bài nào",
           "emptyDesc": "Bạn chưa có bài thi nào trong lịch sử. Hãy bắt đầu làm bài ngay để theo dõi tiến độ!",
           "emptyAction": "Khám phá đề thi"
+        },
+        "load": {
+          "categoriesFailed": "Không tải được các bộ đề. Vui lòng thử lại.",
+          "attemptsFailed": "Không tải được lịch sử làm bài. Vui lòng thử lại.",
+          "retry": "Thử lại"
         }
       },
       "category": {
@@ -105,9 +110,27 @@
         "confirmSubmitCancel": "Tiếp tục làm bài",
         "confirmSubmitAction": "Nộp bài ngay",
         "confirmExitTitle": "Rời khỏi phòng thi?",
-        "confirmExitDesc": "Bài thi đang diễn ra. Bạn có chắc chắn muốn thoát khỏi phòng thi?",
+        "confirmExitDesc": "Thoát sẽ lưu đáp án và hủy lượt làm này. Bạn sẽ không thể tiếp tục lượt làm đã hủy.",
         "confirmExitCancel": "Ở lại làm tiếp",
-        "confirmExitAction": "Xác nhận thoát"
+        "confirmExitAction": "Hủy lượt làm và thoát",
+        "question": "Câu {number}",
+        "audio": "Âm thanh câu hỏi",
+        "imageAlt": "Hình minh họa đề thi",
+        "mediaFailed": "Không tải được nội dung đa phương tiện. Bạn vẫn có thể trả lời câu hỏi.",
+        "blank": "({number})",
+        "insertion": "[Chèn câu]",
+        "reference": "Tham chiếu {number}",
+        "clear": "Xóa đáp án",
+        "elapsed": "Đã làm",
+        "remaining": "Còn lại",
+        "speed": "Tốc độ phát",
+        "expandPalette": "Mở bảng câu hỏi",
+        "collapsePalette": "Thu gọn bảng câu hỏi",
+        "saving": "Đang lưu thay đổi…",
+        "saved": "Đã lưu mọi thay đổi",
+        "saveFailed": "Chưa xác nhận được thay đổi. Vui lòng thử lại trước khi rời trang.",
+        "retry": "Thử lại",
+        "navigationFailed": "Lượt làm đã kết thúc nhưng chưa mở được trang tiếp theo. Vui lòng thử lại."
       },
       "result": {
         "back": "Quay về danh sách",

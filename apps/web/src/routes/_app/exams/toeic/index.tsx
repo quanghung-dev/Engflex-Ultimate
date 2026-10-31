@@ -1,9 +1,25 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useAuth } from "@clerk/tanstack-react-start";
+import type { ExamAttemptSummary, Pagination } from "@engflex/contracts";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { History, TrendingUp } from "lucide-react";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
+import { CardShell } from "#/components/common/card-shell";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { PageHero } from "#/components/common/page-layout";
+import { SubmitButton } from "#/components/common/submit-button";
+import {
+	AlertDialog,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "#/components/ui/alert-dialog";
 import { Skeleton } from "#/components/ui/skeleton";
 import {
 	ToeicCategoryCard,
@@ -17,7 +33,13 @@ import {
 	type ToeicStats,
 	ToeicStatsPanel,
 } from "#/features/exams/components/toeic-stats-panel";
-import { useExamAttempts, useExamCategories } from "#/features/exams/queries";
+import {
+	examAttemptsQueryOptions,
+	examCategoriesQueryOptions,
+	examKeys,
+	useCancelExamAttempt,
+} from "#/features/exams/queries";
+import { ApiError } from "#/lib/api/api";
 import { m } from "#/paraglide/messages";
 import { getLocale } from "#/paraglide/runtime";
 
@@ -92,11 +114,102 @@ export const Route = createFileRoute("/_app/exams/toeic/")({
 	component: ToeicHubPage,
 });
 
+function retryHubRead(count: number, error: unknown) {
+	return (
+		!(error instanceof ApiError && [401, 404, 409].includes(error.status)) &&
+		count < 3
+	);
+}
+
+function HubQueryError({
+	message,
+	pending,
+	onRetry,
+}: {
+	message: string;
+	pending: boolean;
+	onRetry: () => void;
+}) {
+	return (
+		<CardShell className="col-span-full flex flex-col items-start gap-3 p-5">
+			<p role="alert" className="text-sm text-destructive">
+				{message}
+			</p>
+			<SubmitButton pending={pending} onClick={onRetry} variant="outline">
+				{m["exams.toeic.hub.load.retry"]()}
+			</SubmitButton>
+		</CardShell>
+	);
+}
+
 function ToeicHubPage() {
 	useBreadcrumbs([{ label: m["exams.toeic.hub.title"]() }]);
+	const { isLoaded } = useAuth();
+	const queryClient = useQueryClient();
+	const navigate = useNavigate();
+	const cancel = useCancelExamAttempt();
+	const cancelLock = useRef(false);
+	const [attemptToCancel, setAttemptToCancel] = useState<string | null>(null);
+	const [cancelError, setCancelError] = useState(false);
+	const categoriesQuery = useQuery({
+		...examCategoriesQueryOptions({ type: "toeic" }),
+		enabled: isLoaded,
+		retry: retryHubRead,
+	});
+	const attemptsQuery = useQuery({
+		...examAttemptsQueryOptions({ page: 1, pageSize: 5 }),
+		enabled: isLoaded,
+		retry: retryHubRead,
+	});
 
-	const categoriesQuery = useExamCategories({ type: "toeic" });
-	const attemptsQuery = useExamAttempts({ page: 1, pageSize: 5 });
+	async function handleCancel() {
+		if (!attemptToCancel || cancelLock.current) return;
+		cancelLock.current = true;
+		setCancelError(false);
+		try {
+			const response = await cancel.mutateAsync(attemptToCancel);
+			if (response.status !== "abandoned" && response.status !== "completed")
+				throw new Error("Attempt was not closed");
+			queryClient.setQueriesData<{
+				items: ExamAttemptSummary[];
+				pagination: Pagination;
+			}>({ queryKey: [...examKeys.all, "attempts"] }, (cached) =>
+				cached
+					? {
+							...cached,
+							items: cached.items.map((item) =>
+								item.id === response.id ? response : item,
+							),
+						}
+					: cached,
+			);
+			setAttemptToCancel(null);
+			if (response.status === "abandoned")
+				toast.success(m["exams.toeic.hub.history.cancelSuccess"]());
+			else
+				toast.info(m["exams.toeic.history.alreadyCompleted"](), {
+					action: {
+						label: m["exams.toeic.hub.history.viewResult"](),
+						onClick: () => {
+							void navigate({
+								to: APP_ROUTES.EXAMS.TOEIC.RESULT,
+								params: { id: response.id },
+							});
+						},
+					},
+				});
+			void queryClient.invalidateQueries({
+				queryKey: [...examKeys.all, "attempts"],
+			});
+			void queryClient.invalidateQueries({
+				queryKey: examKeys.attempt(response.id),
+			});
+		} catch {
+			setCancelError(true);
+		} finally {
+			cancelLock.current = false;
+		}
+	}
 
 	const categories: ToeicCategoryCardItem[] = (categoriesQuery.data ?? []).map(
 		(cat, idx) => ({
@@ -148,7 +261,15 @@ function ToeicHubPage() {
 			</div>
 
 			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-				{categoriesQuery.isPending ? (
+				{categoriesQuery.isError ? (
+					<HubQueryError
+						message={m["exams.toeic.hub.load.categoriesFailed"]()}
+						pending={categoriesQuery.isFetching}
+						onRetry={() => {
+							void categoriesQuery.refetch();
+						}}
+					/>
+				) : categoriesQuery.isPending ? (
 					<>
 						<CategoryCardSkeleton />
 						<CategoryCardSkeleton />
@@ -164,12 +285,65 @@ function ToeicHubPage() {
 
 			<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
 				<ToeicStatsPanel stats={MOCK_STATS} />
-				{attemptsQuery.isPending ? (
+				{attemptsQuery.isError ? (
+					<HubQueryError
+						message={m["exams.toeic.hub.load.attemptsFailed"]()}
+						pending={attemptsQuery.isFetching}
+						onRetry={() => {
+							void attemptsQuery.refetch();
+						}}
+					/>
+				) : attemptsQuery.isPending ? (
 					<HistoryPanelSkeleton />
 				) : (
-					<ToeicHistoryPanel attempts={attempts} />
+					<ToeicHistoryPanel
+						attempts={attempts}
+						locked={cancel.isPending}
+						onCancel={(id) => {
+							if (!cancelLock.current) {
+								setCancelError(false);
+								setAttemptToCancel(id);
+							}
+						}}
+					/>
 				)}
 			</div>
+			<AlertDialog
+				open={attemptToCancel !== null}
+				onOpenChange={(open) => {
+					if (!open && !cancelLock.current) setAttemptToCancel(null);
+				}}
+			>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>
+							{m["exams.toeic.hub.history.cancelDialogTitle"]()}
+						</AlertDialogTitle>
+						<AlertDialogDescription>
+							{m["exams.toeic.hub.history.cancelDialogDesc"]()}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					{cancelError && (
+						<p role="alert" className="text-sm text-destructive">
+							{m["exams.toeic.history.cancelFailed"]()}
+						</p>
+					)}
+					<AlertDialogFooter>
+						<AlertDialogCancel disabled={cancel.isPending}>
+							{m["exams.toeic.hub.history.cancelDialogCancel"]()}
+						</AlertDialogCancel>
+						<SubmitButton
+							variant="destructive"
+							pending={cancel.isPending}
+							onClick={() => {
+								void handleCancel();
+							}}
+						>
+							{m["exams.toeic.hub.history.cancelDialogConfirm"]()}
+						</SubmitButton>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }

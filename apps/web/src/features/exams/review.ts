@@ -1,4 +1,5 @@
 import type { ExamReviewAttempt, ExamReviewContent } from "@engflex/contracts";
+import { APP_ROUTES } from "#/app/app-route";
 import { toeicPartLabel } from "./parts";
 
 export type ReviewPart = ExamReviewContent["parts"][number];
@@ -43,14 +44,23 @@ export function mediaSource(
 	assetId: string | null | undefined,
 	assets: ExamReviewContent["assets"],
 ): string | null {
-	if (!assetId || !assets.some((asset) => asset.sourceId === assetId))
-		return null;
+	const asset = assets.find((asset) => asset.sourceId === assetId);
+	if (!assetId || !asset || !/^[a-f0-9]{64}$/i.test(asset.sha256)) return null;
 	try {
 		const url = new URL(assetId);
-		return url.protocol === "https:" || url.protocol === "http:"
-			? url.href
-			: null;
+		if (url.protocol !== "https:" && url.protocol !== "http:") return null;
 	} catch {
-		return null;
+		if (
+			assetId.startsWith("/") ||
+			assetId.includes("\\") ||
+			assetId.split("/").includes("..")
+		)
+			return null;
 	}
+	// Both local and imported HTTP(S) identities resolve to verified MinIO
+	// objects. Taking and review always use the same-origin media forward.
+	return APP_ROUTES.MEDIA.DETAIL.replace(
+		"$",
+		`exams/toeic/${asset.sha256.toLowerCase()}`,
+	);
 }

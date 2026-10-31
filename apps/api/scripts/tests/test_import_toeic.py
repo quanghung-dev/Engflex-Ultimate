@@ -3,6 +3,10 @@ import hashlib
 import importlib.util
 import io
 import json
+import sys
+import tempfile
+from types import SimpleNamespace
+from unittest.mock import Mock
 from pathlib import Path
 import unittest
 from unittest.mock import patch
@@ -52,6 +56,27 @@ class ImportTests(unittest.TestCase):
                         self.assertEqual(before, content)
                         self.assertEqual(urls["audio.wav"], result["parts"][0]["items"][0]["itemAudio"]["assetId"])
                         self.assertEqual(urls["photo.png"], result["parts"][0]["items"][0]["media"][0]["assetId"])
+
+    def test_import_aborts_before_database_write_when_media_not_ready(self):
+        for fault in ("release", "publish"):
+            with self.subTest(fault=fault), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                release = root / "release"
+                release.mkdir()
+                for path in (release / "content.json", release / "provenance.json", root / "validation.json", root / "media.json"):
+                    path.write_text("{}", encoding="utf-8")
+                publisher = Mock(side_effect=ValueError("media not ready"))
+                connect = Mock(side_effect=AssertionError("DB must not be opened"))
+                argv = ["import_toeic.py", "--release", str(release), "--media", str(root / "media.json"), "--category-slug", "test", "--category-title", "Test", "--test-slug", "test"]
+                modules = {"publish_toeic_media": SimpleNamespace(publish_content=publisher), "psycopg": SimpleNamespace(connect=connect)}
+                with patch.object(sys, "argv", argv), patch.dict(sys.modules, modules), patch.object(module, "prepare", side_effect=ValueError("release not ready") if fault == "release" else None, return_value={"prepared": True}):
+                    with self.assertRaises(ValueError):
+                        module.main()
+                connect.assert_not_called()
+                if fault == "release":
+                    publisher.assert_not_called()
+                else:
+                    publisher.assert_called_once()
 
 
 if __name__ == "__main__":

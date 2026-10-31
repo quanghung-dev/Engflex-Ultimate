@@ -1,4 +1,6 @@
 import { Clock } from "lucide-react";
+import { SubmitButton } from "#/components/common/submit-button";
+import { Button } from "#/components/ui/button";
 import { m } from "#/paraglide/messages";
 
 function formatSeconds(totalSec: number): string {
@@ -9,6 +11,9 @@ function formatSeconds(totalSec: number): string {
 
 export function ToeicExamHeader({
 	testTitle,
+	pending,
+	practice,
+	locked,
 	timeLeft,
 	speed,
 	onCycleSpeed,
@@ -16,6 +21,9 @@ export function ToeicExamHeader({
 	onExitClick,
 }: {
 	testTitle: string;
+	pending: boolean;
+	practice: boolean;
+	locked: boolean;
 	timeLeft: number;
 	speed: number;
 	onCycleSpeed: () => void;
@@ -37,7 +45,12 @@ export function ToeicExamHeader({
 			{/* Center: Countdown Timer Badge */}
 			<div className="flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50/80 px-3.5 py-1 text-xs font-mono font-bold text-sky-700 shadow-xs dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-300 md:text-sm">
 				<Clock className="size-4" aria-hidden="true" />
-				<span>{formatSeconds(timeLeft)}</span>
+				<span>
+					{practice
+						? m["exams.toeic.take.elapsed"]()
+						: m["exams.toeic.take.remaining"]()}{" "}
+					{formatSeconds(timeLeft)}
+				</span>
 			</div>
 
 			{/* Right: Actions */}
@@ -46,26 +59,29 @@ export function ToeicExamHeader({
 					type="button"
 					onClick={onCycleSpeed}
 					className="flex h-8 items-center justify-center rounded-full border border-border/80 bg-muted/40 px-3 text-xs font-bold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-					title="Tốc độ phát"
+					title={m["exams.toeic.take.speed"]()}
 				>
 					{speed}x
 				</button>
 
-				<button
+				<SubmitButton
+					pending={pending}
+					disabled={locked}
 					type="button"
 					onClick={onSubmitClick}
 					className="flex h-8 items-center justify-center rounded-lg bg-emerald-600 px-3.5 text-xs font-bold text-white shadow-xs transition-colors hover:bg-emerald-700"
 				>
 					{m["exams.toeic.take.submitButton"]()}
-				</button>
+				</SubmitButton>
 
-				<button
+				<Button
+					disabled={locked}
 					type="button"
 					onClick={onExitClick}
 					className="flex h-8 items-center justify-center rounded-lg bg-rose-600 px-3.5 text-xs font-bold text-white shadow-xs transition-colors hover:bg-rose-700"
 				>
 					{m["exams.toeic.take.exitButton"]()}
-				</button>
+				</Button>
 			</div>
 		</header>
 	);

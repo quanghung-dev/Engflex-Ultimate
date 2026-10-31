@@ -1,90 +1,71 @@
+import { SubmitButton } from "#/components/common/submit-button";
+import {
+	AlertDialog,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogTitle,
+} from "#/components/ui/alert-dialog";
 import { m } from "#/paraglide/messages";
 
-export function ConfirmSubmitModal({
-	isOpen,
-	answeredCount,
-	totalCount,
+export function SessionConfirmModal({
+	action,
+	answered,
+	total,
+	pending,
+	error,
 	onClose,
 	onConfirm,
 }: {
-	isOpen: boolean;
-	answeredCount: number;
-	totalCount: number;
+	action: "submit" | "cancel" | null;
+	answered: number;
+	total: number;
+	pending: boolean;
+	error: boolean;
 	onClose: () => void;
 	onConfirm: () => void;
 }) {
-	if (!isOpen) return null;
-
 	return (
-		<div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-			<div className="flex w-full max-w-md flex-col gap-4 rounded-2xl border border-border bg-card p-6 shadow-xl animate-in fade-in-50 zoom-in-95">
-				<h3 className="text-lg font-bold text-card-foreground">
-					{m["exams.toeic.take.confirmSubmitTitle"]()}
-				</h3>
-				<p className="text-sm text-muted-foreground leading-relaxed">
-					{m["exams.toeic.take.confirmSubmitDesc"]({
-						answered: answeredCount,
-						total: totalCount,
-					})}
-				</p>
-				<div className="flex items-center justify-end gap-3 pt-2">
-					<button
-						type="button"
-						onClick={onClose}
-						className="rounded-xl border border-border px-4 py-2 text-xs font-bold text-foreground transition-colors hover:bg-muted"
-					>
-						{m["exams.toeic.take.confirmSubmitCancel"]()}
-					</button>
-					<button
-						type="button"
+		<AlertDialog
+			open={action !== null}
+			onOpenChange={(open) => {
+				if (!open && !pending) onClose();
+			}}
+		>
+			<AlertDialogContent className="z-[70]">
+				<AlertDialogTitle>
+					{action === "submit"
+						? m["exams.toeic.take.confirmSubmitTitle"]()
+						: m["exams.toeic.take.confirmExitTitle"]()}
+				</AlertDialogTitle>
+				<AlertDialogDescription>
+					{action === "submit"
+						? m["exams.toeic.take.confirmSubmitDesc"]({ answered, total })
+						: m["exams.toeic.take.confirmExitDesc"]()}
+				</AlertDialogDescription>
+				{error && (
+					<p role="alert" className="text-sm text-destructive">
+						{m["exams.toeic.take.saveFailed"]()}
+					</p>
+				)}
+				<AlertDialogFooter>
+					<AlertDialogCancel disabled={pending} onClick={onClose}>
+						{action === "submit"
+							? m["exams.toeic.take.confirmSubmitCancel"]()
+							: m["exams.toeic.take.confirmExitCancel"]()}
+					</AlertDialogCancel>
+					<SubmitButton
+						pending={pending}
 						onClick={onConfirm}
-						className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-xs transition-colors hover:bg-emerald-700"
+						variant={action === "cancel" ? "destructive" : "default"}
 					>
-						{m["exams.toeic.take.confirmSubmitAction"]()}
-					</button>
-				</div>
-			</div>
-		</div>
-	);
-}
-
-export function ConfirmExitModal({
-	isOpen,
-	onClose,
-	onConfirm,
-}: {
-	isOpen: boolean;
-	onClose: () => void;
-	onConfirm: () => void;
-}) {
-	if (!isOpen) return null;
-
-	return (
-		<div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-			<div className="flex w-full max-w-md flex-col gap-4 rounded-2xl border border-border bg-card p-6 shadow-xl animate-in fade-in-50 zoom-in-95">
-				<h3 className="text-lg font-bold text-card-foreground">
-					{m["exams.toeic.take.confirmExitTitle"]()}
-				</h3>
-				<p className="text-sm text-muted-foreground leading-relaxed">
-					{m["exams.toeic.take.confirmExitDesc"]()}
-				</p>
-				<div className="flex items-center justify-end gap-3 pt-2">
-					<button
-						type="button"
-						onClick={onClose}
-						className="rounded-xl border border-border px-4 py-2 text-xs font-bold text-foreground transition-colors hover:bg-muted"
-					>
-						{m["exams.toeic.take.confirmExitCancel"]()}
-					</button>
-					<button
-						type="button"
-						onClick={onConfirm}
-						className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white shadow-xs transition-colors hover:bg-rose-700"
-					>
-						{m["exams.toeic.take.confirmExitAction"]()}
-					</button>
-				</div>
-			</div>
-		</div>
+						{action === "submit"
+							? m["exams.toeic.take.confirmSubmitAction"]()
+							: m["exams.toeic.take.confirmExitAction"]()}
+					</SubmitButton>
+				</AlertDialogFooter>
+			</AlertDialogContent>
+		</AlertDialog>
 	);
 }
