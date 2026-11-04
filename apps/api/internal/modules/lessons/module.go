@@ -39,7 +39,8 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, voiceCfg config.VoiceConfi
 		llm.NewHTTPLLMClient(llmCfg),
 		repositories.NewAttemptRepository(db),
 	)
-	activityCtl := controllers.NewLessonActivityController(activitySvc, media)
+	audioSvc := services.NewAudioSynthesisService(services.ExecRunner{})
+	activityCtl := controllers.NewLessonActivityController(activitySvc, audioSvc, media)
 
 	// Lessons/activities/sections are 100% admin-curated, so mutations are
 	// admin-gated outright; reads stay open to any authenticated user,
@@ -74,6 +75,7 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, voiceCfg config.VoiceConfi
 	}
 	la.POST("/:id/pronounce", append(strict, middleware.RequireAuth(), activityCtl.Pronounce)...)
 	la.POST("/:id/score", append(strict, middleware.RequireAuth(), activityCtl.ScoreWriting)...)
+	la.POST("/:id/synthesize-audio", middleware.RequireAuth(), middleware.RequireAdmin(), activityCtl.SynthesizeAudio)
 
 	// Admin-only: full (unstripped) activity config, needed to prefill the
 	// edit form — the learner-shaped GET /lesson-activities/:id strips
