@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { isIeltsMediaKey } from "#/features/exams/ielts/media";
 import { isToeicMediaKey } from "#/features/exams/media-key";
 
 const MINIO_INTERNAL =
@@ -23,12 +24,23 @@ export const Route = createFileRoute("/api/media/$")({
 					return Response.json({ message: "bad media key" }, { status: 404 });
 				}
 				const toeic = key.startsWith("toeic/");
+				const ielts = key.startsWith("ielts/");
+				if (ielts && !isIeltsMediaKey(key)) {
+					return Response.json({ message: "bad media key" }, { status: 404 });
+				}
 				if (toeic && !isToeicMediaKey(key)) {
 					return Response.json({ message: "bad media key" }, { status: 404 });
 				}
 				const stories = key.startsWith("stories/");
-				const bucket = toeic ? "toeic" : stories ? "stories" : MEDIA_BUCKET;
-				const objectKey = toeic || stories ? key.slice(bucket.length + 1) : key;
+				const bucket = toeic
+					? "toeic"
+					: ielts
+						? "ielts"
+						: stories
+							? "stories"
+							: MEDIA_BUCKET;
+				const objectKey =
+					toeic || ielts || stories ? key.slice(bucket.length + 1) : key;
 				const object = objectKey.split("/").map(encodeURIComponent).join("/");
 				const range = request.headers.get("range");
 				let upstream: Response;
