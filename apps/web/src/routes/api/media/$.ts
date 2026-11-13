@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { isIeltsMediaKey, isToeicMediaKey } from "#/features/exams/media-key";
+import { isIeltsMediaKey } from "#/features/exams/ielts/media";
+import { isToeicMediaKey } from "#/features/exams/media-key";
 
 const MINIO_INTERNAL =
 	process.env.MEDIA_INTERNAL_ENDPOINT?.trim() || "http://localhost:9000";
@@ -23,11 +24,11 @@ export const Route = createFileRoute("/api/media/$")({
 					return Response.json({ message: "bad media key" }, { status: 404 });
 				}
 				const toeic = key.startsWith("toeic/");
-				if (toeic && !isToeicMediaKey(key)) {
-					return Response.json({ message: "bad media key" }, { status: 404 });
-				}
 				const ielts = key.startsWith("ielts/");
 				if (ielts && !isIeltsMediaKey(key)) {
+					return Response.json({ message: "bad media key" }, { status: 404 });
+				}
+				if (toeic && !isToeicMediaKey(key)) {
 					return Response.json({ message: "bad media key" }, { status: 404 });
 				}
 				const stories = key.startsWith("stories/");
