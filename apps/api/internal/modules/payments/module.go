@@ -20,7 +20,7 @@ import (
 // public — ipn's security is the HMAC signature alone (VNPay calls it
 // server-to-server, no Clerk token exists there), and return is a UX-only
 // status page. Every /admin/premium/* route is admin-gated outright.
-func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.PaymentConfig) {
+func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.PaymentConfig, sepayCfg config.SepayConfig) {
 	subRepo := repositories.NewSubscriptionRepository(db)
 	txnRepo := repositories.NewPaymentTransactionRepository(db)
 	planRepo := repositories.NewPlanRepository(db)
@@ -35,8 +35,16 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.PaymentConfig) 
 		PayURL:     cfg.VNPayPayURL,
 		ReturnURL:  cfg.VNPayReturnURL,
 	}, db, subRepo, txnRepo, planRepo)
+	sepaySvc := services.NewSepayService(services.SepayConfig{
+		APIKey:        sepayCfg.APIKey,
+		WebhookSecret: sepayCfg.WebhookSecret,
+		BaseURL:       sepayCfg.BaseURL,
+		BankAccount:   sepayCfg.BankAccount,
+		BankName:      sepayCfg.BankName,
+		AccountHolder: sepayCfg.AccountHolder,
+	}, db, subRepo, txnRepo, planRepo)
 
-	paymentCtl := controllers.NewPaymentController(planSvc, subSvc, vnpaySvc)
+	paymentCtl := controllers.NewPaymentController(planSvc, subSvc, vnpaySvc, sepaySvc)
 	planCtl := controllers.NewPlanController(planSvc)
 	featureCtl := controllers.NewPremiumFeatureController(featureSvc)
 	subAdminCtl := controllers.NewSubscriptionAdminController(subSvc)
@@ -46,6 +54,11 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.PaymentConfig) 
 	g.POST("/checkout", middleware.RequireAuth(), paymentCtl.Checkout)
 	g.GET("/ipn", paymentCtl.IPN)
 	g.GET("/return", paymentCtl.Return)
+
+	sp := rg.Group("/payments/sepay")
+	sp.POST("/checkout", middleware.RequireAuth(), paymentCtl.SepayCheckout)
+	sp.POST("/webhook", paymentCtl.SepayWebhook)
+	sp.GET("/status/:reference", middleware.RequireAuth(), paymentCtl.SepayStatus)
 
 	rg.GET("/premium/me", middleware.RequireAuth(), paymentCtl.Me)
 

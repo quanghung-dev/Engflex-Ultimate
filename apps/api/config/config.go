@@ -18,6 +18,8 @@ type Config struct {
 	RateLimit RateLimitConfig
 	Media     MediaConfig
 	Payment   PaymentConfig
+	Minio     MinioConfig
+	Sepay     SepayConfig
 }
 
 // Load reads .env files (if present) and then resolves every config section
@@ -44,5 +46,7 @@ func Load(dotEnvPaths ...string) (Config, error) {
 		RateLimit: LoadRateLimitConfig(),
 		Media:     LoadMediaConfig(),
 		Payment:   LoadPaymentConfig(),
+		Minio:     LoadMinioConfig(),
+		Sepay:     LoadSepayConfig(),
 	}, nil
 }
